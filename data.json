@@ -125,68 +125,15 @@
   ],
   "parlays": [
     {
-      "id": "72zr0fa",
+      "id": "8ur2l4u",
       "name": "Parlay 1",
-      "betIds": [
-        "1bsypr1",
-        "mms1mkl",
-        "369ycge",
-        "1yrpmm8"
-      ],
-      "stake": 500
-    },
-    {
-      "id": "gw83bvv",
-      "name": "Parlay 2",
-      "betIds": [
-        "gz9rnzl",
-        "osyzhwo",
-        "4ta7laq",
-        "rexf3fn",
-        "mms1mkl",
-        "369ycge",
-        "1yrpmm8",
-        "xb04zgi"
-      ],
-      "stake": 100
-    },
-    {
-      "id": "z1esk89",
-      "name": "Parlay 3",
-      "betIds": [
-        "vwp4en4",
-        "mmjrzcg",
-        "d43l7au",
-        "e30yre8",
-        "8ejia5d",
-        "mms1mkl",
-        "369ycge",
-        "1yrpmm8"
-      ],
-      "stake": 25
-    },
-    {
-      "id": "3lg0im2",
-      "name": "Parlay 4",
-      "betIds": [
-        "mmjrzcg",
-        "d43l7au",
-        "e30yre8",
-        "8ejia5d",
-        "rexf3fn"
-      ],
-      "stake": 50
-    },
-    {
-      "id": "7gix3ov",
-      "name": "Parlay 5",
       "betIds": [],
       "stake": 50
     }
   ],
   "betResults": {},
   "weeklyRecaps": [],
-  "activeParlayId": "7gix3ov",
+  "activeParlayId": "8ur2l4u",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
