@@ -262,7 +262,12 @@
       "stake": 500
     }
   ],
-  "betResults": {},
+  "betResults": {
+    "369ycge": "loss",
+    "1yrpmm8": "loss",
+    "mms1mkl": "loss",
+    "4ta7laq": "loss"
+  },
   "weeklyRecaps": [],
   "activeParlayId": null,
   "weekName": "Mar 28, 2026",
