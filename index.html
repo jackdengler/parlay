@@ -430,11 +430,39 @@ html, body {
 .w-btn.on { background: var(--green-bg); color: var(--green); border-color: #9DD3B0; }
 .l-btn { background: var(--bg2); color: var(--muted); }
 .l-btn.on { background: var(--red-bg); color: var(--red); border-color: #F0ADA6; }
+.recap-parlay-card {
+  margin: 0 14px 7px; background: var(--bg); border-radius: var(--radius);
+  border: 1px solid var(--border); overflow: hidden;
+}
+.recap-parlay-card.expanded { border-color: var(--accent); }
 .recap-parlay-row {
   display: flex; align-items: center; justify-content: space-between;
-  margin: 0 14px 7px; background: var(--bg); border-radius: var(--radius);
-  padding: 12px 14px; border: 1px solid var(--border);
+  padding: 12px 14px; cursor: pointer; user-select: none;
 }
+.recap-parlay-row:active { background: var(--bg3); }
+.rp-chevron { color: var(--muted2); font-size: 10px; flex-shrink: 0; }
+.rp-legs { border-top: 1px solid var(--border); padding: 8px 14px 10px; }
+.rpl-row {
+  display: flex; align-items: center; gap: 10px; padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+}
+.rpl-row:last-child { border-bottom: none; }
+.rpl-icon {
+  width: 20px; height: 20px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; font-size: 11px;
+  font-weight: 800; flex-shrink: 0;
+}
+.rpl-icon.win { background: var(--green-bg); color: var(--green); }
+.rpl-icon.loss { background: var(--red-bg); color: var(--red); }
+.rpl-icon.pend { background: var(--bg3); color: var(--muted2); font-size: 16px; line-height: 1; }
+.rpl-info { flex: 1; min-width: 0; }
+.rpl-name { font-size: 13px; font-weight: 600; color: var(--text); display: block; }
+.rpl-prob { font-size: 11px; color: var(--muted); margin-top: 1px; display: block; }
+.rpl-combined {
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--muted); text-align: center;
+}
+.rpl-combined strong { color: var(--accent); font-weight: 700; }
 .rp-name { color: var(--text); font-size: 14px; font-weight: 700; font-family: 'Lora', serif; }
 .rp-meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
 .status-win { color: var(--green); font-size: 16px; font-weight: 700; font-family: 'Lora', serif; font-style: italic; }
@@ -1022,6 +1050,8 @@ function renderPool() {
 
 // ─── BUILDER ───────────────────────────────────────────────────────────────
 let renamingParlayId = null;
+let expandedResultParlayId = null;
+function toggleResultParlay(id) { expandedResultParlayId = expandedResultParlayId===id?null:id; render(); }
 function renderBuilder() {
   let html=`<div class="tab-content">
   <div class="section-hdr">
@@ -1251,21 +1281,52 @@ function renderResults() {
           plLine=`<div class="rp-maxpl">Best: +$${maxPay}</div>`;
         }
       }
-      html+=`<div class="recap-parlay-row">
-        <div style="flex:1;min-width:0">
-          <div class="rp-name">${esc(p.name)}</div>
-          <div class="rp-meta">${p.betIds.length} legs · $${p.stake} stake</div>
-          <div class="leg-dots">${sortedLegs.map(id=>{
-            const r=S.betResults[id]||null;
+      const isExpanded=expandedResultParlayId===p.id;
+      html+=`<div class="recap-parlay-card ${isExpanded?'expanded':''}">
+        <div class="recap-parlay-row" onclick="toggleResultParlay('${p.id}')">
+          <div style="flex:1;min-width:0">
+            <div class="rp-name">${esc(p.name)}</div>
+            <div class="rp-meta">${p.betIds.length} legs · $${p.stake} stake</div>
+            <div class="leg-dots">${sortedLegs.map(id=>{
+              const r=S.betResults[id]||null;
+              const b=S.bets.find(x=>x.id===id);
+              const cls=r==='win'?'leg-dot win':r==='loss'?'leg-dot loss':'leg-dot pend';
+              return `<span class="${cls}" title="${b?esc(b.name):''}"></span>`;
+            }).join('')}</div>
+            ${plLine}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="${status==='win'?'status-win':status==='loss'?'status-loss':'status-pend'}">
+              ${status==='win'?'+$'+calcProfit(p.betIds,p.stake):status==='loss'?'-$'+p.stake:'Pending'}
+            </div>
+            <span class="rp-chevron">${isExpanded?'▲':'▼'}</span>
+          </div>
+        </div>
+        ${isExpanded?`<div class="rp-legs">
+          ${p.betIds.map(id=>{
             const b=S.bets.find(x=>x.id===id);
-            const cls=r==='win'?'leg-dot win':r==='loss'?'leg-dot loss':'leg-dot pend';
-            return `<span class="${cls}" title="${b?esc(b.name):''}"></span>`;
-          }).join('')}</div>
-          ${plLine}
-        </div>
-        <div class="${status==='win'?'status-win':status==='loss'?'status-loss':'status-pend'}">
-          ${status==='win'?'+$'+calcProfit(p.betIds,p.stake):status==='loss'?'-$'+p.stake:'Pending'}
-        </div>
+            if(!b) return '';
+            const r=S.betResults[id]||null;
+            const imp=impliedProb(b.odds).toFixed(0);
+            const oc=b.odds>0?'odds-pos':'odds-neg';
+            const icon=r==='win'?'<span class="rpl-icon win">✓</span>':r==='loss'?'<span class="rpl-icon loss">✕</span>':'<span class="rpl-icon pend">·</span>';
+            const prob=r?'':`<span class="rpl-prob">${imp}% implied</span>`;
+            return `<div class="rpl-row ${r||''}">
+              ${icon}
+              <div class="rpl-info">
+                <span class="rpl-name">${esc(b.name)}</span>
+                ${prob}
+              </div>
+              <span class="${oc}">${fmtOdds(b.odds)}</span>
+            </div>`;
+          }).join('')}
+          ${(()=>{
+            const liveBets=p.betIds.filter(id=>!S.betResults[id]).map(id=>S.bets.find(x=>x.id===id)).filter(Boolean);
+            if(liveBets.length<2||alreadyLost) return '';
+            const combinedProb=liveBets.reduce((acc,b)=>acc*(impliedProb(b.odds)/100),1)*100;
+            return `<div class="rpl-combined">All ${liveBets.length} remaining hit: <strong>${combinedProb.toFixed(1)}%</strong></div>`;
+          })()}
+        </div>`:''}
       </div>`;
     });
 
