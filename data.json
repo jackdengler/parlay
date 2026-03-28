@@ -2,6 +2,11 @@
   "eventName": "UFC 314",
   "bets": [
     {
+      "id": "1bsypr1",
+      "name": "Bahamondes ML",
+      "odds": -333
+    },
+    {
       "id": "mmjrzcg",
       "name": "Adesanya Points",
       "odds": 162
@@ -10,11 +15,6 @@
       "id": "2mnbmds",
       "name": "Pyfer TKO/KO",
       "odds": 275
-    },
-    {
-      "id": "1bsypr1",
-      "name": "Bahamondes ML",
-      "odds": -333
     },
     {
       "id": "z0g7qxk",
