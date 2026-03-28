@@ -248,11 +248,17 @@
         "rexf3fn"
       ],
       "stake": 25
+    },
+    {
+      "id": "zgxmf65",
+      "name": "Parlay 12",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {},
   "weeklyRecaps": [],
-  "activeParlayId": null,
+  "activeParlayId": "zgxmf65",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
