@@ -2,51 +2,6 @@
   "eventName": "UFC 314",
   "bets": [
     {
-      "id": "a3lyxa4",
-      "name": "Israel ML",
-      "odds": -152
-    },
-    {
-      "id": "pu47bet",
-      "name": "Barber ML",
-      "odds": -200
-    },
-    {
-      "id": "baip77z",
-      "name": "Belgaroui ML",
-      "odds": -103
-    },
-    {
-      "id": "x8cltmc",
-      "name": "McKinney ML",
-      "odds": -182
-    },
-    {
-      "id": "zewmhvr",
-      "name": "Bahamondes ML",
-      "odds": -333
-    },
-    {
-      "id": "piivj5w",
-      "name": "Hooper ML",
-      "odds": -312
-    },
-    {
-      "id": "a8u0vig",
-      "name": "Tybura ML",
-      "odds": 107
-    },
-    {
-      "id": "e0d9hz5",
-      "name": "Stirling ML",
-      "odds": -714
-    },
-    {
-      "id": "wslmxcd",
-      "name": "Thainara ML",
-      "odds": -833
-    },
-    {
       "id": "8hq3fxm",
       "name": "Tybura R1",
       "odds": 520
@@ -97,28 +52,14 @@
       "id": "uaztwjr",
       "name": "Parlay 1",
       "betIds": [
-        "x8cltmc",
-        "9eyei4t",
-        "pu47bet",
-        "baip77z",
-        "zewmhvr",
-        "piivj5w",
-        "a8u0vig",
-        "e0d9hz5",
-        "wslmxcd"
+        "9eyei4t"
       ],
       "stake": 100
     },
     {
       "id": "0s5gcff",
       "name": "Parlay 2",
-      "betIds": [
-        "x8cltmc",
-        "zewmhvr",
-        "a8u0vig",
-        "pu47bet",
-        "piivj5w"
-      ],
+      "betIds": [],
       "stake": 250
     },
     {
@@ -128,24 +69,14 @@
         "sjlh0xk",
         "9eyei4t",
         "86211f8",
-        "16a60ww",
-        "a8u0vig",
-        "baip77z",
-        "piivj5w"
+        "16a60ww"
       ],
       "stake": 25
     },
     {
       "id": "1gm5zb0",
       "name": "Parlay 4",
-      "betIds": [
-        "pu47bet",
-        "zewmhvr",
-        "a8u0vig",
-        "piivj5w",
-        "e0d9hz5",
-        "wslmxcd"
-      ],
+      "betIds": [],
       "stake": 500
     }
   ],
