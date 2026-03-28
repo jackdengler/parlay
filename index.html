@@ -1162,6 +1162,8 @@ function renderExposure() {
   S.bets.forEach(b=>{
     const inParlays=S.parlays.filter(p=>p.betIds.includes(b.id));
     const atRisk=inParlays.reduce((s,p)=>s+p.stake,0);
+    const betResult=S.betResults[b.id]||null;
+    const betCovered=betResult==='win';
     const oc=b.odds>0?'odds-pos':'odds-neg';
     html+=`<div class="exp-card">
       <div class="exp-top">
@@ -1170,8 +1172,12 @@ function renderExposure() {
           <span class="${oc}">${fmtOdds(b.odds)}</span>
         </div>
         <div style="text-align:right">
-          <div class="exp-risk-amt" style="color:${atRisk>0?'var(--red)':'var(--muted2)'}">${atRisk>0?'$'+atRisk:'—'}</div>
-          <div class="exp-risk-lbl">at risk</div>
+          ${betCovered
+            ?`<div class="exp-risk-amt" style="color:var(--green)">Covered</div><div class="exp-risk-lbl">won</div>`
+            :betResult==='loss'
+              ?`<div class="exp-risk-amt" style="color:var(--red)">-$${atRisk}</div><div class="exp-risk-lbl">lost</div>`
+              :`<div class="exp-risk-amt" style="color:${atRisk>0?'var(--red)':'var(--muted2)'}">${atRisk>0?'$'+atRisk:'—'}</div><div class="exp-risk-lbl">at risk</div>`
+          }
         </div>
       </div>`;
     if(inParlays.length===0) {
