@@ -260,6 +260,19 @@
         "ralru1r"
       ],
       "stake": 500
+    },
+    {
+      "id": "6924gu2",
+      "name": "Parlay 13",
+      "betIds": [
+        "1bsypr1",
+        "369ycge",
+        "1yrpmm8",
+        "mms1mkl",
+        "4ta7laq",
+        "ralru1r"
+      ],
+      "stake": 50
     }
   ],
   "betResults": {
@@ -280,7 +293,7 @@
     "8ejia5d": null
   },
   "weeklyRecaps": [],
-  "activeParlayId": null,
+  "activeParlayId": "6924gu2",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
