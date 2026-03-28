@@ -27,11 +27,6 @@
       "odds": -200
     },
     {
-      "id": "vwp4en4",
-      "name": "Barber Points",
-      "odds": -110
-    },
-    {
       "id": "4ta7laq",
       "name": "McKinney ML",
       "odds": -172
@@ -56,6 +51,11 @@
       "id": "mms1mkl",
       "name": "Hooper ML",
       "odds": -312
+    },
+    {
+      "id": "vwp4en4",
+      "name": "Barber Points",
+      "odds": -110
     },
     {
       "id": "8ejia5d",
