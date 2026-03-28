@@ -279,15 +279,6 @@
         "8ejia5d"
       ],
       "stake": 75
-    },
-    {
-      "id": "7lku8p7",
-      "name": "Parlay 15",
-      "betIds": [
-        "369ycge",
-        "1yrpmm8"
-      ],
-      "stake": 50
     }
   ],
   "betResults": {
@@ -308,7 +299,7 @@
     "8ejia5d": null
   },
   "weeklyRecaps": [],
-  "activeParlayId": "7lku8p7",
+  "activeParlayId": null,
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
