@@ -100,7 +100,110 @@
     "hx28yiw": null,
     "9eyei4t": null
   },
-  "weeklyRecaps": [],
+  "weeklyRecaps": [
+    {
+      "id": "foq6tsd",
+      "event": "Mar 28, 2026",
+      "date": "Mar 28, 2026",
+      "bets": [
+        {
+          "id": "8hq3fxm",
+          "name": "Tybura R1",
+          "odds": 520,
+          "result": null
+        },
+        {
+          "id": "mvp3tfw",
+          "name": "Hooper Points",
+          "odds": 200,
+          "result": null
+        },
+        {
+          "id": "p0rz42s",
+          "name": "Hooper Sub",
+          "odds": 220,
+          "result": null
+        },
+        {
+          "id": "16a60ww",
+          "name": "Bahamondes KO",
+          "odds": 170,
+          "result": null
+        },
+        {
+          "id": "86211f8",
+          "name": "McKinney R1",
+          "odds": 120,
+          "result": null
+        },
+        {
+          "id": "sjlh0xk",
+          "name": "Barber Points",
+          "odds": -110,
+          "result": null
+        },
+        {
+          "id": "m1gerjx",
+          "name": "Pyfer ML",
+          "odds": 112,
+          "result": null
+        },
+        {
+          "id": "hx28yiw",
+          "name": "Pyfer KO",
+          "odds": 275,
+          "result": null
+        },
+        {
+          "id": "9eyei4t",
+          "name": "Israel Points",
+          "odds": 162,
+          "result": null
+        }
+      ],
+      "parlays": [
+        {
+          "id": "uaztwjr",
+          "name": "Parlay 1",
+          "betIds": [
+            "9eyei4t"
+          ],
+          "stake": 100,
+          "result": "pending",
+          "payout": 262
+        },
+        {
+          "id": "0s5gcff",
+          "name": "Parlay 2",
+          "betIds": [],
+          "stake": 250,
+          "result": "pending",
+          "payout": 250
+        },
+        {
+          "id": "fq11mun",
+          "name": "Parlay 3",
+          "betIds": [
+            "sjlh0xk",
+            "9eyei4t",
+            "86211f8",
+            "16a60ww"
+          ],
+          "stake": 25,
+          "result": "pending",
+          "payout": 742.77
+        },
+        {
+          "id": "1gm5zb0",
+          "name": "Parlay 4",
+          "betIds": [],
+          "stake": 500,
+          "result": "pending",
+          "payout": 500
+        }
+      ]
+    }
+  ],
   "activeParlayId": null,
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
