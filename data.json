@@ -269,14 +269,6 @@
         "1bsypr1"
       ],
       "stake": 500
-    },
-    {
-      "id": "gsdkc7z",
-      "name": "Parlay 15",
-      "betIds": [
-        "xb04zgi"
-      ],
-      "stake": 200
     }
   ],
   "betResults": {
@@ -297,7 +289,7 @@
     "8ejia5d": "loss"
   },
   "weeklyRecaps": [],
-  "activeParlayId": "gsdkc7z",
+  "activeParlayId": null,
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
