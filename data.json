@@ -168,7 +168,18 @@
     {
       "id": "a2th8o6",
       "name": "Parlay 7",
-      "betIds": [],
+      "betIds": [
+        "369ycge",
+        "1yrpmm8",
+        "mms1mkl",
+        "4ta7laq",
+        "1bsypr1",
+        "ralru1r",
+        "rexf3fn",
+        "xb04zgi",
+        "osyzhwo",
+        "gz9rnzl"
+      ],
       "stake": 50
     }
   ],
