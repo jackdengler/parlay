@@ -751,37 +751,40 @@ async function saveToken() {
   }
 }
 
-// ─── CSV IMPORT ─────────────────────────────────────────────────────────────
-function importCSV(file) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
-    let added = 0, skipped = 0;
-    lines.forEach(line => {
-      // Support: "Name, odds" or "Name odds" or "odds, Name"
-      const parts = line.split(',');
-      let name, oddsRaw;
-      if (parts.length >= 2) {
-        // Try both orders: "Name, odds" and "odds, Name"
-        const a = parts[0].trim(), b = parts.slice(1).join(',').trim();
-        if (/^[+-]?\d+$/.test(b)) { name = a; oddsRaw = b; }
-        else if (/^[+-]?\d+$/.test(a)) { oddsRaw = a; name = b; }
-        else { name = a; oddsRaw = b; }
-      } else {
-        // No comma — try splitting on last whitespace before a number
-        const m = line.trim().match(/^(.+?)\s+([+-]?\d+)$/) || line.trim().match(/^([+-]?\d+)\s+(.+)$/);
-        if (m) { name = m[1].trim(); oddsRaw = m[2].trim(); }
-      }
-      const odds = parseInt(oddsRaw);
-      if (name && !isNaN(odds) && odds !== 0) {
-        S.bets.push({ id: uid(), name, odds });
-        added++;
-      } else { skipped++; }
-    });
-    if (added) { saveState(); render(); showToast(`Added ${added} bet${added>1?'s':''}${skipped?` · ${skipped} skipped`:''}`); }
-    else { showToast('No valid bets found in file'); }
-  };
-  reader.readAsText(file);
+// ─── PASTE IMPORT ───────────────────────────────────────────────────────────
+let showPasteForm = false;
+
+function parseBetLines(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  let added = 0, skipped = 0;
+  lines.forEach(line => {
+    // Last comma-separated token that looks like odds wins
+    const parts = line.split(',');
+    let name, oddsRaw;
+    if (parts.length >= 2) {
+      const last = parts[parts.length - 1].trim();
+      if (/^[+-]?\d+$/.test(last)) { oddsRaw = last; name = parts.slice(0, -1).join(',').trim(); }
+      else { name = parts[0].trim(); oddsRaw = last; }
+    } else {
+      const m = line.trim().match(/^(.+?)\s+([+-]?\d+)$/);
+      if (m) { name = m[1].trim(); oddsRaw = m[2].trim(); }
+    }
+    const odds = parseInt(oddsRaw);
+    if (name && !isNaN(odds) && odds !== 0) { S.bets.push({ id: uid(), name, odds }); added++; }
+    else skipped++;
+  });
+  return { added, skipped };
+}
+
+function openPasteForm() { showPasteForm = true; render(); setTimeout(() => document.getElementById('pasteInput')?.focus(), 80); }
+function closePasteForm() { showPasteForm = false; render(); }
+function submitPaste() {
+  const text = document.getElementById('pasteInput')?.value?.trim();
+  if (!text) { closePasteForm(); return; }
+  const { added, skipped } = parseBetLines(text);
+  showPasteForm = false;
+  if (added) { saveState(); render(); showToast(`Added ${added} bet${added>1?'s':''}${skipped?` · ${skipped} skipped`:''}`); }
+  else { showToast('No valid bets found'); render(); }
 }
 
 // ─── HELPERS ───────────────────────────────────────────────────────────────
@@ -809,6 +812,7 @@ function showToast(msg) {
 let currentTab='pool';
 function switchTab(tab) {
   if(tab!=='results') S._confirmClear=false;
+  showPasteForm=false;
   currentTab=tab;
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   renderScreen();
@@ -842,10 +846,7 @@ function renderPool() {
   <div class="section-hdr">
     <span class="section-title">Bet Pool</span>
     <div style="display:flex;gap:8px;align-items:center">
-      <label class="add-btn" style="cursor:pointer;margin:0">
-        Import CSV
-        <input type="file" accept=".csv,.txt" style="display:none" onchange="if(this.files[0])importCSV(this.files[0]);this.value=''" />
-      </label>
+      <button class="add-btn" onclick="openPasteForm()">Paste bets</button>
       <button class="add-btn" onclick="openBetForm()">+ Add bet</button>
     </div>
   </div>`;
@@ -866,6 +867,17 @@ function renderPool() {
       </div>
     </div>`;
   });
+
+  if(showPasteForm) {
+    html+=`<div class="form-card">
+      <div class="form-title">Paste bets</div>
+      <textarea class="ios-input" id="pasteInput" rows="6" placeholder="Adesanya/Pyfer O1.5, -455&#10;Thainara R1 Win, +420&#10;Simon Points, +130&#10;Lopes ML, +410" style="resize:none;font-size:13px;line-height:1.6"></textarea>
+      <div class="form-btns">
+        <button class="cancel-btn" onclick="closePasteForm()">Cancel</button>
+        <button class="save-btn" onclick="submitPaste()">Add bets</button>
+      </div>
+    </div>`;
+  }
 
   if(showBetForm) {
     const b=editingBetId?S.bets.find(x=>x.id===editingBetId):null;
