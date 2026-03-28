@@ -263,17 +263,6 @@
         "8ejia5d"
       ],
       "stake": 100
-    },
-    {
-      "id": "43l1ewt",
-      "name": "Parlay 15",
-      "betIds": [
-        "1yrpmm8",
-        "mms1mkl",
-        "369ycge",
-        "1bsypr1"
-      ],
-      "stake": 500
     }
   ],
   "betResults": {
