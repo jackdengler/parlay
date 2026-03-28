@@ -1,6 +1,27 @@
 {
   "eventName": "UFC 314",
-  "bets": [],
+  "bets": [
+    {
+      "id": "zepjf6a",
+      "name": "Adesanya/Pyfer O1.5",
+      "odds": -455
+    },
+    {
+      "id": "49lumr6",
+      "name": "Thainara R1 Win",
+      "odds": 420
+    },
+    {
+      "id": "khegxwa",
+      "name": "Simon Points",
+      "odds": 130
+    },
+    {
+      "id": "rbs8c2q",
+      "name": "Lopes ML",
+      "odds": 410
+    }
+  ],
   "parlays": [],
   "betResults": {},
   "weeklyRecaps": [],
