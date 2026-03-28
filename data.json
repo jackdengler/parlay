@@ -1,6 +1,32 @@
 {
   "eventName": "UFC 314",
-  "bets": [],
+  "bets": [
+    {
+      "id": "jm1vz08",
+      "name": "Thainara Alexia",
+      "odds": -833
+    },
+    {
+      "id": "2kw0g0w",
+      "name": "Simon Ricky",
+      "odds": -149
+    },
+    {
+      "id": "cu29m3i",
+      "name": "Lopes Bruno",
+      "odds": 410
+    },
+    {
+      "id": "8a5j6hq",
+      "name": "Fernandes Gabriella",
+      "odds": -115
+    },
+    {
+      "id": "w3i37zl",
+      "name": "Tybura Marcin",
+      "odds": 107
+    }
+  ],
   "parlays": [],
   "betResults": {},
   "weeklyRecaps": [],
