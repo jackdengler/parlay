@@ -283,7 +283,11 @@
     {
       "id": "43l1ewt",
       "name": "Parlay 15",
-      "betIds": [],
+      "betIds": [
+        "1yrpmm8",
+        "mms1mkl",
+        "369ycge"
+      ],
       "stake": 50
     }
   ],
