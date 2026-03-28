@@ -14,7 +14,8 @@
     {
       "id": "mms1mkl",
       "name": "Hooper ML",
-      "odds": -312
+      "odds": -333,
+      "group": ""
     },
     {
       "id": "4ta7laq",
@@ -239,9 +240,10 @@
         "1yrpmm8",
         "mms1mkl",
         "1bsypr1",
-        "4ta7laq"
+        "4ta7laq",
+        "xb04zgi"
       ],
-      "stake": 300
+      "stake": 200
     },
     {
       "id": "mwrr7wq",
