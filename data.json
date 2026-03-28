@@ -153,7 +153,9 @@
     {
       "id": "z1esk89",
       "name": "Parlay 3",
-      "betIds": [],
+      "betIds": [
+        "vwp4en4"
+      ],
       "stake": 50
     }
   ],
