@@ -1,0 +1,176 @@
+{
+  "eventName": "UFC 314",
+  "bets": [
+    {
+      "id": "a3lyxa4",
+      "name": "Israel ML",
+      "odds": -152
+    },
+    {
+      "id": "pu47bet",
+      "name": "Barber ML",
+      "odds": -200
+    },
+    {
+      "id": "baip77z",
+      "name": "Belgaroui ML",
+      "odds": -103
+    },
+    {
+      "id": "x8cltmc",
+      "name": "McKinney ML",
+      "odds": -182
+    },
+    {
+      "id": "zewmhvr",
+      "name": "Bahamondes ML",
+      "odds": -333
+    },
+    {
+      "id": "piivj5w",
+      "name": "Hooper ML",
+      "odds": -312
+    },
+    {
+      "id": "a8u0vig",
+      "name": "Tybura ML",
+      "odds": 107
+    },
+    {
+      "id": "e0d9hz5",
+      "name": "Stirling ML",
+      "odds": -714
+    },
+    {
+      "id": "wslmxcd",
+      "name": "Thainara ML",
+      "odds": -833
+    },
+    {
+      "id": "8hq3fxm",
+      "name": "Tybura R1",
+      "odds": 520
+    },
+    {
+      "id": "mvp3tfw",
+      "name": "Hooper Points",
+      "odds": 200
+    },
+    {
+      "id": "p0rz42s",
+      "name": "Hooper Sub",
+      "odds": 220
+    },
+    {
+      "id": "16a60ww",
+      "name": "Bahamondes KO",
+      "odds": 170
+    },
+    {
+      "id": "86211f8",
+      "name": "McKinney R1",
+      "odds": 120
+    },
+    {
+      "id": "sjlh0xk",
+      "name": "Barber Points",
+      "odds": -110
+    },
+    {
+      "id": "m1gerjx",
+      "name": "Pyfer ML",
+      "odds": 112
+    },
+    {
+      "id": "hx28yiw",
+      "name": "Pyfer KO",
+      "odds": 275
+    },
+    {
+      "id": "9eyei4t",
+      "name": "Israel Points",
+      "odds": 162
+    },
+    {
+      "id": "bq96dvn",
+      "name": "ddd",
+      "odds": -444
+    }
+  ],
+  "parlays": [
+    {
+      "id": "uaztwjr",
+      "name": "Parlay 1",
+      "betIds": [
+        "x8cltmc",
+        "9eyei4t",
+        "pu47bet",
+        "baip77z",
+        "zewmhvr",
+        "piivj5w",
+        "a8u0vig",
+        "e0d9hz5",
+        "wslmxcd"
+      ],
+      "stake": 100
+    },
+    {
+      "id": "0s5gcff",
+      "name": "Parlay 2",
+      "betIds": [
+        "pu47bet",
+        "x8cltmc",
+        "zewmhvr",
+        "a8u0vig"
+      ],
+      "stake": 250
+    },
+    {
+      "id": "fq11mun",
+      "name": "Parlay 3",
+      "betIds": [
+        "sjlh0xk",
+        "9eyei4t",
+        "86211f8",
+        "16a60ww",
+        "a8u0vig",
+        "baip77z",
+        "piivj5w"
+      ],
+      "stake": 25
+    },
+    {
+      "id": "1gm5zb0",
+      "name": "Parlay 4",
+      "betIds": [
+        "pu47bet",
+        "zewmhvr"
+      ],
+      "stake": 500
+    }
+  ],
+  "betResults": {
+    "a3lyxa4": null,
+    "pu47bet": "win",
+    "baip77z": null,
+    "x8cltmc": "loss",
+    "zewmhvr": "win",
+    "piivj5w": null,
+    "a8u0vig": null,
+    "e0d9hz5": null,
+    "wslmxcd": null,
+    "8hq3fxm": null,
+    "mvp3tfw": null,
+    "p0rz42s": null,
+    "16a60ww": null,
+    "86211f8": "loss",
+    "sjlh0xk": null,
+    "m1gerjx": null,
+    "hx28yiw": null,
+    "9eyei4t": null
+  },
+  "weeklyRecaps": [],
+  "activeParlayId": null,
+  "weekName": "Mar 28, 2026",
+  "_confirmClear": false
+}
