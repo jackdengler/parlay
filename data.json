@@ -276,7 +276,7 @@
       "betIds": [
         "xb04zgi"
       ],
-      "stake": 50
+      "stake": 220
     }
   ],
   "betResults": {
@@ -297,7 +297,7 @@
     "8ejia5d": null
   },
   "weeklyRecaps": [],
-  "activeParlayId": "m6dmos6",
+  "activeParlayId": null,
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
