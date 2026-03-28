@@ -459,7 +459,12 @@ html, body {
 }
 .week-summary-row { display: flex; justify-content: space-between; padding: 5px 0; }
 .ws-lbl { color: var(--muted); font-size: 13px; }
-.ws-val { font-size: 14px; font-weight: 700; font-family: 'Lora', serif; }
+.ws-val { font-size: 14px; font-weight: 700; font-family: 'Lora', serif; display: flex; align-items: center; gap: 6px; }
+.ws-covered {
+  background: var(--green-bg); color: var(--green); font-size: 10px; font-weight: 700;
+  font-family: 'Source Sans 3', sans-serif; letter-spacing: 0.5px; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 6px;
+}
 .save-recap-btn {
   margin: 16px 14px 0; width: calc(100% - 28px); display: block;
   background: var(--accent); color: #fff; border: none; border-radius: var(--radius);
@@ -1277,9 +1282,10 @@ function renderResults() {
     const plColor=realizedPL>0?'var(--green)':realizedPL<0?'var(--red)':'var(--muted)';
     const bestColor=bestCasePL>0?'var(--green)':bestCasePL<0?'var(--red)':'var(--muted)';
     const plSign=realizedPL>0?'+':realizedPL<0?'-':''; const bestSign=bestCasePL>0?'+':bestCasePL<0?'-':'';
+    const covered=realizedPL>=totalStaked;
     html+=`<div class="week-summary-card">
       <div class="week-summary-title">Week Summary</div>
-      <div class="week-summary-row"><span class="ws-lbl">Total exposure</span><span class="ws-val">$${totalStaked.toFixed(2)}</span></div>
+      <div class="week-summary-row"><span class="ws-lbl">Total exposure</span><span class="ws-val">${covered?'<span class="ws-covered">Covered</span>':''}$${totalStaked.toFixed(2)}</span></div>
       <div class="week-summary-row"><span class="ws-lbl">Locked P/L</span><span class="ws-val" style="color:${plColor}">${plSign}$${Math.abs(realizedPL).toFixed(2)}</span></div>
       <div class="week-summary-row"><span class="ws-lbl">Best case</span><span class="ws-val" style="color:${bestColor}">${bestSign}$${Math.abs(bestCasePL).toFixed(2)}</span></div>
     </div>`;
