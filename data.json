@@ -269,14 +269,6 @@
         "1bsypr1"
       ],
       "stake": 500
-    },
-    {
-      "id": "m6dmos6",
-      "name": "Parlay 16",
-      "betIds": [
-        "xb04zgi"
-      ],
-      "stake": 220
     }
   ],
   "betResults": {
