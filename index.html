@@ -154,9 +154,16 @@ html, body {
   padding: 13px 14px;
   border: 1px solid var(--border);
   border-left: 3px solid var(--border2);
-  transition: border-left-color 0.15s;
+  transition: border-left-color 0.15s, opacity 0.15s;
 }
 .bet-card.in-parlay { border-left-color: var(--accent); }
+.bet-card.drag-over-top { box-shadow: 0 -2px 0 var(--accent); }
+.bet-card.drag-over-bottom { box-shadow: 0 2px 0 var(--accent); }
+.drag-handle {
+  color: var(--muted2); font-size: 15px; cursor: grab; padding: 0 10px 0 0;
+  flex-shrink: 0; touch-action: none; user-select: none; line-height: 1;
+}
+.drag-handle:active { cursor: grabbing; color: var(--muted); }
 .bet-name { color: var(--text); font-size: 15px; font-weight: 600; }
 .bet-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: 12px; }
 .odds-pos {
@@ -858,7 +865,8 @@ function renderPool() {
   S.bets.forEach(b=>{
     const cls=inParlayIds.has(b.id)?'bet-card in-parlay':'bet-card';
     const oc=b.odds>0?'odds-pos':'odds-neg';
-    html+=`<div class="${cls}">
+    html+=`<div class="${cls}" data-id="${b.id}">
+      <span class="drag-handle">⠿</span>
       <div class="bet-name">${esc(b.name)}</div>
       <div class="bet-right">
         <span class="${oc}">${fmtOdds(b.odds)}</span>
@@ -1362,6 +1370,82 @@ function attachHandlers(){
     S.eventName=e.target.value;saveState();
     document.getElementById('eventMeta').textContent=`${S.bets.length} bet${S.bets.length!==1?'s':''} · ${S.parlays.length} parlay${S.parlays.length!==1?'s':''}`;
   });
+  initDrag();
+}
+
+// ─── DRAG TO REORDER ────────────────────────────────────────────────────────
+let _drag = null;
+
+function initDrag() {
+  document.querySelectorAll('.drag-handle').forEach(h => {
+    h.addEventListener('touchstart', onDragStart, {passive: false});
+    h.addEventListener('mousedown', onDragStart);
+  });
+}
+
+function onDragStart(e) {
+  const card = e.currentTarget.closest('.bet-card[data-id]');
+  if (!card) return;
+  e.preventDefault();
+  const touch = e.touches ? e.touches[0] : e;
+  const rect = card.getBoundingClientRect();
+  const ghost = card.cloneNode(true);
+  ghost.style.cssText = `position:fixed;left:${rect.left}px;width:${rect.width}px;top:${rect.top}px;z-index:500;opacity:0.92;pointer-events:none;box-shadow:0 8px 28px rgba(0,0,0,0.18);border-radius:14px;transition:none;`;
+  document.body.appendChild(ghost);
+  card.style.opacity = '0.25';
+  _drag = { id: card.dataset.id, offsetY: touch.clientY - rect.top, ghost, card };
+  document.addEventListener('touchmove', onDragMove, {passive: false});
+  document.addEventListener('touchend', onDragEnd);
+  document.addEventListener('mousemove', onDragMove);
+  document.addEventListener('mouseup', onDragEnd);
+}
+
+function onDragMove(e) {
+  if (!_drag) return;
+  e.preventDefault();
+  const touch = e.touches ? e.touches[0] : e;
+  const y = touch.clientY;
+  _drag.ghost.style.top = (y - _drag.offsetY) + 'px';
+  document.querySelectorAll('.bet-card[data-id]').forEach(c => {
+    c.classList.remove('drag-over-top', 'drag-over-bottom');
+    if (c.dataset.id === _drag.id) return;
+    const r = c.getBoundingClientRect();
+    c.classList.add(y < r.top + r.height / 2 ? 'drag-over-top' : 'drag-over-bottom');
+  });
+}
+
+function onDragEnd(e) {
+  if (!_drag) return;
+  const touch = e.changedTouches ? e.changedTouches[0] : e;
+  const y = touch.clientY;
+  const cards = [...document.querySelectorAll('.bet-card[data-id]')];
+  let targetId = null, insertBefore = true;
+  for (const c of cards) {
+    if (c.dataset.id === _drag.id) continue;
+    const r = c.getBoundingClientRect();
+    if (y < r.top + r.height / 2) { targetId = c.dataset.id; insertBefore = true; break; }
+    targetId = c.dataset.id; insertBefore = false;
+  }
+  const fromIdx = S.bets.findIndex(b => b.id === _drag.id);
+  if (targetId !== null) {
+    let toIdx = S.bets.findIndex(b => b.id === targetId);
+    if (!insertBefore) toIdx++;
+    if (fromIdx < toIdx) toIdx--;
+    if (fromIdx !== toIdx && toIdx >= 0) {
+      const [moved] = S.bets.splice(fromIdx, 1);
+      S.bets.splice(toIdx, 0, moved);
+      saveState();
+    }
+  }
+  _drag.ghost.remove();
+  _drag.card.style.opacity = '';
+  cards.forEach(c => c.classList.remove('drag-over-top', 'drag-over-bottom'));
+  _drag = null;
+  document.removeEventListener('touchmove', onDragMove);
+  document.removeEventListener('touchend', onDragEnd);
+  document.removeEventListener('mousemove', onDragMove);
+  document.removeEventListener('mouseup', onDragEnd);
+  render();
 }
 
 // ─── SERVICE WORKER ────────────────────────────────────────────────────────
