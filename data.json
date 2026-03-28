@@ -2,6 +2,11 @@
   "eventName": "UFC 314",
   "bets": [
     {
+      "id": "369ycge",
+      "name": "Thainara ML",
+      "odds": -833
+    },
+    {
       "id": "1bsypr1",
       "name": "Bahamondes ML",
       "odds": -333
@@ -15,11 +20,6 @@
       "id": "1yrpmm8",
       "name": "Stirling ML",
       "odds": -714
-    },
-    {
-      "id": "369ycge",
-      "name": "Thainara ML",
-      "odds": -833
     },
     {
       "id": "ralru1r",
