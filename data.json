@@ -215,11 +215,17 @@
         "e30yre8"
       ],
       "stake": 50
+    },
+    {
+      "id": "8trj818",
+      "name": "Parlay 10",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {},
   "weeklyRecaps": [],
-  "activeParlayId": null,
+  "activeParlayId": "8trj818",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
