@@ -32,11 +32,6 @@
       "odds": -110
     },
     {
-      "id": "osyzhwo",
-      "name": "Adesanya ML",
-      "odds": -152
-    },
-    {
       "id": "4ta7laq",
       "name": "McKinney ML",
       "odds": -172
@@ -66,6 +61,11 @@
       "id": "8ejia5d",
       "name": "Tybura R1 Win",
       "odds": 520
+    },
+    {
+      "id": "osyzhwo",
+      "name": "Adesanya ML",
+      "odds": -152
     },
     {
       "id": "bqfg3iv",
