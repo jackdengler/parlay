@@ -472,17 +472,6 @@ html, body {
   cursor: pointer; padding: 0 0 0 8px; flex-shrink: 0; line-height: 1;
 }
 .archive-del-btn:active { color: var(--red); }
-.data-io-row {
-  display: flex; gap: 8px; margin: 0 14px 10px;
-}
-.io-btn {
-  flex: 1; background: var(--bg); color: var(--text2);
-  border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 11px 8px; font-size: 13px; font-weight: 600; cursor: pointer;
-  font-family: 'Source Sans 3', sans-serif; text-align: center;
-  transition: background 0.1s, border-color 0.1s;
-}
-.io-btn:active { background: var(--bg3); border-color: var(--border2); }
 
 .odds-input-row {
   display: flex; gap: 8px; align-items: center; margin-bottom: 10px;
@@ -1016,10 +1005,11 @@ function defaultWeekName() {
   return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 }
 
-function renderRecap() {
+// ─── RESULTS TAB ────────────────────────────────────────────────────────
+function renderResults() {
   if(!S.weekName) S.weekName = defaultWeekName();
   let html=`<div class="tab-content">
-  <div class="section-hdr"><span class="section-title">Week Recap</span></div>
+  <div class="section-hdr"><span class="section-title">Results</span></div>
   <div style="padding:0 14px 12px">
     <div style="color:var(--muted);font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:6px">Week name</div>
     <input class="ios-input" style="margin-bottom:0" id="weekNameInput" type="text" value="${esc(S.weekName)}" placeholder="e.g. UFC 314 · Apr 12" autocomplete="off" oninput="S.weekName=this.value;saveState()" />
@@ -1060,53 +1050,8 @@ function renderRecap() {
 
   if(S.bets.length>0||S.parlays.length>0) {
     html+=`<button class="save-recap-btn" onclick="saveRecap()">Save & archive this week</button>`;
-  } else {
-    html+=`<div class="empty"><div class="empty-icon"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="empty-txt">Add bets and parlays first.</div></div>`;
-  }
 
-  if(S.weeklyRecaps.length>0) {
-    const allNet=S.weeklyRecaps.reduce((tot,r)=>{
-      const wonP=r.parlays.filter(p=>p.result==='win');
-      const lostP=r.parlays.filter(p=>p.result==='loss');
-      return tot+wonP.reduce((s,p)=>s+(p.payout-p.stake),0)-lostP.reduce((s,p)=>s+p.stake,0);
-    },0);
-    html+=`<div class="recap-sub" style="display:flex;justify-content:space-between;align-items:center">
-      <span>Past weeks</span>
-      <span style="font-family:'Lora',serif;font-style:italic;font-size:14px;color:${allNet>=0?'var(--green)':'var(--red)'}">${allNet>=0?'+':''}$${allNet.toFixed(2)} all-time</span>
-    </div>`;
-    html+=`<div class="data-io-row">
-      <button class="io-btn" onclick="exportData()">⬇ Export backup</button>
-      <button class="io-btn" onclick="document.getElementById('importDataFile').click()">⬆ Import backup</button>
-      <input type="file" id="importDataFile" accept=".json,application/json" style="display:none" onchange="importData(this)">
-    </div>`;
-    S.weeklyRecaps.forEach(r=>{
-      const wonP=r.parlays.filter(p=>p.result==='win');
-      const lostP=r.parlays.filter(p=>p.result==='loss');
-      const net=wonP.reduce((s,p)=>s+(p.payout-p.stake),0)-lostP.reduce((s,p)=>s+p.stake,0);
-      const totalStaked=r.parlays.reduce((s,p)=>s+p.stake,0);
-      html+=`<div class="archive-card">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div>
-            <div class="archive-name">${esc(r.event)}</div>
-            <div class="archive-date">${r.date} · ${r.parlays.length} parlay${r.parlays.length!==1?'s':''}</div>
-          </div>
-          <button class="archive-del-btn" onclick="deleteRecap('${r.id}')">✕</button>
-        </div>
-        <div>
-          <span class="archive-net ${net>=0?'pos':'neg'}">${net>=0?'+':''}$${net.toFixed(2)}</span>
-          <span class="archive-staked"> net · $${totalStaked} staked</span>
-        </div>
-      </div>`;
-    });
-  } else {
-    html+=`<div class="data-io-row" style="margin-top:8px">
-      <button class="io-btn" style="flex:1" onclick="document.getElementById('importDataFile').click()">⬆ Import backup</button>
-      <input type="file" id="importDataFile" accept=".json,application/json" style="display:none" onchange="importData(this)">
-    </div>`;
-  }
-
-  // New week button — always shown if there's anything to clear
-  if(S.bets.length>0||S.parlays.length>0) {
+    // New week / clear button
     if(S._confirmClear) {
       html+=`<div class="confirm-clear-box">
         <div class="confirm-clear-txt">This will clear all bets and parlays. Past recaps stay saved.</div>
@@ -1116,8 +1061,144 @@ function renderRecap() {
         </div>
       </div>`;
     } else {
-      html+=`<button class="new-week-btn" onclick="S._confirmClear=true;render()">Start new week — clears bets &amp; parlays</button>`;
+      html+=`<button class="new-week-btn" onclick="S._confirmClear=true;render()">Start new week</button>`;
     }
+  } else {
+    html+=`<div class="empty"><div class="empty-icon"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div class="empty-txt">No bets yet.<br>Add bets first, then mark results here.</div></div>`;
+  }
+
+  html+=`</div>`;
+  return html;
+}
+
+// ─── HISTORY / RECAP TAB ────────────────────────────────────────────────
+let selectedRecapIdx = -1; // -1 = All Time
+
+function recapNet(r) {
+  const wonP=r.parlays.filter(p=>p.result==='win');
+  const lostP=r.parlays.filter(p=>p.result==='loss');
+  return wonP.reduce((s,p)=>s+(p.payout-p.stake),0)-lostP.reduce((s,p)=>s+p.stake,0);
+}
+function recapStaked(r) { return r.parlays.reduce((s,p)=>s+p.stake,0); }
+function recapWon(r) { return r.parlays.filter(p=>p.result==='win').reduce((s,p)=>s+p.payout,0); }
+
+function selectRecap(idx) { selectedRecapIdx=idx; render(); }
+
+function renderRecap() {
+  let html=`<div class="tab-content">
+  <div class="section-hdr"><span class="section-title">History</span></div>`;
+
+  if(S.weeklyRecaps.length===0) {
+    html+=`<div class="empty"><div class="empty-icon"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg></div><div class="empty-txt">No history yet.<br>Archive a week from the Results tab to see stats here.</div></div>`;
+    html+=`</div>`;
+    return html;
+  }
+
+  // Clamp selection
+  if(selectedRecapIdx >= S.weeklyRecaps.length) selectedRecapIdx = -1;
+
+  // Week selector pills
+  html+=`<div class="week-selector">
+    <button class="week-pill ${selectedRecapIdx===-1?'active':''}" onclick="selectRecap(-1)">All Time</button>`;
+  S.weeklyRecaps.forEach((r,i)=>{
+    html+=`<button class="week-pill ${selectedRecapIdx===i?'active':''}" onclick="selectRecap(${i})">${esc(r.event||r.date)}</button>`;
+  });
+  html+=`</div>`;
+
+  // Compute stats for selection
+  let totalStaked=0, totalWon=0, totalNet=0, winCount=0, totalParlays=0;
+  if(selectedRecapIdx===-1) {
+    S.weeklyRecaps.forEach(r=>{
+      totalStaked+=recapStaked(r);
+      totalWon+=recapWon(r);
+      totalNet+=recapNet(r);
+      winCount+=r.parlays.filter(p=>p.result==='win').length;
+      totalParlays+=r.parlays.length;
+    });
+  } else {
+    const r=S.weeklyRecaps[selectedRecapIdx];
+    totalStaked=recapStaked(r);
+    totalWon=recapWon(r);
+    totalNet=recapNet(r);
+    winCount=r.parlays.filter(p=>p.result==='win').length;
+    totalParlays=r.parlays.length;
+  }
+  const winRate=totalParlays>0?Math.round(winCount/totalParlays*100):0;
+
+  // Stats grid
+  html+=`<div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value" style="color:${totalNet>=0?'var(--green)':'var(--red)'}">${totalNet>=0?'+':''}$${totalNet.toFixed(2)}</div>
+      <div class="stat-label">Net P/L</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--text)">$${totalStaked.toFixed(2)}</div>
+      <div class="stat-label">Staked</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--green)">$${totalWon.toFixed(2)}</div>
+      <div class="stat-label">Won</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--accent)">${winRate}%</div>
+      <div class="stat-label">${winCount}/${totalParlays} parlays</div>
+    </div>
+  </div>`;
+
+  // Bar chart (All Time view)
+  if(selectedRecapIdx===-1 && S.weeklyRecaps.length>1) {
+    html+=`<div class="recap-sub">Performance by event</div>`;
+    const maxAbs=Math.max(...S.weeklyRecaps.map(r=>Math.abs(recapNet(r))),1);
+    html+=`<div class="bar-chart">`;
+    S.weeklyRecaps.forEach((r,i)=>{
+      const net=recapNet(r);
+      const pct=Math.max(Math.abs(net)/maxAbs*100,8);
+      html+=`<div class="bar-row" onclick="selectRecap(${i})" style="cursor:pointer">
+        <div class="bar-label">${esc(r.event||r.date)}</div>
+        <div class="bar-track">
+          <div class="bar-fill ${net>=0?'pos':'neg'}" style="width:${pct.toFixed(1)}%">${net>=0?'+':''}$${net.toFixed(2)}</div>
+        </div>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+
+  // Week detail (specific week selected)
+  if(selectedRecapIdx>=0) {
+    const r=S.weeklyRecaps[selectedRecapIdx];
+
+    if(r.bets && r.bets.length>0) {
+      html+=`<div class="recap-sub">Bets</div>`;
+      html+=`<div class="detail-card">`;
+      r.bets.forEach(b=>{
+        const rc=b.result==='win'?'detail-result-win':b.result==='loss'?'detail-result-loss':'detail-result-pend';
+        const rl=b.result==='win'?'Win':b.result==='loss'?'Loss':'--';
+        html+=`<div class="detail-bet-row">
+          <span class="detail-bet-name">${esc(b.name)}</span>
+          <span class="${rc}">${rl}</span>
+        </div>`;
+      });
+      html+=`</div>`;
+    }
+
+    if(r.parlays && r.parlays.length>0) {
+      html+=`<div class="recap-sub">Parlays</div>`;
+      r.parlays.forEach(p=>{
+        const net=p.result==='win'?(p.payout-p.stake):p.result==='loss'?-p.stake:0;
+        html+=`<div class="recap-parlay-row">
+          <div>
+            <div class="rp-name">${esc(p.name)}</div>
+            <div class="rp-meta">${(p.betIds||[]).length} legs · $${p.stake} stake</div>
+          </div>
+          <div class="${p.result==='win'?'status-win':p.result==='loss'?'status-loss':'status-pend'}">
+            ${p.result==='win'?'+$'+(p.payout-p.stake).toFixed(2):p.result==='loss'?'-$'+p.stake:'Pending'}
+          </div>
+        </div>`;
+      });
+    }
+
+    // Delete this recap
+    html+=`<button class="new-week-btn" style="color:var(--red);border-color:var(--red-bg)" onclick="deleteRecap('${r.id}')">Delete this event</button>`;
   }
 
   html+=`</div>`;
@@ -1211,36 +1292,6 @@ function saveRecap(){
   S.weeklyRecaps=[recap,...S.weeklyRecaps];
   S.weekName=defaultWeekName(); // reset for next week
   saveState();showToast('Week archived ✓');render();
-}
-function exportData(){
-  const payload={version:1,exported:new Date().toISOString(),weeklyRecaps:S.weeklyRecaps};
-  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=`parlay-backup-${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('Backup downloaded ✓');
-}
-function importData(input){
-  const file=input.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    try{
-      const data=JSON.parse(e.target.result);
-      const incoming=data.weeklyRecaps||[];
-      if(!Array.isArray(incoming)||incoming.length===0){showToast('No recaps found in file');return;}
-      // Merge: skip duplicates by id
-      const existingIds=new Set(S.weeklyRecaps.map(r=>r.id));
-      const newOnes=incoming.filter(r=>!existingIds.has(r.id));
-      S.weeklyRecaps=[...S.weeklyRecaps,...newOnes];
-      saveState();render();
-      showToast(`Imported ${newOnes.length} week${newOnes.length!==1?'s':''} ✓`);
-    }catch(err){showToast('Invalid backup file');}
-    input.value='';
-  };
-  reader.readAsText(file);
 }
 function deleteRecap(id){
   S.weeklyRecaps=S.weeklyRecaps.filter(r=>r.id!==id);
