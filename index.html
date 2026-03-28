@@ -447,6 +447,8 @@ html, body {
 .leg-dot.win { background: var(--green); }
 .leg-dot.loss { background: var(--red); }
 .leg-dot.pend { background: var(--muted2); opacity: 0.4; }
+.rp-maxpl { color: var(--green); font-size: 11px; font-weight: 600; margin-top: 4px; }
+.rp-maxpl.loss { color: var(--red); }
 .save-recap-btn {
   margin: 16px 14px 0; width: calc(100% - 28px); display: block;
   background: var(--accent); color: #fff; border: none; border-radius: var(--radius);
@@ -1207,16 +1209,37 @@ function renderResults() {
       const won=legRes.length>0&&legRes.every(r=>r==='win');
       const lost=legRes.some(r=>r==='loss');
       const status=won?'win':lost?'loss':'pending';
+      // Sort legs: colored (win/loss) first, then pending
+      const sortedLegs=[...p.betIds].sort((a,b)=>{
+        const ra=S.betResults[a]||null, rb=S.betResults[b]||null;
+        if(ra&&!rb) return -1; if(!ra&&rb) return 1; return 0;
+      });
+      // Max P/L: if remaining pending legs all win vs current state
+      const decided=p.betIds.filter(id=>S.betResults[id]);
+      const pending=p.betIds.filter(id=>!S.betResults[id]);
+      const alreadyLost=decided.some(id=>S.betResults[id]==='loss');
+      let plLine='';
+      if(status==='pending'&&decided.length>0) {
+        if(alreadyLost) {
+          plLine=`<div class="rp-maxpl loss">Busted</div>`;
+        } else {
+          // Best case: all remaining win → full payout
+          const maxPay=calcProfit(p.betIds,p.stake);
+          // Worst case: a pending leg loses → lose stake
+          plLine=`<div class="rp-maxpl">Best: +$${maxPay}</div>`;
+        }
+      }
       html+=`<div class="recap-parlay-row">
         <div style="flex:1;min-width:0">
           <div class="rp-name">${esc(p.name)}</div>
           <div class="rp-meta">${p.betIds.length} legs · $${p.stake} stake</div>
-          <div class="leg-dots">${p.betIds.map(id=>{
+          <div class="leg-dots">${sortedLegs.map(id=>{
             const r=S.betResults[id]||null;
             const b=S.bets.find(x=>x.id===id);
             const cls=r==='win'?'leg-dot win':r==='loss'?'leg-dot loss':'leg-dot pend';
             return `<span class="${cls}" title="${b?esc(b.name):''}"></span>`;
           }).join('')}</div>
+          ${plLine}
         </div>
         <div class="${status==='win'?'status-win':status==='loss'?'status-loss':'status-pend'}">
           ${status==='win'?'+$'+calcProfit(p.betIds,p.stake):status==='loss'?'-$'+p.stake:'Pending'}
