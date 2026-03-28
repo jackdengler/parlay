@@ -117,10 +117,17 @@
       "odds": 107
     }
   ],
-  "parlays": [],
+  "parlays": [
+    {
+      "id": "72zr0fa",
+      "name": "Parlay 1",
+      "betIds": [],
+      "stake": 50
+    }
+  ],
   "betResults": {},
   "weeklyRecaps": [],
-  "activeParlayId": null,
+  "activeParlayId": "72zr0fa",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
