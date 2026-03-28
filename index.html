@@ -449,6 +449,17 @@ html, body {
 .leg-dot.pend { background: var(--muted2); opacity: 0.4; }
 .rp-maxpl { color: var(--green); font-size: 11px; font-weight: 600; margin-top: 4px; }
 .rp-maxpl.loss { color: var(--red); }
+.week-summary-card {
+  margin: 14px 14px 0; background: var(--bg); border-radius: var(--radius-lg);
+  padding: 14px 16px; border: 1px solid var(--border);
+}
+.week-summary-title {
+  font-family: 'Lora', serif; color: var(--text2); font-size: 14px;
+  font-weight: 700; margin-bottom: 10px;
+}
+.week-summary-row { display: flex; justify-content: space-between; padding: 5px 0; }
+.ws-lbl { color: var(--muted); font-size: 13px; }
+.ws-val { font-size: 14px; font-weight: 700; font-family: 'Lora', serif; }
 .save-recap-btn {
   margin: 16px 14px 0; width: calc(100% - 28px); display: block;
   background: var(--accent); color: #fff; border: none; border-radius: var(--radius);
@@ -1246,6 +1257,32 @@ function renderResults() {
         </div>
       </div>`;
     });
+
+    // Week summary card
+    let totalStaked=0, realizedPL=0, bestCasePL=0;
+    S.parlays.forEach(p=>{
+      totalStaked+=p.stake;
+      const legRes=p.betIds.map(id=>S.betResults[id]||null);
+      const won=legRes.length>0&&legRes.every(r=>r==='win');
+      const lost=legRes.some(r=>r==='loss');
+      if(won) { realizedPL+=parseFloat(calcProfit(p.betIds,p.stake)); bestCasePL+=parseFloat(calcProfit(p.betIds,p.stake)); }
+      else if(lost) { realizedPL-=p.stake; bestCasePL-=p.stake; }
+      else {
+        // Still pending — not yet lost stake
+        const alreadyLost=p.betIds.some(id=>S.betResults[id]==='loss');
+        if(alreadyLost) { bestCasePL-=p.stake; }
+        else { bestCasePL+=parseFloat(calcProfit(p.betIds,p.stake)); }
+      }
+    });
+    const plColor=realizedPL>0?'var(--green)':realizedPL<0?'var(--red)':'var(--muted)';
+    const bestColor=bestCasePL>0?'var(--green)':bestCasePL<0?'var(--red)':'var(--muted)';
+    const plSign=realizedPL>0?'+':realizedPL<0?'-':''; const bestSign=bestCasePL>0?'+':bestCasePL<0?'-':'';
+    html+=`<div class="week-summary-card">
+      <div class="week-summary-title">Week Summary</div>
+      <div class="week-summary-row"><span class="ws-lbl">Total exposure</span><span class="ws-val">$${totalStaked.toFixed(2)}</span></div>
+      <div class="week-summary-row"><span class="ws-lbl">Locked P/L</span><span class="ws-val" style="color:${plColor}">${plSign}$${Math.abs(realizedPL).toFixed(2)}</span></div>
+      <div class="week-summary-row"><span class="ws-lbl">Best case</span><span class="ws-val" style="color:${bestColor}">${bestSign}$${Math.abs(bestCasePL).toFixed(2)}</span></div>
+    </div>`;
   }
 
   if(S.bets.length>0||S.parlays.length>0) {
