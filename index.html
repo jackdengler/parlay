@@ -440,6 +440,13 @@ html, body {
 .status-win { color: var(--green); font-size: 16px; font-weight: 700; font-family: 'Lora', serif; font-style: italic; }
 .status-loss { color: var(--red); font-size: 16px; font-weight: 700; font-family: 'Lora', serif; font-style: italic; }
 .status-pend { color: var(--muted2); font-size: 13px; font-weight: 600; }
+.leg-dots { display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap; }
+.leg-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.leg-dot.win { background: var(--green); }
+.leg-dot.loss { background: var(--red); }
+.leg-dot.pend { background: var(--muted2); opacity: 0.4; }
 .save-recap-btn {
   margin: 16px 14px 0; width: calc(100% - 28px); display: block;
   background: var(--accent); color: #fff; border: none; border-radius: var(--radius);
@@ -1201,9 +1208,15 @@ function renderResults() {
       const lost=legRes.some(r=>r==='loss');
       const status=won?'win':lost?'loss':'pending';
       html+=`<div class="recap-parlay-row">
-        <div>
+        <div style="flex:1;min-width:0">
           <div class="rp-name">${esc(p.name)}</div>
           <div class="rp-meta">${p.betIds.length} legs · $${p.stake} stake</div>
+          <div class="leg-dots">${p.betIds.map(id=>{
+            const r=S.betResults[id]||null;
+            const b=S.bets.find(x=>x.id===id);
+            const cls=r==='win'?'leg-dot win':r==='loss'?'leg-dot loss':'leg-dot pend';
+            return `<span class="${cls}" title="${b?esc(b.name):''}"></span>`;
+          }).join('')}</div>
         </div>
         <div class="${status==='win'?'status-win':status==='loss'?'status-loss':'status-pend'}">
           ${status==='win'?'+$'+calcProfit(p.betIds,p.stake):status==='loss'?'-$'+p.stake:'Pending'}
