@@ -273,7 +273,9 @@
     {
       "id": "gsdkc7z",
       "name": "Parlay 15",
-      "betIds": [],
+      "betIds": [
+        "xb04zgi"
+      ],
       "stake": 50
     }
   ],
