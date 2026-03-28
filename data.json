@@ -48,6 +48,16 @@
       "odds": 120
     },
     {
+      "id": "vwp4en4",
+      "name": "Barber Points",
+      "odds": -110
+    },
+    {
+      "id": "d43l7au",
+      "name": "Bahamondes TKO/KO",
+      "odds": 170
+    },
+    {
       "id": "gz9rnzl",
       "name": "Barber ML",
       "odds": -200
@@ -66,16 +76,6 @@
       "id": "rexf3fn",
       "name": "Belgaroui ML",
       "odds": 102
-    },
-    {
-      "id": "vwp4en4",
-      "name": "Barber Points",
-      "odds": -110
-    },
-    {
-      "id": "d43l7au",
-      "name": "Bahamondes TKO/KO",
-      "odds": 170
     }
   ],
   "parlays": [
