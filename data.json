@@ -135,11 +135,17 @@
         "4ta7laq"
       ],
       "stake": 50
+    },
+    {
+      "id": "en9qcxg",
+      "name": "Parlay 2",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {},
   "weeklyRecaps": [],
-  "activeParlayId": null,
+  "activeParlayId": "en9qcxg",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
