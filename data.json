@@ -88,6 +88,11 @@
       "odds": 170
     },
     {
+      "id": "xb04zgi",
+      "name": "Tybura ML",
+      "odds": 107
+    },
+    {
       "id": "rexf3fn",
       "name": "Belgaroui ML",
       "odds": 102
@@ -116,11 +121,6 @@
       "id": "pr1o3rr",
       "name": "Yanez ML",
       "odds": 110
-    },
-    {
-      "id": "xb04zgi",
-      "name": "Tybura ML",
-      "odds": 107
     }
   ],
   "parlays": [
