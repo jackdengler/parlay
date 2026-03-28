@@ -1,6 +1,32 @@
 {
   "eventName": "UFC 314",
-  "bets": [],
+  "bets": [
+    {
+      "id": "6cx2265",
+      "name": "Thainara ML",
+      "odds": -833
+    },
+    {
+      "id": "vzg4anw",
+      "name": "Simon ML",
+      "odds": -149
+    },
+    {
+      "id": "fnmtucx",
+      "name": "Lopes ML",
+      "odds": 410
+    },
+    {
+      "id": "fs7rcqn",
+      "name": "Fernandes ML",
+      "odds": -115
+    },
+    {
+      "id": "2kw9cnq",
+      "name": "Tybura ML",
+      "odds": 107
+    }
+  ],
   "parlays": [],
   "betResults": {},
   "weeklyRecaps": [],
