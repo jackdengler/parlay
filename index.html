@@ -418,6 +418,51 @@ html, body {
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+/* ── SYNC INDICATOR ── */
+.sync-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  transition: background 0.3s;
+}
+.sync-dot.synced { background: var(--green); }
+.sync-dot.saving { background: var(--accent); animation: pulse 1s infinite; }
+.sync-dot.error { background: var(--red); }
+.sync-dot.offline { background: var(--muted2); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* ── SETTINGS MODAL ── */
+.settings-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+  z-index: 1000; display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.settings-card {
+  background: var(--bg); border-radius: var(--radius-lg);
+  padding: 24px 20px; width: 100%; max-width: 380px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+}
+.settings-title {
+  font-family: 'Lora', serif; font-size: 18px; font-weight: 700;
+  color: var(--text); margin-bottom: 16px;
+}
+.settings-label {
+  color: var(--muted); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 6px;
+}
+.settings-help {
+  color: var(--muted); font-size: 12px; line-height: 1.5; margin-top: 8px;
+}
+.settings-status {
+  margin-top: 12px; padding: 10px 12px; border-radius: 10px;
+  font-size: 13px; font-weight: 600;
+}
+.settings-status.ok { background: var(--green-bg); color: var(--green); }
+.settings-status.err { background: var(--red-bg); color: var(--red); }
+.gear-btn {
+  background: none; border: none; cursor: pointer; font-size: 18px;
+  color: var(--muted); padding: 0; line-height: 1;
+}
+.gear-btn:active { color: var(--text); }
+
 .archive-del-btn {
   background: none; border: none; color: var(--muted2); font-size: 14px;
   cursor: pointer; padding: 0 0 0 8px; flex-shrink: 0; line-height: 1;
@@ -478,6 +523,8 @@ html, body {
   <div class="event-header">
     <div class="event-name-row">
       <input id="eventName" type="text" value="UFC 314" placeholder="Event name…" autocomplete="off" autocorrect="off" spellcheck="false" />
+      <span class="sync-dot offline" id="syncDot" title="Sync status"></span>
+      <button class="gear-btn" onclick="openSettings()">⚙</button>
     </div>
     <div class="event-meta" id="eventMeta">0 bets · 0 parlays</div>
   </div>
@@ -507,16 +554,129 @@ html, body {
 </div>
 
 <div class="toast" id="toast"></div>
+<div id="settingsOverlay" style="display:none"></div>
 
 <script>
 // ─── STATE ─────────────────────────────────────────────────────────────────
 const STORE_KEY = 'ufc_parlay_v5';
+const GH_TOKEN_KEY = 'parlay_gh_token';
+const GH_REPO = 'jackdengler/parlay';
+const GH_FILE = 'data.json';
+let ghSha = null;
+let syncStatus = 'offline'; // synced | saving | error | offline
+
 function defaultState() {
   return { eventName:'UFC 314', bets:[], parlays:[], betResults:{}, weeklyRecaps:[], activeParlayId:null, weekName:'' };
 }
 let S = defaultState();
-function loadState() { try { const r=localStorage.getItem(STORE_KEY); if(r) S={...defaultState(),...JSON.parse(r)}; } catch(e){} }
-function saveState() { try { localStorage.setItem(STORE_KEY,JSON.stringify(S)); } catch(e){} }
+
+function getToken() { return localStorage.getItem(GH_TOKEN_KEY) || ''; }
+function setToken(t) { localStorage.setItem(GH_TOKEN_KEY, t); }
+
+function setSyncStatus(s) {
+  syncStatus = s;
+  const dot = document.getElementById('syncDot');
+  if (dot) { dot.className = 'sync-dot ' + s; }
+}
+
+// ─── GITHUB SYNC ──────────────────────────────────────────────────────────
+async function ghLoad() {
+  const token = getToken();
+  if (!token) { setSyncStatus('offline'); return false; }
+  try {
+    const res = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`, {
+      headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (res.status === 404) { ghSha = null; setSyncStatus('synced'); return true; }
+    if (!res.ok) { setSyncStatus('error'); return false; }
+    const data = await res.json();
+    ghSha = data.sha;
+    const content = JSON.parse(atob(data.content));
+    S = { ...defaultState(), ...content };
+    localStorage.setItem(STORE_KEY, JSON.stringify(S));
+    setSyncStatus('synced');
+    return true;
+  } catch (e) { setSyncStatus('error'); return false; }
+}
+
+async function ghSave() {
+  const token = getToken();
+  if (!token) { setSyncStatus('offline'); return; }
+  setSyncStatus('saving');
+  try {
+    const body = { message: 'sync', content: btoa(unescape(encodeURIComponent(JSON.stringify(S, null, 2)))) };
+    if (ghSha) body.sha = ghSha;
+    const res = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`, {
+      method: 'PUT',
+      headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      // sha mismatch — re-fetch and retry once
+      if (res.status === 409 || res.status === 422) {
+        await ghLoad();
+        return ghSave();
+      }
+      setSyncStatus('error'); return;
+    }
+    const data = await res.json();
+    ghSha = data.content.sha;
+    setSyncStatus('synced');
+  } catch (e) { setSyncStatus('error'); }
+}
+
+let _ghSaveTimer = null;
+function debouncedGhSave() {
+  clearTimeout(_ghSaveTimer);
+  _ghSaveTimer = setTimeout(ghSave, 2000);
+}
+
+function loadState() {
+  try { const r = localStorage.getItem(STORE_KEY); if (r) S = { ...defaultState(), ...JSON.parse(r) }; } catch (e) {}
+}
+function saveState() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {}
+  debouncedGhSave();
+}
+
+// ─── SETTINGS ─────────────────────────────────────────────────────────────
+function openSettings() {
+  const overlay = document.getElementById('settingsOverlay');
+  const token = getToken();
+  overlay.innerHTML = `<div class="settings-overlay" onclick="if(event.target===this)closeSettings()">
+    <div class="settings-card">
+      <div class="settings-title">GitHub Sync</div>
+      <div class="settings-label">Personal Access Token</div>
+      <input class="ios-input" id="ghTokenInput" type="password" placeholder="ghp_xxxxxxxxxxxx" value="${token ? '••••••••' : ''}" autocomplete="off" onfocus="if(this.value.startsWith('••'))this.value=''" />
+      <div class="settings-help">Create a token at GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens. Give it <strong>Contents</strong> read &amp; write access to the <strong>${GH_REPO.split('/')[1]}</strong> repo.</div>
+      <div class="form-btns" style="margin-top:16px">
+        <button class="cancel-btn" onclick="closeSettings()">Cancel</button>
+        <button class="save-btn" onclick="saveToken()">Save</button>
+      </div>
+      <div id="settingsStatus"></div>
+    </div>
+  </div>`;
+  overlay.style.display = 'block';
+}
+function closeSettings() {
+  document.getElementById('settingsOverlay').style.display = 'none';
+}
+async function saveToken() {
+  const input = document.getElementById('ghTokenInput');
+  const val = input.value.trim();
+  if (!val || val.startsWith('••')) { closeSettings(); return; }
+  setToken(val);
+  const statusEl = document.getElementById('settingsStatus');
+  statusEl.innerHTML = '<div class="settings-status" style="background:var(--bg2);color:var(--muted)">Testing connection...</div>';
+  const ok = await ghLoad();
+  if (ok) {
+    statusEl.innerHTML = '<div class="settings-status ok">Connected! Syncing with GitHub.</div>';
+    render();
+    setTimeout(closeSettings, 1200);
+  } else {
+    statusEl.innerHTML = '<div class="settings-status err">Failed to connect. Check your token and try again.</div>';
+  }
+}
 
 // ─── HELPERS ───────────────────────────────────────────────────────────────
 function uid() { return Math.random().toString(36).slice(2,9); }
@@ -1029,6 +1189,10 @@ self.addEventListener('fetch',e=>{if(e.request.url.includes('fonts.googleapis')|
 
 // ─── BOOT ──────────────────────────────────────────────────────────────────
 loadState();render();
+// Try loading from GitHub (async — will re-render when done)
+if (getToken()) {
+  ghLoad().then(ok => { if (ok) render(); });
+}
 </script>
 </body>
 </html>
