@@ -1,6 +1,122 @@
 {
   "eventName": "UFC 314",
-  "bets": [],
+  "bets": [
+    {
+      "id": "mmjrzcg",
+      "name": "Adesanya Points",
+      "odds": 162
+    },
+    {
+      "id": "2mnbmds",
+      "name": "Pyfer TKO/KO",
+      "odds": 275
+    },
+    {
+      "id": "z0g7qxk",
+      "name": "Pyfer Submission",
+      "odds": 500
+    },
+    {
+      "id": "gz9rnzl",
+      "name": "Barber ML",
+      "odds": -200
+    },
+    {
+      "id": "vwp4en4",
+      "name": "Barber Points",
+      "odds": -110
+    },
+    {
+      "id": "osyzhwo",
+      "name": "Adesanya ML",
+      "odds": -152
+    },
+    {
+      "id": "bqfg3iv",
+      "name": "Pyfer ML",
+      "odds": 112
+    },
+    {
+      "id": "owv05io",
+      "name": "Adesanya TKO/KO",
+      "odds": 275
+    },
+    {
+      "id": "1bsypr1",
+      "name": "Bahamondes ML",
+      "odds": -333
+    },
+    {
+      "id": "d43l7au",
+      "name": "Bahamondes TKO/KO",
+      "odds": 170
+    },
+    {
+      "id": "4ta7laq",
+      "name": "McKinney ML",
+      "odds": -172
+    },
+    {
+      "id": "e30yre8",
+      "name": "McKinney R1 Win",
+      "odds": 120
+    },
+    {
+      "id": "rexf3fn",
+      "name": "Belgaroui ML",
+      "odds": 102
+    },
+    {
+      "id": "8ejia5d",
+      "name": "Tybura R1 Win",
+      "odds": 520
+    },
+    {
+      "id": "l2daa31",
+      "name": "Tybura/Fortune U1.5",
+      "odds": -100
+    },
+    {
+      "id": "mms1mkl",
+      "name": "Hooper ML",
+      "odds": -312
+    },
+    {
+      "id": "saf4xof",
+      "name": "Hooper Points",
+      "odds": 200
+    },
+    {
+      "id": "bxar94e",
+      "name": "Hooper Submission",
+      "odds": 220
+    },
+    {
+      "id": "369ycge",
+      "name": "Thainara ML",
+      "odds": -833
+    },
+    {
+      "id": "1yrpmm8",
+      "name": "Stirling ML",
+      "odds": -714
+    },
+    {
+      "id": "f4bqu0a",
+      "name": "Simon ML",
+      "odds": -149
+    },
+    {
+      "id": "pr1o3rr",
+      "name": "Yanez ML",
+      "odds": 110
+    },
+    {
+      "id": "xb04zgi",
+      "name": "Tybura ML",
+      "odds": 107
+    }
+  ],
   "parlays": [],
   "betResults": {},
   "weeklyRecaps": [],
