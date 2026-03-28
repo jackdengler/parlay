@@ -164,11 +164,17 @@
         "1yrpmm8"
       ],
       "stake": 25
+    },
+    {
+      "id": "3lg0im2",
+      "name": "Parlay 4",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {},
   "weeklyRecaps": [],
-  "activeParlayId": null,
+  "activeParlayId": "3lg0im2",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
