@@ -137,7 +137,14 @@
     {
       "id": "bs49vd3",
       "name": "Parlay 5",
-      "betIds": [],
+      "betIds": [
+        "mms1mkl",
+        "369ycge",
+        "1yrpmm8",
+        "4ta7laq",
+        "1bsypr1",
+        "ralru1r"
+      ],
       "stake": 50
     }
   ],
