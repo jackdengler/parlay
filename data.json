@@ -269,6 +269,12 @@
         "1bsypr1"
       ],
       "stake": 500
+    },
+    {
+      "id": "m6dmos6",
+      "name": "Parlay 15",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {
@@ -289,7 +295,7 @@
     "8ejia5d": null
   },
   "weeklyRecaps": [],
-  "activeParlayId": "xam4rhe",
+  "activeParlayId": "m6dmos6",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
