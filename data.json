@@ -180,7 +180,9 @@
     {
       "id": "7gix3ov",
       "name": "Parlay 5",
-      "betIds": [],
+      "betIds": [
+        "d43l7au"
+      ],
       "stake": 50
     },
     {
