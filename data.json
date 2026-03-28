@@ -92,6 +92,12 @@
       "odds": 220
     },
     {
+      "id": "ralru1r",
+      "name": "Chiesa ML",
+      "odds": -1000,
+      "group": ""
+    },
+    {
       "id": "369ycge",
       "name": "Thainara ML",
       "odds": -833
@@ -115,12 +121,6 @@
       "id": "xb04zgi",
       "name": "Tybura ML",
       "odds": 107
-    },
-    {
-      "id": "ralru1r",
-      "name": "Chiesa ML",
-      "odds": -1000,
-      "group": ""
     }
   ],
   "parlays": [
