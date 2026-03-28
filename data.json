@@ -271,6 +271,12 @@
         "vwp4en4"
       ],
       "stake": 50
+    },
+    {
+      "id": "zq0dmdd",
+      "name": "Parlay 14",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {
@@ -291,7 +297,7 @@
     "8ejia5d": null
   },
   "weeklyRecaps": [],
-  "activeParlayId": null,
+  "activeParlayId": "zq0dmdd",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
