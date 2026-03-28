@@ -148,12 +148,18 @@
         "1yrpmm8",
         "xb04zgi"
       ],
+      "stake": 100
+    },
+    {
+      "id": "z1esk89",
+      "name": "Parlay 3",
+      "betIds": [],
       "stake": 50
     }
   ],
   "betResults": {},
   "weeklyRecaps": [],
-  "activeParlayId": null,
+  "activeParlayId": "z1esk89",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
