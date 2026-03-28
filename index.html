@@ -436,13 +436,14 @@ html, body {
 /* ── SETTINGS MODAL ── */
 .settings-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.35);
-  z-index: 1000; display: flex; align-items: center; justify-content: center;
-  padding: 20px;
+  z-index: 1000; display: flex; align-items: flex-start; justify-content: center;
+  padding: 20px; overflow-y: auto; -webkit-overflow-scrolling: touch;
 }
 .settings-card {
   background: var(--bg); border-radius: var(--radius-lg);
   padding: 24px 20px; width: 100%; max-width: 380px;
   box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+  margin: auto;
 }
 .settings-title {
   font-family: 'Lora', serif; font-size: 18px; font-weight: 700;
@@ -750,6 +751,39 @@ async function saveToken() {
   }
 }
 
+// ─── CSV IMPORT ─────────────────────────────────────────────────────────────
+function importCSV(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
+    let added = 0, skipped = 0;
+    lines.forEach(line => {
+      // Support: "Name, odds" or "Name odds" or "odds, Name"
+      const parts = line.split(',');
+      let name, oddsRaw;
+      if (parts.length >= 2) {
+        // Try both orders: "Name, odds" and "odds, Name"
+        const a = parts[0].trim(), b = parts.slice(1).join(',').trim();
+        if (/^[+-]?\d+$/.test(b)) { name = a; oddsRaw = b; }
+        else if (/^[+-]?\d+$/.test(a)) { oddsRaw = a; name = b; }
+        else { name = a; oddsRaw = b; }
+      } else {
+        // No comma — try splitting on last whitespace before a number
+        const m = line.trim().match(/^(.+?)\s+([+-]?\d+)$/) || line.trim().match(/^([+-]?\d+)\s+(.+)$/);
+        if (m) { name = m[1].trim(); oddsRaw = m[2].trim(); }
+      }
+      const odds = parseInt(oddsRaw);
+      if (name && !isNaN(odds) && odds !== 0) {
+        S.bets.push({ id: uid(), name, odds });
+        added++;
+      } else { skipped++; }
+    });
+    if (added) { saveState(); render(); showToast(`Added ${added} bet${added>1?'s':''}${skipped?` · ${skipped} skipped`:''}`); }
+    else { showToast('No valid bets found in file'); }
+  };
+  reader.readAsText(file);
+}
+
 // ─── HELPERS ───────────────────────────────────────────────────────────────
 function uid() { return Math.random().toString(36).slice(2,9); }
 function fmtOdds(o) { return o>0?`+${o}`:`${o}`; }
@@ -807,7 +841,13 @@ function renderPool() {
   let html=`<div class="tab-content">
   <div class="section-hdr">
     <span class="section-title">Bet Pool</span>
-    <button class="add-btn" onclick="openBetForm()">+ Add bet</button>
+    <div style="display:flex;gap:8px;align-items:center">
+      <label class="add-btn" style="cursor:pointer;margin:0">
+        Import CSV
+        <input type="file" accept=".csv,.txt" style="display:none" onchange="if(this.files[0])importCSV(this.files[0]);this.value=''" />
+      </label>
+      <button class="add-btn" onclick="openBetForm()">+ Add bet</button>
+    </div>
   </div>`;
 
   if(S.bets.length===0&&!showBetForm) {
@@ -1314,7 +1354,7 @@ function attachHandlers(){
 
 // ─── SERVICE WORKER ────────────────────────────────────────────────────────
 if('serviceWorker' in navigator){
-  const swCode=`const CACHE='parlay-v5';
+  const swCode=`const CACHE='parlay-v6';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/'])));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
 self.addEventListener('fetch',e=>{if(e.request.url.includes('fonts.googleapis')||e.request.url.includes('fonts.gstatic'))return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)));});`;
