@@ -47,11 +47,6 @@
       "odds": 275
     },
     {
-      "id": "d43l7au",
-      "name": "Bahamondes TKO/KO",
-      "odds": 170
-    },
-    {
       "id": "4ta7laq",
       "name": "McKinney ML",
       "odds": -172
@@ -86,6 +81,11 @@
       "id": "e30yre8",
       "name": "McKinney R1 Win",
       "odds": 120
+    },
+    {
+      "id": "d43l7au",
+      "name": "Bahamondes TKO/KO",
+      "odds": 170
     },
     {
       "id": "rexf3fn",
