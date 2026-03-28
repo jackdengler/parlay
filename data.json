@@ -135,7 +135,7 @@
         "4ta7laq",
         "ralru1r"
       ],
-      "stake": 500
+      "stake": 2
     },
     {
       "id": "en9qcxg",
@@ -146,7 +146,7 @@
   ],
   "betResults": {},
   "weeklyRecaps": [],
-  "activeParlayId": null,
+  "activeParlayId": "en9qcxg",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
