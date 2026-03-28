@@ -252,7 +252,13 @@
     {
       "id": "zgxmf65",
       "name": "Parlay 12",
-      "betIds": [],
+      "betIds": [
+        "369ycge",
+        "1yrpmm8",
+        "mms1mkl",
+        "1bsypr1",
+        "ralru1r"
+      ],
       "stake": 50
     }
   ],
