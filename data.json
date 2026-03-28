@@ -77,6 +77,22 @@
       "odds": -100
     },
     {
+      "id": "1yrpmm8",
+      "name": "Stirling ML",
+      "odds": -714
+    },
+    {
+      "id": "369ycge",
+      "name": "Thainara ML",
+      "odds": -833
+    },
+    {
+      "id": "ralru1r",
+      "name": "Chiesa ML",
+      "odds": -1000,
+      "group": ""
+    },
+    {
       "id": "mms1mkl",
       "name": "Hooper ML",
       "odds": -312
@@ -90,22 +106,6 @@
       "id": "bxar94e",
       "name": "Hooper Submission",
       "odds": 220
-    },
-    {
-      "id": "ralru1r",
-      "name": "Chiesa ML",
-      "odds": -1000,
-      "group": ""
-    },
-    {
-      "id": "369ycge",
-      "name": "Thainara ML",
-      "odds": -833
-    },
-    {
-      "id": "1yrpmm8",
-      "name": "Stirling ML",
-      "odds": -714
     },
     {
       "id": "f4bqu0a",
