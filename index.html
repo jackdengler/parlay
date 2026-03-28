@@ -180,6 +180,36 @@ html, body {
 .icon-btn:active { background: var(--bg3); }
 .icon-btn.danger { color: var(--red); }
 
+/* ── SWIPE DELETE ── */
+.bet-card[data-id] { will-change: transform; }
+.swipe-reveal {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--red); font-size: 12px; font-weight: 700; letter-spacing: 0.3px;
+  opacity: 0; pointer-events: none; transition: opacity 0.1s;
+}
+
+/* ── GROUP HEADER ── */
+.group-hdr {
+  padding: 10px 18px 2px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.9px;
+  text-transform: uppercase; color: var(--muted);
+}
+.group-hdr:first-child { padding-top: 0; }
+
+/* ── IMPLIED PROB ── */
+.imp-prob {
+  font-size: 11px; font-weight: 600; color: var(--muted2);
+  font-style: normal; font-family: 'Source Sans 3', sans-serif;
+  margin-top: 1px; text-align: right;
+}
+
+/* ── PARLAY RENAME ── */
+.parlay-rename-input {
+  background: var(--bg2); border: 1.5px solid var(--accent); border-radius: 8px;
+  padding: 3px 8px; color: var(--text); font-family: 'Lora', serif;
+  font-size: 16px; font-weight: 700; outline: none; width: 160px; display: block;
+}
+
 /* ── FORM CARD ── */
 .form-card {
   margin: 4px 14px 10px;
@@ -798,13 +828,15 @@ function submitPaste() {
   if (!text) { closePasteForm(); return; }
   const { added, skipped } = parseBetLines(text);
   showPasteForm = false;
-  if (added) { saveState(); render(); showToast(`Added ${added} bet${added>1?'s':''}${skipped?` · ${skipped} skipped`:''}`); }
+  if (added) { haptic(); saveState(); render(); showToast(`Added ${added} bet${added>1?'s':''}${skipped?` · ${skipped} skipped`:''}`); }
   else { showToast('No valid bets found'); render(); }
 }
 
 // ─── HELPERS ───────────────────────────────────────────────────────────────
 function uid() { return Math.random().toString(36).slice(2,9); }
 function fmtOdds(o) { return o>0?`+${o}`:`${o}`; }
+function impliedProb(o) { return o<0?Math.abs(o)/(Math.abs(o)+100)*100:100/(o+100)*100; }
+function haptic(p=10) { try{navigator.vibrate(p);}catch(e){} }
 function oddsToDecimal(o) { return o>0?o/100+1:100/Math.abs(o)+1; }
 function parlayDecimal(ids) {
   return ids.reduce((acc,id)=>{ const b=S.bets.find(b=>b.id===id); return b?acc*oddsToDecimal(b.odds):acc; },1);
@@ -827,7 +859,7 @@ function showToast(msg) {
 let currentTab='pool';
 function switchTab(tab) {
   if(tab!=='results') S._confirmClear=false;
-  showPasteForm=false;
+  showPasteForm=false; renamingParlayId=null;
   currentTab=tab;
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   renderScreen();
@@ -869,18 +901,30 @@ function renderPool() {
     html+=`<div class="empty"><div class="empty-icon"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><div class="empty-txt">No bets yet.<br>Tap + Add bet to get started.</div></div>`;
   }
 
-  S.bets.forEach(b=>{
+  // Group bets
+  const betGroups={}, ungroupedBets=[];
+  S.bets.forEach(b=>{ if(b.group){if(!betGroups[b.group])betGroups[b.group]=[];betGroups[b.group].push(b);}else ungroupedBets.push(b); });
+
+  function renderBetCard(b){
     const cls=inParlayIds.has(b.id)?'bet-card in-parlay':'bet-card';
     const oc=b.odds>0?'odds-pos':'odds-neg';
-    html+=`<div class="${cls}" data-id="${b.id}">
+    return `<div class="${cls}" data-id="${b.id}" style="position:relative">
       <span class="drag-handle">⠿</span>
       <div class="bet-name">${esc(b.name)}</div>
       <div class="bet-right">
-        <span class="${oc}">${fmtOdds(b.odds)}</span>
+        <div style="display:flex;flex-direction:column;align-items:flex-end">
+          <span class="${oc}">${fmtOdds(b.odds)}</span>
+          <span class="imp-prob">${impliedProb(b.odds).toFixed(0)}%</span>
+        </div>
         <button class="icon-btn" onclick="openEditBet('${b.id}')">✎</button>
-        <button class="icon-btn danger" onclick="deleteBet('${b.id}')">✕</button>
       </div>
     </div>`;
+  }
+
+  ungroupedBets.forEach(b=>{ html+=renderBetCard(b); });
+  Object.entries(betGroups).forEach(([g,bets])=>{
+    html+=`<div class="group-hdr">${esc(g)}</div>`;
+    bets.forEach(b=>{ html+=renderBetCard(b); });
   });
 
   if(showPasteForm) {
@@ -906,6 +950,7 @@ function renderPool() {
         <button class="odds-sign-btn ${isNeg?'neg':'pos'}" id="oddsSignBtn" onclick="toggleOddsSign()" type="button">${isNeg?'−':'+'}</button>
         <input class="ios-input odds-input" id="fBetOdds" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="180" value="${absVal}" />
       </div>
+      <input class="ios-input" id="fBetGroup" type="text" placeholder="Fight / group (optional)" value="${b?.group?esc(b.group):''}" autocomplete="off" />
       <div class="form-btns">
         <button class="cancel-btn" onclick="closeBetForm()">Cancel</button>
         <button class="save-btn" onclick="saveBet()">Save bet</button>
@@ -917,6 +962,7 @@ function renderPool() {
 }
 
 // ─── BUILDER ───────────────────────────────────────────────────────────────
+let renamingParlayId = null;
 function renderBuilder() {
   let html=`<div class="tab-content">
   <div class="section-hdr">
@@ -933,12 +979,16 @@ function renderBuilder() {
     const dec=parlayDecimal(p.betIds);
     html+=`<div class="parlay-card ${isActive?'active':''}" onclick="toggleParlay('${p.id}')">
       <div class="parlay-top">
-        <div>
-          <div class="parlay-name">${esc(p.name)}</div>
+        <div style="flex:1;min-width:0">
+          ${renamingParlayId===p.id
+            ?`<input class="parlay-rename-input" id="parlayNameInput" value="${esc(p.name)}" onclick="event.stopPropagation()" onblur="submitRenameParlay()" onkeydown="if(event.key==='Enter')this.blur()" />`
+            :`<div class="parlay-name" onclick="event.stopPropagation();renameParlay('${p.id}')" title="Tap to rename">${esc(p.name)}</div>`
+          }
           <div class="parlay-meta">${p.betIds.length} leg${p.betIds.length!==1?'s':''}</div>
         </div>
         <div style="display:flex;align-items:center;gap:6px">
           <span class="parlay-odds">${p.betIds.length>0?decToAmerican(dec):'—'}</span>
+          <button class="del-btn" onclick="event.stopPropagation();shareParlay('${p.id}')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></button>
           <button class="del-btn" onclick="event.stopPropagation();deleteParlay('${p.id}')">✕</button>
         </div>
       </div>`;
@@ -965,14 +1015,24 @@ function renderBuilder() {
       html+=`<div class="leg-picker">
         <div class="leg-picker-title">Tap to add or remove legs</div>`;
       if(S.bets.length===0) html+=`<div style="color:var(--muted2);font-size:13px;text-align:center;padding:12px">Add bets in the Bets tab first</div>`;
-      S.bets.forEach(b=>{
+      function renderLegRow(b){
         const on=p.betIds.includes(b.id);
         const oc=b.odds>0?'odds-pos':'odds-neg';
-        html+=`<div class="leg-row ${on?'on':''}" onclick="toggleLeg('${p.id}','${b.id}')">
+        return `<div class="leg-row ${on?'on':''}" onclick="toggleLeg('${p.id}','${b.id}')">
           <div class="leg-check ${on?'on':'off'}">${on?'✓':'+'}</div>
           <span class="leg-name">${esc(b.name)}</span>
-          <span class="${oc}">${fmtOdds(b.odds)}</span>
+          <div style="display:flex;flex-direction:column;align-items:flex-end">
+            <span class="${oc}">${fmtOdds(b.odds)}</span>
+            <span class="imp-prob">${impliedProb(b.odds).toFixed(0)}%</span>
+          </div>
         </div>`;
+      }
+      const lgGroups={}, lgUngrouped=[];
+      S.bets.forEach(b=>{ if(b.group){if(!lgGroups[b.group])lgGroups[b.group]=[];lgGroups[b.group].push(b);}else lgUngrouped.push(b); });
+      lgUngrouped.forEach(b=>{ html+=renderLegRow(b); });
+      Object.entries(lgGroups).forEach(([g,bets])=>{
+        html+=`<div class="leg-picker-title" style="margin-top:10px;margin-bottom:6px">${esc(g)}</div>`;
+        bets.forEach(b=>{ html+=renderLegRow(b); });
       });
 
       if(p.betIds.length>0) {
@@ -1291,11 +1351,13 @@ function saveBet(){
   const isNeg=document.getElementById('oddsSignBtn')?.classList.contains('neg');
   if(!name||isNaN(absVal)||absVal<=0){showToast('Enter a name and valid odds');return;}
   const odds=isNeg?-absVal:absVal;
-  if(editingBetId){S.bets=S.bets.map(b=>b.id===editingBetId?{...b,name,odds}:b);}
-  else{S.bets.push({id:uid(),name,odds});}
-  showBetForm=false;editingBetId=null;saveState();render();
+  const group=document.getElementById('fBetGroup')?.value?.trim()||'';
+  if(editingBetId){S.bets=S.bets.map(b=>b.id===editingBetId?{...b,name,odds,group}:b);}
+  else{S.bets.push({id:uid(),name,odds,group});}
+  haptic();showBetForm=false;editingBetId=null;saveState();render();
 }
 function deleteBet(id){
+  haptic([8,40,8]);
   S.bets=S.bets.filter(b=>b.id!==id);
   S.parlays=S.parlays.map(p=>({...p,betIds:p.betIds.filter(x=>x!==id)}));
   saveState();render();
@@ -1370,9 +1432,109 @@ function newWeek(){
   saveState();render();showToast('New week started ✓');
 }
 
+// ─── PARLAY RENAME ──────────────────────────────────────────────────────────
+function renameParlay(id) {
+  renamingParlayId = id; renderScreen();
+  setTimeout(() => { const el = document.getElementById('parlayNameInput'); if(el){el.focus();el.select();} }, 60);
+}
+function submitRenameParlay() {
+  const val = document.getElementById('parlayNameInput')?.value?.trim();
+  if (val && renamingParlayId) { S.parlays = S.parlays.map(p => p.id===renamingParlayId?{...p,name:val}:p); saveState(); }
+  renamingParlayId = null; render();
+}
+
+// ─── SHARE PARLAY ───────────────────────────────────────────────────────────
+async function shareParlay(pid) {
+  const p = S.parlays.find(x => x.id === pid);
+  if (!p || !p.betIds.length) { showToast('Add legs first'); return; }
+  const dpr = Math.min(window.devicePixelRatio||1, 2);
+  const W = 720, rowH = 58, hdrH = 108, ftrH = 88;
+  const H = hdrH + rowH * p.betIds.length + ftrH;
+  const canvas = document.createElement('canvas');
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  // Background
+  ctx.fillStyle = '#1A1916'; ctx.fillRect(0, 0, W, H);
+  // Header
+  ctx.fillStyle = '#C96442'; ctx.font = 'bold 30px Georgia,serif';
+  ctx.fillText('parlay', 36, 46);
+  ctx.fillStyle = '#FAF9F7'; ctx.font = 'bold 20px -apple-system,sans-serif';
+  ctx.fillText(p.name, 36, 78);
+  ctx.fillStyle = '#3D3B37'; ctx.fillRect(0, hdrH-1, W, 1);
+  // Legs
+  p.betIds.forEach((bid,i) => {
+    const b = S.bets.find(x=>x.id===bid); if(!b) return;
+    const y = hdrH + i * rowH;
+    if (i%2===0) { ctx.fillStyle='#222120'; ctx.fillRect(0, y, W, rowH); }
+    ctx.fillStyle='#FAF9F7'; ctx.font='600 17px -apple-system,sans-serif'; ctx.textAlign='left';
+    ctx.fillText(b.name, 36, y+rowH/2+6);
+    ctx.fillStyle = b.odds>0?'#2D7D52':'#C96442'; ctx.font='italic bold 19px Georgia,serif'; ctx.textAlign='right';
+    ctx.fillText(fmtOdds(b.odds), W-36, y+rowH/2+6);
+    ctx.fillStyle='#8A8680'; ctx.font='500 12px -apple-system,sans-serif';
+    ctx.fillText(impliedProb(b.odds).toFixed(0)+'%', W-36, y+rowH/2+22);
+  });
+  // Footer
+  const fy = hdrH + p.betIds.length * rowH;
+  ctx.fillStyle='#111010'; ctx.fillRect(0, fy, W, ftrH);
+  ctx.fillStyle='#8A8680'; ctx.font='500 14px -apple-system,sans-serif'; ctx.textAlign='left';
+  ctx.fillText(`${p.betIds.length} legs · $${p.stake} stake`, 36, fy+32);
+  ctx.fillStyle='#C96442'; ctx.font='italic bold 26px Georgia,serif'; ctx.textAlign='right';
+  ctx.fillText(decToAmerican(parlayDecimal(p.betIds)), W-36, fy+32);
+  ctx.fillStyle='#2D7D52'; ctx.font='bold 15px -apple-system,sans-serif';
+  ctx.fillText('→ $'+calcPayout(p.betIds,p.stake)+' payout', W-36, fy+56);
+  canvas.toBlob(async blob => {
+    try {
+      await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+      haptic(); showToast('Parlay card copied!');
+    } catch(e) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='parlay.png'; a.click();
+      showToast('Parlay card saved!');
+    }
+  }, 'image/png');
+}
+
+// ─── SWIPE TO DELETE ────────────────────────────────────────────────────────
+function initSwipe() {
+  document.querySelectorAll('.bet-card[data-id]').forEach(card => {
+    let sx=0, sy=0, tracking=false, didSwipe=false;
+    card.addEventListener('touchstart', e => {
+      if (e.target.closest('.drag-handle')||e.target.closest('.icon-btn')) return;
+      sx=e.touches[0].clientX; sy=e.touches[0].clientY; tracking=true; didSwipe=false;
+    }, {passive:true});
+    card.addEventListener('touchmove', e => {
+      if (!tracking) return;
+      const dx=e.touches[0].clientX-sx, dy=Math.abs(e.touches[0].clientY-sy);
+      if (!didSwipe && dy>12 && dy>Math.abs(dx)) { tracking=false; return; }
+      if (dx < -8) {
+        didSwipe=true; e.preventDefault();
+        const x=Math.max(dx,-100);
+        card.style.transition='none';
+        card.style.transform=`translateX(${x}px)`;
+        card.style.borderRightColor=dx<-55?'var(--red)':'var(--border2)';
+      }
+    }, {passive:false});
+    card.addEventListener('touchend', e => {
+      if (!tracking||!didSwipe) { tracking=false; return; }
+      tracking=false;
+      const dx=e.changedTouches[0].clientX-sx;
+      if (dx < -75) {
+        card.style.transition='transform 0.18s ease,opacity 0.18s ease';
+        card.style.transform='translateX(-110%)'; card.style.opacity='0';
+        setTimeout(()=>deleteBet(card.dataset.id), 180);
+      } else {
+        card.style.transition='transform 0.2s ease';
+        card.style.transform=''; card.style.borderRightColor='';
+        setTimeout(()=>{ card.style.transition=''; }, 200);
+      }
+    }, {passive:true});
+  });
+}
+
 // ─── ATTACH HANDLERS ───────────────────────────────────────────────────────
 function attachHandlers(){
-  initDrag();
+  initDrag(); initSwipe();
 }
 
 // ─── DRAG TO REORDER ────────────────────────────────────────────────────────
@@ -1447,12 +1609,13 @@ function onDragEnd(e) {
   document.removeEventListener('touchend', onDragEnd);
   document.removeEventListener('mousemove', onDragMove);
   document.removeEventListener('mouseup', onDragEnd);
+  haptic([4,30,4]);
   render();
 }
 
 // ─── SERVICE WORKER ────────────────────────────────────────────────────────
 if('serviceWorker' in navigator){
-  const swCode=`const CACHE='parlay-v6';
+  const swCode=`const CACHE='parlay-v7';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/'])));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
 self.addEventListener('fetch',e=>{if(e.request.url.includes('fonts.googleapis')||e.request.url.includes('fonts.gstatic'))return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)));});`;
