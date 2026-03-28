@@ -121,7 +121,9 @@
     {
       "id": "72zr0fa",
       "name": "Parlay 1",
-      "betIds": [],
+      "betIds": [
+        "1bsypr1"
+      ],
       "stake": 50
     }
   ],
