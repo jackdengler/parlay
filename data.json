@@ -232,11 +232,17 @@
         "vwp4en4"
       ],
       "stake": 50
+    },
+    {
+      "id": "1dhzi2j",
+      "name": "Parlay 11",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {},
   "weeklyRecaps": [],
-  "activeParlayId": null,
+  "activeParlayId": "1dhzi2j",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
