@@ -275,7 +275,9 @@
     {
       "id": "zq0dmdd",
       "name": "Parlay 14",
-      "betIds": [],
+      "betIds": [
+        "8ejia5d"
+      ],
       "stake": 50
     }
   ],
