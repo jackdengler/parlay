@@ -267,7 +267,11 @@
     {
       "id": "89v30du",
       "name": "Parlay 14",
-      "betIds": [],
+      "betIds": [
+        "369ycge",
+        "1yrpmm8",
+        "mms1mkl"
+      ],
       "stake": 50
     }
   ],
@@ -289,7 +293,7 @@
     "8ejia5d": null
   },
   "weeklyRecaps": [],
-  "activeParlayId": "89v30du",
+  "activeParlayId": null,
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
