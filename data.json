@@ -273,7 +273,9 @@
     {
       "id": "m6dmos6",
       "name": "Parlay 16",
-      "betIds": [],
+      "betIds": [
+        "xb04zgi"
+      ],
       "stake": 50
     }
   ],
