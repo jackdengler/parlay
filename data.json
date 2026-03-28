@@ -139,7 +139,10 @@
     {
       "id": "gw83bvv",
       "name": "Parlay 2",
-      "betIds": [],
+      "betIds": [
+        "gz9rnzl",
+        "osyzhwo"
+      ],
       "stake": 50
     }
   ],
