@@ -273,7 +273,9 @@
     {
       "id": "hcucbcg",
       "name": "Parlay 16",
-      "betIds": [],
+      "betIds": [
+        "1bsypr1"
+      ],
       "stake": 50
     }
   ],
