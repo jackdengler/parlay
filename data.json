@@ -164,11 +164,17 @@
         "rexf3fn"
       ],
       "stake": 50
+    },
+    {
+      "id": "a2th8o6",
+      "name": "Parlay 7",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {},
   "weeklyRecaps": [],
-  "activeParlayId": null,
+  "activeParlayId": "a2th8o6",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
