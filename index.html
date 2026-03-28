@@ -337,6 +337,31 @@ html, body {
   font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 6px; margin-top: 2px;
 }
 
+/* ── ROUND ROBIN ── */
+.rr-btn {
+  width: 100%; padding: 9px 14px; border-radius: var(--radius);
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text2);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; gap: 6px; justify-content: center;
+}
+.rr-btn:active { background: var(--border); }
+.rr-from { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.rr-size-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.rr-size-btn {
+  flex: 1; min-width: 56px; padding: 10px 6px; border-radius: var(--radius);
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text2);
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.rr-size-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.rr-size-cnt { font-size: 10px; font-weight: 600; opacity: 0.7; }
+.rr-summary {
+  background: var(--bg3); border-radius: var(--radius); padding: 10px 14px; margin-top: 8px;
+}
+.rr-summary-row { display: flex; justify-content: space-between; padding: 4px 0; }
+.rr-lbl { color: var(--muted); font-size: 13px; }
+.rr-val { color: var(--text); font-size: 13px; font-weight: 600; }
+
 /* ── COMPARE TABLE ── */
 .compare-card {
   margin: 14px 14px 0; background: var(--bg); border-radius: var(--radius-lg);
@@ -673,6 +698,7 @@ html, body {
 
 <div class="toast" id="toast"></div>
 <div id="settingsOverlay" style="display:none"></div>
+<div id="rrOverlay" style="display:none"></div>
 
 <script>
 // ─── STATE ─────────────────────────────────────────────────────────────────
@@ -837,6 +863,14 @@ function uid() { return Math.random().toString(36).slice(2,9); }
 function fmtOdds(o) { return o>0?`+${o}`:`${o}`; }
 function impliedProb(o) { return o<0?Math.abs(o)/(Math.abs(o)+100)*100:100/(o+100)*100; }
 function haptic(p=10) { try{navigator.vibrate(p);}catch(e){} }
+function combinations(arr, k) {
+  if(k===0) return [[]];
+  if(arr.length<k) return [];
+  const [first,...rest]=arr;
+  const withFirst=combinations(rest,k-1).map(c=>[first,...c]);
+  const without=combinations(rest,k);
+  return [...withFirst,...without];
+}
 function oddsToDecimal(o) { return o>0?o/100+1:100/Math.abs(o)+1; }
 function parlayDecimal(ids) {
   return ids.reduce((acc,id)=>{ const b=S.bets.find(b=>b.id===id); return b?acc*oddsToDecimal(b.odds):acc; },1);
@@ -1035,6 +1069,9 @@ function renderBuilder() {
         bets.forEach(b=>{ html+=renderLegRow(b); });
       });
 
+      if(p.betIds.length>=3) {
+        html+=`<div style="padding:0 16px 8px"><button class="rr-btn" onclick="event.stopPropagation();openRoundRobin('${p.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg> Round Robin</button></div>`;
+      }
       if(p.betIds.length>0) {
         html+=`<div class="leg-breakdown"><div class="lgb-title">Leg breakdown</div>`;
         p.betIds.forEach((bid,i)=>{
@@ -1401,6 +1438,72 @@ function setStake(pid,val){
   const n=parseFloat(val);if(isNaN(n)||n<0)return;
   S.parlays=S.parlays.map(p=>p.id===pid?{...p,stake:n}:p);
   saveState();
+}
+// ─── ROUND ROBIN ────────────────────────────────────────────────────────────
+let rrParlayId=null, rrSize=2, rrStake=10;
+function openRoundRobin(pid){
+  const p=S.parlays.find(x=>x.id===pid);
+  if(!p||p.betIds.length<3) return;
+  rrParlayId=pid; rrSize=2; rrStake=p.stake||10;
+  renderRROverlay();
+  document.getElementById('rrOverlay').style.display='block';
+}
+function closeRR(){ document.getElementById('rrOverlay').style.display='none'; rrParlayId=null; }
+function setRRSize(k){ rrSize=k; renderRROverlay(); }
+function setRRStake(val){ const n=parseFloat(val); if(!isNaN(n)&&n>=0) rrStake=n; renderRROverlay(); }
+function renderRROverlay(){
+  const p=S.parlays.find(x=>x.id===rrParlayId); if(!p) return;
+  const n=p.betIds.length;
+  const combos=combinations(p.betIds,rrSize);
+  const totalRisk=rrStake*combos.length;
+  let sizeButtons='';
+  for(let k=2;k<n;k++){
+    const cnt=combinations(p.betIds,k).length;
+    sizeButtons+=`<button class="rr-size-btn ${rrSize===k?'active':''}" onclick="event.stopPropagation();setRRSize(${k})">${k}s<span class="rr-size-cnt">${cnt}</span></button>`;
+  }
+  // Preview best/worst payouts
+  let minPay=Infinity, maxPay=0;
+  combos.forEach(c=>{
+    const pay=parlayDecimal(c)*rrStake;
+    if(pay<minPay) minPay=pay;
+    if(pay>maxPay) maxPay=pay;
+  });
+  const overlay=document.getElementById('rrOverlay');
+  overlay.innerHTML=`<div class="settings-overlay" onclick="if(event.target===this)closeRR()">
+    <div class="settings-card">
+      <div class="settings-title">Round Robin</div>
+      <div class="rr-from">from ${esc(p.name)} · ${n} legs</div>
+      <div class="settings-label" style="margin-top:14px">Sub-parlay size</div>
+      <div class="rr-size-row">${sizeButtons}</div>
+      <div class="settings-label" style="margin-top:14px">Stake per parlay</div>
+      <div class="stake-wrap" style="margin-bottom:8px">
+        <span class="stake-dollar">$</span>
+        <input class="stake-input" type="text" inputmode="decimal" pattern="[0-9]*" value="${rrStake}" oninput="setRRStake(this.value)" onclick="this.select()" />
+      </div>
+      <div class="rr-summary">
+        <div class="rr-summary-row"><span class="rr-lbl">Parlays</span><span class="rr-val">${combos.length}</span></div>
+        <div class="rr-summary-row"><span class="rr-lbl">Total risk</span><span class="rr-val">$${totalRisk.toFixed(2)}</span></div>
+        <div class="rr-summary-row"><span class="rr-lbl">Payout range</span><span class="rr-val">$${minPay.toFixed(2)} – $${maxPay.toFixed(2)}</span></div>
+      </div>
+      <div class="form-btns" style="margin-top:16px">
+        <button class="cancel-btn" onclick="closeRR()">Cancel</button>
+        <button class="save-btn" onclick="generateRR()">Generate ${combos.length} parlays</button>
+      </div>
+    </div>
+  </div>`;
+}
+function generateRR(){
+  const p=S.parlays.find(x=>x.id===rrParlayId); if(!p) return;
+  const combos=combinations(p.betIds,rrSize);
+  const baseName=p.name||'RR';
+  combos.forEach((c,i)=>{
+    S.parlays.push({id:uid(),name:`${baseName} ${rrSize}s ${i+1}/${combos.length}`,betIds:[...c],stake:rrStake});
+  });
+  // Remove original parlay
+  S.parlays=S.parlays.filter(x=>x.id!==rrParlayId);
+  S.activeParlayId=null;
+  haptic();closeRR();saveState();render();
+  showToast(`${combos.length} parlays created`);
 }
 function setResult(id,result){
   S.betResults[id]=S.betResults[id]===result?null:result;
