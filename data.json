@@ -151,13 +151,20 @@
     {
       "id": "qfqeec9",
       "name": "Parlay 6",
-      "betIds": [],
+      "betIds": [
+        "369ycge",
+        "1yrpmm8",
+        "mms1mkl",
+        "4ta7laq",
+        "1bsypr1",
+        "ralru1r"
+      ],
       "stake": 50
     }
   ],
   "betResults": {},
   "weeklyRecaps": [],
-  "activeParlayId": "bs49vd3",
+  "activeParlayId": "qfqeec9",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
