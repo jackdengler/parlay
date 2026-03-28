@@ -135,11 +135,17 @@
         "ralru1r"
       ],
       "stake": 500
+    },
+    {
+      "id": "gw83bvv",
+      "name": "Parlay 2",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {},
   "weeklyRecaps": [],
-  "activeParlayId": null,
+  "activeParlayId": "gw83bvv",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
