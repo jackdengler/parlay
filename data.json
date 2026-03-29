@@ -298,6 +298,12 @@
       "name": "Parlay 17",
       "betIds": [],
       "stake": 50
+    },
+    {
+      "id": "8c83wqr",
+      "name": "Parlay 18",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {
@@ -318,7 +324,7 @@
     "8ejia5d": "loss"
   },
   "weeklyRecaps": [],
-  "activeParlayId": "b19vseh",
+  "activeParlayId": "8c83wqr",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
