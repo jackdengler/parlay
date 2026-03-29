@@ -278,6 +278,18 @@
         "mms1mkl"
       ],
       "stake": 1500
+    },
+    {
+      "id": "abfx0b7",
+      "name": "Parlay 16",
+      "betIds": [],
+      "stake": 50
+    },
+    {
+      "id": "a15330k",
+      "name": "Parlay 17",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {
@@ -298,7 +310,7 @@
     "8ejia5d": "loss"
   },
   "weeklyRecaps": [],
-  "activeParlayId": "hcucbcg",
+  "activeParlayId": "a15330k",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
