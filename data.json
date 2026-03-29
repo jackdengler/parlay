@@ -286,6 +286,12 @@
         "e30yre8"
       ],
       "stake": 1400
+    },
+    {
+      "id": "b19vseh",
+      "name": "Parlay 17",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {
@@ -306,7 +312,7 @@
     "8ejia5d": "loss"
   },
   "weeklyRecaps": [],
-  "activeParlayId": null,
+  "activeParlayId": "b19vseh",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
