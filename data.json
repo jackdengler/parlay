@@ -305,7 +305,7 @@
       "betIds": [
         "by824sd"
       ],
-      "stake": 50
+      "stake": 2000
     },
     {
       "id": "8c83wqr",
@@ -332,7 +332,7 @@
     "8ejia5d": "loss"
   },
   "weeklyRecaps": [],
-  "activeParlayId": "b19vseh",
+  "activeParlayId": "8c83wqr",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
