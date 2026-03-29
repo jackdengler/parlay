@@ -329,6 +329,12 @@
         "5j6myet"
       ],
       "stake": 1500
+    },
+    {
+      "id": "3zgkh4j",
+      "name": "Parlay 20",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {
@@ -352,7 +358,7 @@
     "5j6myet": "win"
   },
   "weeklyRecaps": [],
-  "activeParlayId": null,
+  "activeParlayId": "3zgkh4j",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
