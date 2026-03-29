@@ -321,6 +321,12 @@
         "fly0i50"
       ],
       "stake": 998
+    },
+    {
+      "id": "9b18nw5",
+      "name": "Parlay 19",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {
@@ -343,7 +349,7 @@
     "by824sd": "loss"
   },
   "weeklyRecaps": [],
-  "activeParlayId": null,
+  "activeParlayId": "9b18nw5",
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
