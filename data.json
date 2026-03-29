@@ -333,7 +333,9 @@
     {
       "id": "3zgkh4j",
       "name": "Parlay 20",
-      "betIds": [],
+      "betIds": [
+        "gz9rnzl"
+      ],
       "stake": 50
     }
   ],
