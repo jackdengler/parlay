@@ -310,7 +310,9 @@
     {
       "id": "8c83wqr",
       "name": "Parlay 18",
-      "betIds": [],
+      "betIds": [
+        "fly0i50"
+      ],
       "stake": 50
     }
   ],
@@ -332,7 +334,7 @@
     "8ejia5d": "loss"
   },
   "weeklyRecaps": [],
-  "activeParlayId": "8c83wqr",
+  "activeParlayId": null,
   "weekName": "Mar 28, 2026",
   "_confirmClear": false
 }
