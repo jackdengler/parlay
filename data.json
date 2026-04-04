@@ -12,11 +12,6 @@
       "odds": 120
     },
     {
-      "id": "k6mf8c6",
-      "name": "Pat ML",
-      "odds": -105
-    },
-    {
       "id": "fcaycj8",
       "name": "Costa ML",
       "odds": -455
@@ -30,6 +25,11 @@
       "id": "6h9p7cj",
       "name": "Bekoev R1-R2 Win",
       "odds": 110
+    },
+    {
+      "id": "k6mf8c6",
+      "name": "Pat ML",
+      "odds": -105
     },
     {
       "id": "j4ft8ft",
