@@ -2,11 +2,6 @@
   "eventName": "UFC 314",
   "bets": [
     {
-      "id": "e8ps54t",
-      "name": "Jandiroba ML",
-      "odds": -135
-    },
-    {
       "id": "nkzgorv",
       "name": "Yakhyaev R1 Win",
       "odds": -303
@@ -35,6 +30,11 @@
       "id": "g6jj6rj",
       "name": "Pereira ML",
       "odds": -141
+    },
+    {
+      "id": "e8ps54t",
+      "name": "Jandiroba ML",
+      "odds": -135
     },
     {
       "id": "6h9p7cj",
