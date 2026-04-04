@@ -58,6 +58,12 @@
         "j4ft8ft",
         "4yi57kd"
       ],
+      "stake": 200
+    },
+    {
+      "id": "laq8af1",
+      "name": "Parlay 2",
+      "betIds": [],
       "stake": 50
     }
   ],
@@ -465,7 +471,7 @@
       ]
     }
   ],
-  "activeParlayId": "e977em8",
+  "activeParlayId": "laq8af1",
   "weekName": "Apr 4, 2026",
   "_confirmClear": false
 }
