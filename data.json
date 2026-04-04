@@ -74,7 +74,12 @@
     {
       "id": "gl9nbmj",
       "name": "Parlay 3",
-      "betIds": [],
+      "betIds": [
+        "g6jj6rj",
+        "fcaycj8",
+        "k6mf8c6",
+        "j4ft8ft"
+      ],
       "stake": 50
     }
   ],
