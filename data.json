@@ -124,7 +124,13 @@
     {
       "id": "j7t78wi",
       "name": "Parlay 5",
-      "betIds": [],
+      "betIds": [
+        "g6jj6rj",
+        "fcaycj8",
+        "k6mf8c6",
+        "j4ft8ft",
+        "oerhymd"
+      ],
       "stake": 50
     }
   ],
