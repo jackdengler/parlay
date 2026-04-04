@@ -120,6 +120,12 @@
         "nkzgorv"
       ],
       "stake": 6.5
+    },
+    {
+      "id": "j7t78wi",
+      "name": "Parlay 5",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {
@@ -529,7 +535,7 @@
       ]
     }
   ],
-  "activeParlayId": null,
+  "activeParlayId": "j7t78wi",
   "weekName": "Apr 4, 2026",
   "_confirmClear": false
 }
