@@ -103,7 +103,7 @@
         "5j6mxps",
         "08bpafw"
       ],
-      "stake": 50
+      "stake": 100
     }
   ],
   "betResults": {},
@@ -510,7 +510,7 @@
       ]
     }
   ],
-  "activeParlayId": "gl9nbmj",
+  "activeParlayId": null,
   "weekName": "Apr 4, 2026",
   "_confirmClear": false
 }
