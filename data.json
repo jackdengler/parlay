@@ -108,7 +108,9 @@
     {
       "id": "oofvwco",
       "name": "Parlay 4",
-      "betIds": [],
+      "betIds": [
+        "6h9p7cj"
+      ],
       "stake": 50
     }
   ],
