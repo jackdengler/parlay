@@ -70,6 +70,12 @@
         "oerhymd"
       ],
       "stake": 200
+    },
+    {
+      "id": "gl9nbmj",
+      "name": "Parlay 3",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {},
@@ -476,7 +482,7 @@
       ]
     }
   ],
-  "activeParlayId": "laq8af1",
+  "activeParlayId": "gl9nbmj",
   "weekName": "Apr 4, 2026",
   "_confirmClear": false
 }
