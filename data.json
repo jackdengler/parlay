@@ -119,7 +119,7 @@
         "j4ft8ft",
         "nkzgorv"
       ],
-      "stake": 10
+      "stake": 6.5
     }
   ],
   "betResults": {},
@@ -526,7 +526,7 @@
       ]
     }
   ],
-  "activeParlayId": "oofvwco",
+  "activeParlayId": null,
   "weekName": "Apr 4, 2026",
   "_confirmClear": false
 }
