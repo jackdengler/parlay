@@ -1,6 +1,52 @@
 {
   "eventName": "UFC 314",
-  "bets": [],
+  "bets": [
+    {
+      "id": "4yi57kd",
+      "name": "Duncan ML",
+      "odds": -161
+    },
+    {
+      "id": "e8ps54t",
+      "name": "Jandiroba ML",
+      "odds": -135
+    },
+    {
+      "id": "nkzgorv",
+      "name": "Yakhyaev R1 Win",
+      "odds": -303
+    },
+    {
+      "id": "oerhymd",
+      "name": "McMillen R1 Win",
+      "odds": 120
+    },
+    {
+      "id": "j4ft8ft",
+      "name": "Delano ML",
+      "odds": -294
+    },
+    {
+      "id": "k6mf8c6",
+      "name": "Pat ML",
+      "odds": -105
+    },
+    {
+      "id": "fcaycj8",
+      "name": "Costa ML",
+      "odds": -455
+    },
+    {
+      "id": "g6jj6rj",
+      "name": "Pereira ML",
+      "odds": -141
+    },
+    {
+      "id": "6h9p7cj",
+      "name": "Bekoev R1-R2 Win",
+      "odds": 110
+    }
+  ],
   "parlays": [],
   "betResults": {},
   "weeklyRecaps": [
