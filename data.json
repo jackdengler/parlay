@@ -47,7 +47,16 @@
       "odds": -161
     }
   ],
-  "parlays": [],
+  "parlays": [
+    {
+      "id": "e977em8",
+      "name": "Parlay 1",
+      "betIds": [
+        "6h9p7cj"
+      ],
+      "stake": 50
+    }
+  ],
   "betResults": {},
   "weeklyRecaps": [
     {
@@ -452,7 +461,7 @@
       ]
     }
   ],
-  "activeParlayId": null,
+  "activeParlayId": "e977em8",
   "weekName": "Apr 4, 2026",
   "_confirmClear": false
 }
