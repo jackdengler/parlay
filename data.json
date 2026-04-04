@@ -122,7 +122,9 @@
       "stake": 6.5
     }
   ],
-  "betResults": {},
+  "betResults": {
+    "6h9p7cj": "win"
+  },
   "weeklyRecaps": [
     {
       "id": "7mabh5v",
