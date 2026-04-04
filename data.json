@@ -2,11 +2,6 @@
   "eventName": "UFC 314",
   "bets": [
     {
-      "id": "oerhymd",
-      "name": "McMillen R1 Win",
-      "odds": 120
-    },
-    {
       "id": "6h9p7cj",
       "name": "Bekoev R1-R2 Win",
       "odds": 110
@@ -30,6 +25,11 @@
       "id": "j4ft8ft",
       "name": "Delano ML",
       "odds": -294
+    },
+    {
+      "id": "oerhymd",
+      "name": "McMillen R1 Win",
+      "odds": 120
     },
     {
       "id": "nkzgorv",
