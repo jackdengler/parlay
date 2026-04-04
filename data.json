@@ -104,6 +104,12 @@
         "08bpafw"
       ],
       "stake": 100
+    },
+    {
+      "id": "oofvwco",
+      "name": "Parlay 4",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {},
@@ -510,7 +516,7 @@
       ]
     }
   ],
-  "activeParlayId": null,
+  "activeParlayId": "oofvwco",
   "weekName": "Apr 4, 2026",
   "_confirmClear": false
 }
