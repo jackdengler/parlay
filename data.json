@@ -359,8 +359,410 @@
     "by824sd": "loss",
     "5j6myet": "win"
   },
-  "weeklyRecaps": [],
+  "weeklyRecaps": [
+    {
+      "id": "7mabh5v",
+      "event": "Mar 28, 2026",
+      "date": "Apr 4, 2026",
+      "bets": [
+        {
+          "id": "369ycge",
+          "name": "Thainara ML",
+          "odds": -833,
+          "result": "win"
+        },
+        {
+          "id": "1yrpmm8",
+          "name": "Stirling ML",
+          "odds": -714,
+          "result": "win"
+        },
+        {
+          "id": "xb04zgi",
+          "name": "Tybura ML",
+          "odds": 107,
+          "result": "loss"
+        },
+        {
+          "id": "8ejia5d",
+          "name": "Tybura R1 Win",
+          "odds": 520,
+          "result": "loss"
+        },
+        {
+          "id": "mms1mkl",
+          "name": "Hooper ML",
+          "odds": -333,
+          "group": "",
+          "result": "loss"
+        },
+        {
+          "id": "4ta7laq",
+          "name": "McKinney ML",
+          "odds": -172,
+          "result": "win"
+        },
+        {
+          "id": "1bsypr1",
+          "name": "Bahamondes ML",
+          "odds": -333,
+          "result": "loss"
+        },
+        {
+          "id": "ralru1r",
+          "name": "Chiesa ML",
+          "odds": -1000,
+          "group": "",
+          "result": "win"
+        },
+        {
+          "id": "mmjrzcg",
+          "name": "Adesanya Points",
+          "odds": 162,
+          "result": null
+        },
+        {
+          "id": "e30yre8",
+          "name": "McKinney R1 Win",
+          "odds": 110,
+          "group": "",
+          "result": "win"
+        },
+        {
+          "id": "vwp4en4",
+          "name": "Barber Points",
+          "odds": -110,
+          "result": "loss"
+        },
+        {
+          "id": "gz9rnzl",
+          "name": "Barber ML",
+          "odds": -200,
+          "result": "loss"
+        },
+        {
+          "id": "osyzhwo",
+          "name": "Adesanya ML",
+          "odds": -152,
+          "result": null
+        },
+        {
+          "id": "rexf3fn",
+          "name": "Belgaroui ML",
+          "odds": 102,
+          "result": "win"
+        },
+        {
+          "id": "fly0i50",
+          "name": "Lerryan R1",
+          "odds": 150,
+          "group": "",
+          "result": "win"
+        },
+        {
+          "id": "by824sd",
+          "name": "Al M ML",
+          "odds": -110,
+          "group": "",
+          "result": "loss"
+        },
+        {
+          "id": "5j6myet",
+          "name": "Chiesa R1/2",
+          "odds": -110,
+          "group": "",
+          "result": "win"
+        }
+      ],
+      "parlays": [
+        {
+          "id": "8ur2l4u",
+          "name": "Parlay 1",
+          "betIds": [
+            "1bsypr1",
+            "mms1mkl",
+            "369ycge",
+            "1yrpmm8",
+            "4ta7laq",
+            "ralru1r"
+          ],
+          "stake": 250,
+          "result": "loss",
+          "payout": 938.91
+        },
+        {
+          "id": "en9qcxg",
+          "name": "Parlay 2",
+          "betIds": [
+            "1bsypr1",
+            "4ta7laq",
+            "mms1mkl",
+            "ralru1r",
+            "1yrpmm8",
+            "369ycge",
+            "8ejia5d"
+          ],
+          "stake": 50,
+          "result": "loss",
+          "payout": 1164.25
+        },
+        {
+          "id": "b6y9wlj",
+          "name": "Parlay 3",
+          "betIds": [
+            "369ycge",
+            "1yrpmm8",
+            "mms1mkl",
+            "4ta7laq",
+            "1bsypr1",
+            "ralru1r",
+            "mmjrzcg"
+          ],
+          "stake": 25,
+          "result": "loss",
+          "payout": 245.99
+        },
+        {
+          "id": "4exw73z",
+          "name": "Parlay 4",
+          "betIds": [
+            "mms1mkl",
+            "1yrpmm8",
+            "369ycge",
+            "1bsypr1",
+            "ralru1r",
+            "e30yre8"
+          ],
+          "stake": 25,
+          "result": "loss",
+          "payout": 124.68
+        },
+        {
+          "id": "bs49vd3",
+          "name": "Parlay 5",
+          "betIds": [
+            "mms1mkl",
+            "369ycge",
+            "1yrpmm8",
+            "4ta7laq",
+            "1bsypr1",
+            "ralru1r",
+            "vwp4en4"
+          ],
+          "stake": 25,
+          "result": "loss",
+          "payout": 179.25
+        },
+        {
+          "id": "qfqeec9",
+          "name": "Parlay 6",
+          "betIds": [
+            "369ycge",
+            "1yrpmm8",
+            "mms1mkl",
+            "4ta7laq",
+            "1bsypr1",
+            "ralru1r",
+            "gz9rnzl",
+            "osyzhwo",
+            "xb04zgi",
+            "rexf3fn"
+          ],
+          "stake": 150,
+          "result": "loss",
+          "payout": 5857.93
+        },
+        {
+          "id": "a2th8o6",
+          "name": "Parlay 7",
+          "betIds": [
+            "369ycge",
+            "1yrpmm8",
+            "mms1mkl",
+            "4ta7laq",
+            "1bsypr1",
+            "ralru1r",
+            "rexf3fn",
+            "osyzhwo",
+            "gz9rnzl",
+            "8ejia5d"
+          ],
+          "stake": 25,
+          "result": "loss",
+          "payout": 2924.25
+        },
+        {
+          "id": "os7q7dq",
+          "name": "Parlay 8",
+          "betIds": [
+            "369ycge",
+            "1yrpmm8",
+            "mms1mkl",
+            "4ta7laq",
+            "1bsypr1",
+            "ralru1r",
+            "rexf3fn",
+            "xb04zgi",
+            "gz9rnzl",
+            "mmjrzcg"
+          ],
+          "stake": 25,
+          "result": "loss",
+          "payout": 1542.9
+        },
+        {
+          "id": "wr5jrhf",
+          "name": "Parlay 9",
+          "betIds": [
+            "1yrpmm8",
+            "369ycge",
+            "mms1mkl",
+            "1bsypr1",
+            "ralru1r",
+            "rexf3fn",
+            "xb04zgi",
+            "osyzhwo",
+            "gz9rnzl",
+            "e30yre8"
+          ],
+          "stake": 25,
+          "result": "loss",
+          "payout": 1296.5
+        },
+        {
+          "id": "8trj818",
+          "name": "Parlay 10",
+          "betIds": [
+            "1yrpmm8",
+            "369ycge",
+            "mms1mkl",
+            "4ta7laq",
+            "1bsypr1",
+            "ralru1r",
+            "rexf3fn",
+            "xb04zgi",
+            "osyzhwo",
+            "vwp4en4"
+          ],
+          "stake": 25,
+          "result": "loss",
+          "payout": 1242.59
+        },
+        {
+          "id": "zgxmf65",
+          "name": "Parlay 12",
+          "betIds": [
+            "1yrpmm8",
+            "mms1mkl",
+            "1bsypr1",
+            "4ta7laq",
+            "xb04zgi"
+          ],
+          "stake": 200,
+          "result": "loss",
+          "payout": 1261.99
+        },
+        {
+          "id": "mwrr7wq",
+          "name": "Parlay 13",
+          "betIds": [
+            "4ta7laq",
+            "xb04zgi",
+            "rexf3fn",
+            "vwp4en4"
+          ],
+          "stake": 50,
+          "result": "loss",
+          "payout": 631.19
+        },
+        {
+          "id": "zq0dmdd",
+          "name": "Parlay 14",
+          "betIds": [
+            "8ejia5d"
+          ],
+          "stake": 100,
+          "result": "loss",
+          "payout": 620
+        },
+        {
+          "id": "89v30du",
+          "name": "Parlay 15",
+          "betIds": [
+            "369ycge",
+            "1yrpmm8",
+            "mms1mkl",
+            "1bsypr1"
+          ],
+          "stake": 500,
+          "result": "loss",
+          "payout": 1079.49
+        },
+        {
+          "id": "hcucbcg",
+          "name": "Parlay 16",
+          "betIds": [
+            "1bsypr1",
+            "mms1mkl"
+          ],
+          "stake": 1500,
+          "result": "loss",
+          "payout": 2536.17
+        },
+        {
+          "id": "a15330k",
+          "name": "Parlay 17",
+          "betIds": [
+            "e30yre8"
+          ],
+          "stake": 1400,
+          "result": "win",
+          "payout": 2940
+        },
+        {
+          "id": "b19vseh",
+          "name": "Parlay 17",
+          "betIds": [
+            "by824sd"
+          ],
+          "stake": 2000,
+          "result": "loss",
+          "payout": 3818.18
+        },
+        {
+          "id": "8c83wqr",
+          "name": "Parlay 18",
+          "betIds": [
+            "fly0i50"
+          ],
+          "stake": 998,
+          "result": "win",
+          "payout": 2495
+        },
+        {
+          "id": "9b18nw5",
+          "name": "Parlay 19",
+          "betIds": [
+            "5j6myet"
+          ],
+          "stake": 1500,
+          "result": "win",
+          "payout": 2863.64
+        },
+        {
+          "id": "3zgkh4j",
+          "name": "Parlay 20",
+          "betIds": [
+            "gz9rnzl"
+          ],
+          "stake": 3870,
+          "result": "loss",
+          "payout": 5805
+        }
+      ]
+    }
+  ],
   "activeParlayId": null,
-  "weekName": "Mar 28, 2026",
+  "weekName": "Apr 4, 2026",
   "_confirmClear": false
 }
