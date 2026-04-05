@@ -134,6 +134,12 @@
         "4yi57kd"
       ],
       "stake": 198
+    },
+    {
+      "id": "iym7s4p",
+      "name": "Parlay 6",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {
@@ -546,7 +552,7 @@
       ]
     }
   ],
-  "activeParlayId": "j7t78wi",
+  "activeParlayId": "iym7s4p",
   "weekName": "Apr 4, 2026",
   "_confirmClear": false
 }
