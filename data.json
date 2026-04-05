@@ -158,7 +158,7 @@
         "j4ft8ft",
         "ksraez2"
       ],
-      "stake": 50
+      "stake": 498
     }
   ],
   "betResults": {
@@ -571,7 +571,7 @@
       ]
     }
   ],
-  "activeParlayId": "0vjyzf4",
+  "activeParlayId": null,
   "weekName": "Apr 4, 2026",
   "_confirmClear": false
 }
