@@ -1,6 +1,82 @@
 {
   "eventName": "UFC 314",
-  "bets": [],
+  "bets": [
+    {
+      "id": "1r0vkpf",
+      "name": "Godinez ML",
+      "odds": 115
+    },
+    {
+      "id": "dip1rug",
+      "name": "Hokit ML",
+      "odds": -100
+    },
+    {
+      "id": "klk6zrt",
+      "name": "Murzakanov ML",
+      "odds": -238
+    },
+    {
+      "id": "hh6b6fo",
+      "name": "Ulberg ML",
+      "odds": -111
+    },
+    {
+      "id": "r2fduct",
+      "name": "Prochazka ML",
+      "odds": -118
+    },
+    {
+      "id": "si73g79",
+      "name": "Gamrot ML",
+      "odds": -200
+    },
+    {
+      "id": "iiz9j2l",
+      "name": "Swanson ML",
+      "odds": -118
+    },
+    {
+      "id": "m32xdl7",
+      "name": "Reyes ML",
+      "odds": -156
+    },
+    {
+      "id": "5g4m2wu",
+      "name": "Holland ML",
+      "odds": -115
+    },
+    {
+      "id": "hx0vsif",
+      "name": "Suarez ML",
+      "odds": -154
+    },
+    {
+      "id": "ddeo8e5",
+      "name": "Radtke ML",
+      "odds": -182
+    },
+    {
+      "id": "5r0z5pi",
+      "name": "Gastelum ML",
+      "odds": -270
+    },
+    {
+      "id": "l9vjfuk",
+      "name": "Luque ML",
+      "odds": 190
+    },
+    {
+      "id": "ufr7x8m",
+      "name": "Padilla ML",
+      "odds": -167
+    },
+    {
+      "id": "okt8ewa",
+      "name": "Mederos ML",
+      "odds": 125
+    }
+  ],
   "parlays": [],
   "betResults": {},
   "weeklyRecaps": [
