@@ -1,6 +1,82 @@
 {
   "eventName": "UFC 314",
-  "bets": [],
+  "bets": [
+    {
+      "id": "ggxrfar",
+      "name": "Godinez Lupita ML",
+      "odds": 115
+    },
+    {
+      "id": "ylary7f",
+      "name": "Hokit Josh ML",
+      "odds": -100
+    },
+    {
+      "id": "xkkn999",
+      "name": "Murzakanov Azamat ML",
+      "odds": -238
+    },
+    {
+      "id": "rw4gfn6",
+      "name": "Ulberg Carlos ML",
+      "odds": -111
+    },
+    {
+      "id": "38b8i7x",
+      "name": "Prochazka Jiri ML",
+      "odds": -118
+    },
+    {
+      "id": "zrvd8it",
+      "name": "Gamrot Mateusz ML",
+      "odds": -200
+    },
+    {
+      "id": "ch525ss",
+      "name": "Swanson Cub ML",
+      "odds": -118
+    },
+    {
+      "id": "y7frp9m",
+      "name": "Reyes Dominick ML",
+      "odds": -156
+    },
+    {
+      "id": "t22q2t8",
+      "name": "Holland Kevin ML",
+      "odds": -115
+    },
+    {
+      "id": "z40022g",
+      "name": "Suarez Tatiana ML",
+      "odds": -154
+    },
+    {
+      "id": "66fmkt9",
+      "name": "Radtke Charles ML",
+      "odds": -182
+    },
+    {
+      "id": "ls7i82o",
+      "name": "Gastelum Kelvin ML",
+      "odds": -270
+    },
+    {
+      "id": "0fsgep4",
+      "name": "Luque Vicente ML",
+      "odds": 190
+    },
+    {
+      "id": "scys4ci",
+      "name": "Padilla Christopher ML",
+      "odds": -167
+    },
+    {
+      "id": "k8w6h0l",
+      "name": "Mederos Marquel ML",
+      "odds": 125
+    }
+  ],
   "parlays": [],
   "betResults": {},
   "weeklyRecaps": [
