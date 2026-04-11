@@ -79,39 +79,13 @@
   ],
   "parlays": [
     {
-      "id": "2lx6fkb",
+      "id": "s0e40tx",
       "name": "Parlay 1",
       "betIds": [
         "dip1rug",
         "klk6zrt",
-        "hh6b6fo",
-        "si73g79",
-        "iiz9j2l",
-        "m32xdl7",
-        "5g4m2wu",
-        "hx0vsif",
-        "ddeo8e5",
-        "ufr7x8m"
-      ],
-      "stake": 77
-    },
-    {
-      "id": "6gkvv9c",
-      "name": "Parlay 2",
-      "betIds": [
-        "klk6zrt",
-        "dip1rug",
         "si73g79",
         "m32xdl7"
-      ],
-      "stake": 300
-    },
-    {
-      "id": "jddrspr",
-      "name": "Parlay 3",
-      "betIds": [
-        "ddeo8e5",
-        "5r0z5pi"
       ],
       "stake": 50
     }
@@ -702,7 +676,7 @@
       ]
     }
   ],
-  "activeParlayId": null,
+  "activeParlayId": "s0e40tx",
   "weekName": "Apr 11, 2026",
   "_confirmClear": false
 }
