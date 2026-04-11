@@ -164,6 +164,188 @@
   },
   "weeklyRecaps": [
     {
+      "id": "irigsrd",
+      "event": "Apr 4, 2026",
+      "date": "Apr 11, 2026",
+      "bets": [
+        {
+          "id": "6h9p7cj",
+          "name": "Bekoev R1-R2 Win",
+          "odds": 110,
+          "result": "loss"
+        },
+        {
+          "id": "g6jj6rj",
+          "name": "Pereira ML",
+          "odds": -141,
+          "result": "win"
+        },
+        {
+          "id": "fcaycj8",
+          "name": "Costa ML",
+          "odds": -455,
+          "result": "win"
+        },
+        {
+          "id": "k6mf8c6",
+          "name": "Pat ML",
+          "odds": -105,
+          "result": "loss"
+        },
+        {
+          "id": "j4ft8ft",
+          "name": "Delano ML",
+          "odds": -294,
+          "result": "win"
+        },
+        {
+          "id": "oerhymd",
+          "name": "McMillen R1 Win",
+          "odds": 120,
+          "result": "win"
+        },
+        {
+          "id": "nkzgorv",
+          "name": "Yakhyaev R1 Win",
+          "odds": -303,
+          "result": null
+        },
+        {
+          "id": "e8ps54t",
+          "name": "Jandiroba ML",
+          "odds": -135,
+          "result": null
+        },
+        {
+          "id": "4yi57kd",
+          "name": "Duncan ML",
+          "odds": -161,
+          "result": null
+        },
+        {
+          "id": "08bpafw",
+          "name": "Bokoev ML",
+          "odds": -769,
+          "group": "",
+          "result": "loss"
+        },
+        {
+          "id": "5j6mxps",
+          "name": "McMillen ML",
+          "odds": -833,
+          "group": "",
+          "result": "win"
+        },
+        {
+          "id": "qyhs8tm",
+          "name": "Yakhyaev ML",
+          "odds": -2500,
+          "group": "",
+          "result": null
+        },
+        {
+          "id": "ksraez2",
+          "name": "Estevam ML",
+          "odds": 101,
+          "group": "",
+          "result": null
+        }
+      ],
+      "parlays": [
+        {
+          "id": "e977em8",
+          "name": "Parlay 1",
+          "betIds": [
+            "6h9p7cj",
+            "nkzgorv",
+            "oerhymd",
+            "j4ft8ft",
+            "4yi57kd"
+          ],
+          "stake": 200,
+          "result": "loss",
+          "payout": 2669.92
+        },
+        {
+          "id": "laq8af1",
+          "name": "Parlay 2",
+          "betIds": [
+            "4yi57kd",
+            "g6jj6rj",
+            "6h9p7cj",
+            "oerhymd"
+          ],
+          "stake": 200,
+          "result": "loss",
+          "payout": 2560.26
+        },
+        {
+          "id": "gl9nbmj",
+          "name": "Parlay 3",
+          "betIds": [
+            "g6jj6rj",
+            "fcaycj8",
+            "k6mf8c6",
+            "j4ft8ft",
+            "e8ps54t",
+            "4yi57kd",
+            "qyhs8tm",
+            "5j6mxps",
+            "08bpafw"
+          ],
+          "stake": 100,
+          "result": "loss",
+          "payout": 2026.31
+        },
+        {
+          "id": "oofvwco",
+          "name": "Parlay 4",
+          "betIds": [
+            "6h9p7cj",
+            "g6jj6rj",
+            "k6mf8c6",
+            "oerhymd",
+            "e8ps54t",
+            "4yi57kd",
+            "fcaycj8",
+            "j4ft8ft",
+            "nkzgorv"
+          ],
+          "stake": 6.5,
+          "result": "loss",
+          "payout": 614.84
+        },
+        {
+          "id": "j7t78wi",
+          "name": "Parlay 5",
+          "betIds": [
+            "g6jj6rj",
+            "fcaycj8",
+            "k6mf8c6",
+            "j4ft8ft",
+            "oerhymd",
+            "e8ps54t",
+            "4yi57kd"
+          ],
+          "stake": 198,
+          "result": "loss",
+          "payout": 6705.48
+        },
+        {
+          "id": "0vjyzf4",
+          "name": "Parlay 7",
+          "betIds": [
+            "oerhymd",
+            "j4ft8ft",
+            "ksraez2"
+          ],
+          "stake": 498,
+          "result": "pending",
+          "payout": 2951.19
+        }
+      ]
+    },
+    {
       "id": "7mabh5v",
       "event": "Mar 28, 2026",
       "date": "Apr 4, 2026",
@@ -566,6 +748,6 @@
     }
   ],
   "activeParlayId": null,
-  "weekName": "Apr 4, 2026",
+  "weekName": "Apr 11, 2026",
   "_confirmClear": false
 }
