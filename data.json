@@ -124,7 +124,10 @@
     {
       "id": "65s9cab",
       "name": "Parlay 4",
-      "betIds": [],
+      "betIds": [
+        "dip1rug",
+        "klk6zrt"
+      ],
       "stake": 50
     }
   ],
