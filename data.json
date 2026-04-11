@@ -94,6 +94,15 @@
         "ufr7x8m"
       ],
       "stake": 100
+    },
+    {
+      "id": "6gkvv9c",
+      "name": "Parlay 2",
+      "betIds": [
+        "dip1rug",
+        "klk6zrt"
+      ],
+      "stake": 50
     }
   ],
   "betResults": {},
@@ -682,7 +691,7 @@
       ]
     }
   ],
-  "activeParlayId": null,
+  "activeParlayId": "6gkvv9c",
   "weekName": "Apr 11, 2026",
   "_confirmClear": false
 }
