@@ -94,7 +94,7 @@
         "iiz9j2l",
         "hh6b6fo"
       ],
-      "stake": 25
+      "stake": 20
     },
     {
       "id": "5oxygxo",
@@ -694,7 +694,7 @@
       ]
     }
   ],
-  "activeParlayId": "5oxygxo",
+  "activeParlayId": null,
   "weekName": "Apr 11, 2026",
   "_confirmClear": false
 }
