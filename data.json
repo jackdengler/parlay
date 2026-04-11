@@ -94,6 +94,17 @@
         "iiz9j2l",
         "hh6b6fo"
       ],
+      "stake": 25
+    },
+    {
+      "id": "5oxygxo",
+      "name": "Parlay 2",
+      "betIds": [
+        "dip1rug",
+        "klk6zrt",
+        "si73g79",
+        "m32xdl7"
+      ],
       "stake": 50
     }
   ],
@@ -683,7 +694,7 @@
       ]
     }
   ],
-  "activeParlayId": "s0e40tx",
+  "activeParlayId": "5oxygxo",
   "weekName": "Apr 11, 2026",
   "_confirmClear": false
 }
