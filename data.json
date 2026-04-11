@@ -120,6 +120,12 @@
         "5r0z5pi"
       ],
       "stake": 50
+    },
+    {
+      "id": "65s9cab",
+      "name": "Parlay 4",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {
@@ -710,7 +716,7 @@
       ]
     }
   ],
-  "activeParlayId": null,
+  "activeParlayId": "65s9cab",
   "weekName": "Apr 11, 2026",
   "_confirmClear": false
 }
