@@ -81,7 +81,11 @@
     {
       "id": "2lx6fkb",
       "name": "Parlay 1",
-      "betIds": [],
+      "betIds": [
+        "dip1rug",
+        "klk6zrt",
+        "hh6b6fo"
+      ],
       "stake": 50
     }
   ],
