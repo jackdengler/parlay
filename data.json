@@ -109,7 +109,10 @@
     {
       "id": "wundbwi",
       "name": "Parlay 3",
-      "betIds": [],
+      "betIds": [
+        "klk6zrt",
+        "dip1rug"
+      ],
       "stake": 50
     }
   ],
