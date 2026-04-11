@@ -91,7 +91,6 @@
         "hx0vsif",
         "5g4m2wu",
         "iiz9j2l",
-        "hh6b6fo",
         "ufr7x8m"
       ],
       "stake": 25
@@ -694,7 +693,7 @@
       ]
     }
   ],
-  "activeParlayId": "s0e40tx",
+  "activeParlayId": null,
   "weekName": "Apr 11, 2026",
   "_confirmClear": false
 }
