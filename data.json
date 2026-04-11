@@ -105,17 +105,6 @@
         "m32xdl7"
       ],
       "stake": 300
-    },
-    {
-      "id": "wundbwi",
-      "name": "Parlay 3",
-      "betIds": [
-        "klk6zrt",
-        "dip1rug",
-        "si73g79",
-        "m32xdl7"
-      ],
-      "stake": 50
     }
   ],
   "betResults": {},
@@ -704,7 +693,7 @@
       ]
     }
   ],
-  "activeParlayId": "2lx6fkb",
+  "activeParlayId": null,
   "weekName": "Apr 11, 2026",
   "_confirmClear": false
 }
