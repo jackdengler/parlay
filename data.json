@@ -133,12 +133,6 @@
         "hx0vsif"
       ],
       "stake": 50
-    },
-    {
-      "id": "cw20xbo",
-      "name": "Parlay 5",
-      "betIds": [],
-      "stake": 50
     }
   ],
   "betResults": {
@@ -731,7 +725,7 @@
       ]
     }
   ],
-  "activeParlayId": "cw20xbo",
+  "activeParlayId": null,
   "weekName": "Apr 11, 2026",
   "_confirmClear": false
 }
