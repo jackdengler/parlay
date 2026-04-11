@@ -105,12 +105,6 @@
         "m32xdl7"
       ],
       "stake": 125
-    },
-    {
-      "id": "93msm1o",
-      "name": "Parlay 3",
-      "betIds": [],
-      "stake": 50
     }
   ],
   "betResults": {},
@@ -699,7 +693,7 @@
       ]
     }
   ],
-  "activeParlayId": "93msm1o",
+  "activeParlayId": null,
   "weekName": "Apr 11, 2026",
   "_confirmClear": false
 }
