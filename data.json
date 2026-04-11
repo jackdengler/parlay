@@ -77,7 +77,14 @@
       "odds": 125
     }
   ],
-  "parlays": [],
+  "parlays": [
+    {
+      "id": "2lx6fkb",
+      "name": "Parlay 1",
+      "betIds": [],
+      "stake": 50
+    }
+  ],
   "betResults": {},
   "weeklyRecaps": [
     {
@@ -664,7 +671,7 @@
       ]
     }
   ],
-  "activeParlayId": null,
+  "activeParlayId": "2lx6fkb",
   "weekName": "Apr 11, 2026",
   "_confirmClear": false
 }
