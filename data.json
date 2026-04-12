@@ -132,7 +132,7 @@
         "m32xdl7",
         "hx0vsif"
       ],
-      "stake": 3
+      "stake": 294
     }
   ],
   "betResults": {
@@ -732,7 +732,7 @@
       ]
     }
   ],
-  "activeParlayId": null,
+  "activeParlayId": "65s9cab",
   "weekName": "Apr 11, 2026",
   "_confirmClear": false
 }
