@@ -132,7 +132,14 @@
       "odds": 340
     }
   ],
-  "parlays": [],
+  "parlays": [
+    {
+      "id": "77n1x18",
+      "name": "Parlay 1",
+      "betIds": [],
+      "stake": 50
+    }
+  ],
   "betResults": {},
   "weeklyRecaps": [
     {
@@ -878,7 +885,7 @@
       ]
     }
   ],
-  "activeParlayId": null,
+  "activeParlayId": "77n1x18",
   "weekName": "Apr 16, 2026",
   "_confirmClear": false
 }
