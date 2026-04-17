@@ -147,6 +147,165 @@
   },
   "weeklyRecaps": [
     {
+      "id": "plkssdm",
+      "event": "Apr 11, 2026",
+      "date": "Apr 16, 2026",
+      "bets": [
+        {
+          "id": "1r0vkpf",
+          "name": "Godinez ML",
+          "odds": 115,
+          "result": "loss"
+        },
+        {
+          "id": "dip1rug",
+          "name": "Hokit ML",
+          "odds": -100,
+          "result": "win"
+        },
+        {
+          "id": "klk6zrt",
+          "name": "Murzakanov ML",
+          "odds": -238,
+          "result": null
+        },
+        {
+          "id": "hh6b6fo",
+          "name": "Ulberg ML",
+          "odds": -111,
+          "result": null
+        },
+        {
+          "id": "r2fduct",
+          "name": "Prochazka ML",
+          "odds": -118,
+          "result": null
+        },
+        {
+          "id": "si73g79",
+          "name": "Gamrot ML",
+          "odds": -200,
+          "result": "win"
+        },
+        {
+          "id": "iiz9j2l",
+          "name": "Swanson ML",
+          "odds": -118,
+          "result": "win"
+        },
+        {
+          "id": "m32xdl7",
+          "name": "Reyes ML",
+          "odds": -156,
+          "result": "win"
+        },
+        {
+          "id": "5g4m2wu",
+          "name": "Holland ML",
+          "odds": -115,
+          "result": "win"
+        },
+        {
+          "id": "hx0vsif",
+          "name": "Suarez ML",
+          "odds": -154,
+          "result": "win"
+        },
+        {
+          "id": "ddeo8e5",
+          "name": "Radtke ML",
+          "odds": -182,
+          "result": "win"
+        },
+        {
+          "id": "5r0z5pi",
+          "name": "Gastelum ML",
+          "odds": -270,
+          "result": "loss"
+        },
+        {
+          "id": "l9vjfuk",
+          "name": "Luque ML",
+          "odds": 190,
+          "result": "win"
+        },
+        {
+          "id": "ufr7x8m",
+          "name": "Padilla ML",
+          "odds": -167,
+          "result": null
+        },
+        {
+          "id": "okt8ewa",
+          "name": "Mederos ML",
+          "odds": 125,
+          "result": null
+        }
+      ],
+      "parlays": [
+        {
+          "id": "s0e40tx",
+          "name": "Parlay 1",
+          "betIds": [
+            "dip1rug",
+            "klk6zrt",
+            "si73g79",
+            "m32xdl7",
+            "ddeo8e5",
+            "5r0z5pi",
+            "hx0vsif",
+            "5g4m2wu",
+            "iiz9j2l",
+            "ufr7x8m"
+          ],
+          "stake": 20,
+          "result": "loss",
+          "payout": 2704.24
+        },
+        {
+          "id": "5oxygxo",
+          "name": "Parlay 2",
+          "betIds": [
+            "dip1rug",
+            "klk6zrt",
+            "si73g79",
+            "m32xdl7"
+          ],
+          "stake": 300,
+          "result": "pending",
+          "payout": 2097.48
+        },
+        {
+          "id": "zcurh4a",
+          "name": "Parlay 3",
+          "betIds": [
+            "dip1rug",
+            "klk6zrt",
+            "si73g79",
+            "iiz9j2l",
+            "m32xdl7",
+            "hx0vsif",
+            "ddeo8e5",
+            "5r0z5pi"
+          ],
+          "stake": 50,
+          "result": "loss",
+          "payout": 2261.78
+        },
+        {
+          "id": "65s9cab",
+          "name": "Parlay 4",
+          "betIds": [
+            "dip1rug",
+            "klk6zrt"
+          ],
+          "stake": 294,
+          "result": "pending",
+          "payout": 835.06
+        }
+      ]
+    },
+    {
       "id": "irigsrd",
       "event": "Apr 4, 2026",
       "date": "Apr 11, 2026",
@@ -731,6 +890,6 @@
     }
   ],
   "activeParlayId": null,
-  "weekName": "Apr 11, 2026",
-  "_confirmClear": false
+  "weekName": "Apr 16, 2026",
+  "_confirmClear": true
 }
