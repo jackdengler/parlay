@@ -1,6 +1,137 @@
 {
   "eventName": "UFC 314",
-  "bets": [],
+  "bets": [
+    {
+      "id": "4ju7zaz",
+      "name": "Nallo ML",
+      "odds": -185
+    },
+    {
+      "id": "vmtn89r",
+      "name": "Herbert ML",
+      "odds": 137
+    },
+    {
+      "id": "7mtupdp",
+      "name": "Phillips ML",
+      "odds": 120
+    },
+    {
+      "id": "cz35hg0",
+      "name": "Jourdain ML",
+      "odds": -161
+    },
+    {
+      "id": "x898v5f",
+      "name": "Burns ML",
+      "odds": 230
+    },
+    {
+      "id": "z32ydwy",
+      "name": "Malott ML",
+      "odds": -333
+    },
+    {
+      "id": "qh8jadx",
+      "name": "Barbosa ML",
+      "odds": -556
+    },
+    {
+      "id": "9u6qmqf",
+      "name": "Moises ML",
+      "odds": 102
+    },
+    {
+      "id": "gyueqph",
+      "name": "Young ML",
+      "odds": -137
+    },
+    {
+      "id": "ptf7nco",
+      "name": "Jasudavicius ML",
+      "odds": -345
+    },
+    {
+      "id": "1o8t4bh",
+      "name": "Silva ML",
+      "odds": 235
+    },
+    {
+      "id": "vv6fxoe",
+      "name": "Siraj ML",
+      "odds": -303
+    },
+    {
+      "id": "sntape3",
+      "name": "Yannis ML",
+      "odds": 210
+    },
+    {
+      "id": "2nhtwdq",
+      "name": "Castaneda ML",
+      "odds": -128
+    },
+    {
+      "id": "w31fmzb",
+      "name": "Vologdin ML",
+      "odds": -103
+    },
+    {
+      "id": "hnj9m03",
+      "name": "Aldrich ML",
+      "odds": 130
+    },
+    {
+      "id": "6x3wirq",
+      "name": "Horth ML",
+      "odds": -175
+    },
+    {
+      "id": "f014yxn",
+      "name": "Raposo ML",
+      "odds": 148
+    },
+    {
+      "id": "7ezyehv",
+      "name": "Nascimento ML",
+      "odds": -204
+    },
+    {
+      "id": "zh1hwgs",
+      "name": "Croden ML",
+      "odds": -167
+    },
+    {
+      "id": "9hic7yw",
+      "name": "Zheleznyakova ML",
+      "odds": 125
+    },
+    {
+      "id": "7rdo9z3",
+      "name": "Boser ML",
+      "odds": 127
+    },
+    {
+      "id": "d3801ap",
+      "name": "Saricam ML",
+      "odds": -169
+    },
+    {
+      "id": "nj5hx12",
+      "name": "Leblanc ML",
+      "odds": 112
+    },
+    {
+      "id": "z6bjxow",
+      "name": "Valentin ML",
+      "odds": -152
+    },
+    {
+      "id": "9g8t3hy",
+      "name": "Buzukja ML",
+      "odds": 340
+    }
+  ],
   "parlays": [],
   "betResults": {},
   "weeklyRecaps": [
