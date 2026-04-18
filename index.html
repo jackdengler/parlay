@@ -430,6 +430,20 @@ html, body {
 .w-btn.on { background: var(--green-bg); color: var(--green); border-color: #9DD3B0; }
 .l-btn { background: var(--bg2); color: var(--muted); }
 .l-btn.on { background: var(--red-bg); color: var(--red); border-color: #F0ADA6; }
+.live-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 18px 4px; gap: 10px;
+}
+.refresh-live-btn {
+  background: var(--bg2); border: 1px solid var(--border);
+  color: var(--text2); font-family: 'Source Sans 3', sans-serif;
+  font-size: 12px; font-weight: 700; border-radius: 9px;
+  padding: 7px 12px; cursor: pointer; transition: background 0.1s;
+}
+.refresh-live-btn:active { background: var(--bg); }
+.refresh-live-btn:disabled { opacity: 0.5; cursor: default; }
+.live-meta { color: var(--muted2); font-size: 11px; font-weight: 600; }
+.live-meta.err { color: var(--red); }
 .recap-parlay-card {
   margin: 0 14px 7px; background: var(--bg); border-radius: var(--radius);
   border: 1px solid var(--border); overflow: hidden;
@@ -875,6 +889,119 @@ async function saveToken() {
   }
 }
 
+// ─── LIVE RESULTS ──────────────────────────────────────────────────────────
+const ESPN_SCOREBOARD_URL = 'https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard';
+let _liveLastFetch = 0;
+let _liveStatus = 'idle';       // 'idle' | 'loading' | 'error'
+let _livePollTimer = null;
+
+function parseBetForLive(betName) {
+  if (!betName) return null;
+  const tokens = betName.trim().split(/\s+/);
+  if (tokens.length < 2) return null;
+  const market = tokens[tokens.length - 1].toUpperCase();
+  if (market !== 'ML') return null;  // Only moneyline is auto-settled
+  const lastName = tokens[tokens.length - 2].toLowerCase();
+  if (!/^[a-zà-ÿ'.-]+$/i.test(lastName)) return null;
+  return { lastName };
+}
+
+async function fetchLiveResults() {
+  const res = await fetch(ESPN_SCOREBOARD_URL, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`ESPN ${res.status}`);
+  const data = await res.json();
+  const out = [];
+  (data.events || []).forEach(ev => {
+    (ev.competitions || []).forEach(comp => {
+      const completed = !!(comp.status && comp.status.type && comp.status.type.completed);
+      (comp.competitors || []).forEach(c => {
+        const athlete = c.athlete || {};
+        const lastName = (athlete.lastName || '').toLowerCase();
+        if (!lastName) return;
+        out.push({
+          lastName,
+          displayName: athlete.displayName || lastName,
+          winner: typeof c.winner === 'boolean' ? c.winner : null,
+          completed,
+        });
+      });
+    });
+  });
+  return out;
+}
+
+function applyLiveResults(liveList) {
+  const byName = new Map();
+  const dupes = new Set();
+  for (const c of liveList) {
+    if (byName.has(c.lastName)) dupes.add(c.lastName);
+    else byName.set(c.lastName, c);
+  }
+  const betLastNameCount = new Map();
+  S.bets.forEach(b => {
+    if (S.betResults[b.id]) return;
+    const info = parseBetForLive(b.name);
+    if (!info) return;
+    betLastNameCount.set(info.lastName, (betLastNameCount.get(info.lastName) || 0) + 1);
+  });
+
+  let filled = 0, skippedAmbiguous = 0, skippedNoMatch = 0;
+  S.bets.forEach(b => {
+    if (S.betResults[b.id]) return;
+    const info = parseBetForLive(b.name);
+    if (!info) { skippedNoMatch++; return; }
+    if (dupes.has(info.lastName) || (betLastNameCount.get(info.lastName) || 0) > 1) {
+      skippedAmbiguous++; return;
+    }
+    const comp = byName.get(info.lastName);
+    if (!comp || !comp.completed || comp.winner === null) { skippedNoMatch++; return; }
+    S.betResults[b.id] = comp.winner ? 'win' : 'loss';
+    filled++;
+  });
+  return { filled, skippedAmbiguous, skippedNoMatch };
+}
+
+async function refreshLiveResults({ silent = false } = {}) {
+  if (_liveStatus === 'loading') return;
+  _liveStatus = 'loading';
+  if (currentTab === 'results') renderScreen();
+  try {
+    const live = await fetchLiveResults();
+    _liveLastFetch = Date.now();
+    const { filled } = applyLiveResults(live);
+    _liveStatus = 'idle';
+    if (filled > 0) {
+      saveState();
+      render();
+      showToast(`Updated ${filled} bet${filled !== 1 ? 's' : ''} ✓`);
+    } else {
+      if (currentTab === 'results') renderScreen();
+      if (!silent) showToast('No new results');
+    }
+  } catch (e) {
+    _liveStatus = 'error';
+    if (currentTab === 'results') renderScreen();
+    if (!silent) showToast("Couldn't fetch live results");
+  }
+}
+
+function startLivePolling() {
+  stopLivePolling();
+  refreshLiveResults({ silent: true });
+  _livePollTimer = setInterval(() => refreshLiveResults({ silent: true }), 60000);
+}
+function stopLivePolling() {
+  if (_livePollTimer) { clearInterval(_livePollTimer); _livePollTimer = null; }
+}
+
+function fmtAgo(ts) {
+  const diff = Math.max(0, Date.now() - ts);
+  if (diff < 10000) return 'just now';
+  if (diff < 60000) return `${Math.floor(diff/1000)}s ago`;
+  if (diff < 3600000) return `${Math.floor(diff/60000)}m ago`;
+  return `${Math.floor(diff/3600000)}h ago`;
+}
+
 // ─── PASTE IMPORT ───────────────────────────────────────────────────────────
 let showPasteForm = false;
 
@@ -950,6 +1077,7 @@ function switchTab(tab) {
   currentTab=tab;
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   renderScreen();
+  if (tab === 'results') startLivePolling(); else stopLivePolling();
 }
 
 // ─── RENDER ────────────────────────────────────────────────────────────────
@@ -1242,6 +1370,14 @@ function renderResults() {
 
   if(S.bets.length>0) {
     html+=`<div class="recap-sub">Mark bet results</div>`;
+    const liveLabel = _liveStatus==='error' ? 'Fetch failed'
+      : _liveLastFetch ? `Updated ${fmtAgo(_liveLastFetch)}`
+      : 'Not fetched yet';
+    const liveCls = _liveStatus==='error' ? ' err' : '';
+    html+=`<div class="live-row">
+      <button class="refresh-live-btn" onclick="refreshLiveResults()" ${_liveStatus==='loading'?'disabled':''}>${_liveStatus==='loading'?'Updating…':'⟳ Refresh live results'}</button>
+      <span class="live-meta${liveCls}">${liveLabel}</span>
+    </div>`;
     S.bets.forEach(b=>{
       const res=S.betResults[b.id];
       html+=`<div class="recap-bet-row">
@@ -1878,6 +2014,10 @@ loadState();render();
 if (getToken()) {
   ghLoad().then(ok => { if (ok) render(); });
 }
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) stopLivePolling();
+  else if (currentTab === 'results') startLivePolling();
+});
 </script>
 </body>
 </html>
