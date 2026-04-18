@@ -182,7 +182,7 @@
         "6x3wirq",
         "zh1hwgs"
       ],
-      "stake": 50
+      "stake": 500
     }
   ],
   "betResults": {},
@@ -930,7 +930,7 @@
       ]
     }
   ],
-  "activeParlayId": "q1ke6tz",
+  "activeParlayId": null,
   "weekName": "Apr 16, 2026",
   "_confirmClear": false
 }
