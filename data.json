@@ -156,7 +156,9 @@
         "6x3wirq",
         "zh1hwgs"
       ],
-      "stake": 270
+      "stake": 270,
+      "placed": true,
+      "placedAt": 1776545790705
     }
   ],
   "betResults": {},
