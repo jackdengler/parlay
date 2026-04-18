@@ -256,6 +256,41 @@ html, body {
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   margin-bottom: 0;
 }
+.parlay-card.placed { border-color: var(--green); background: var(--green-bg); }
+.parlay-card.placed.active { border-color: var(--green); }
+.placed-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--green); color: #fff; font-size: 10px; font-weight: 800;
+  letter-spacing: 0.6px; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 100px; margin-top: 4px;
+  font-family: 'Source Sans 3', sans-serif;
+}
+.place-btn {
+  background: var(--green); color: #fff; border: none; border-radius: 9px;
+  padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: 'Source Sans 3', sans-serif;
+}
+.place-btn:active { opacity: 0.85; }
+.unlock-btn {
+  background: var(--bg); color: var(--green); border: 1px solid var(--green);
+  border-radius: 9px; padding: 7px 12px; font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: 'Source Sans 3', sans-serif;
+}
+.place-confirm {
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+}
+.place-confirm-txt { color: var(--text2); font-size: 13px; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+.place-confirm-btns { display: flex; gap: 8px; }
+.place-cancel {
+  flex: 1; background: var(--bg2); color: var(--muted); border: 1px solid var(--border);
+  border-radius: 9px; padding: 10px; font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: 'Source Sans 3', sans-serif;
+}
+.place-confirm-yes {
+  flex: 2; background: var(--green); color: #fff; border: none;
+  border-radius: 9px; padding: 10px; font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: 'Source Sans 3', sans-serif;
+}
 .parlay-top { display: flex; justify-content: space-between; align-items: flex-start; }
 .parlay-name { color: var(--text); font-family: 'Lora', serif; font-size: 16px; font-weight: 700; margin-bottom: 2px; }
 .parlay-meta { color: var(--muted); font-size: 12px; font-weight: 500; }
@@ -421,7 +456,7 @@ html, body {
 }
 .recap-bet-name { color: var(--text2); font-size: 14px; font-weight: 600; flex: 1; margin-right: 10px; }
 .wl-row { display: flex; gap: 6px; }
-.w-btn, .l-btn {
+.w-btn, .l-btn, .p-btn {
   border: 1px solid var(--border); border-radius: 9px; width: 34px; height: 30px;
   font-size: 13px; font-weight: 700; cursor: pointer;
   font-family: 'Source Sans 3', sans-serif; transition: background 0.1s, color 0.1s;
@@ -430,6 +465,8 @@ html, body {
 .w-btn.on { background: var(--green-bg); color: var(--green); border-color: #9DD3B0; }
 .l-btn { background: var(--bg2); color: var(--muted); }
 .l-btn.on { background: var(--red-bg); color: var(--red); border-color: #F0ADA6; }
+.p-btn { background: var(--bg2); color: var(--muted); }
+.p-btn.on { background: var(--bg3); color: var(--text2); border-color: var(--border2); }
 .recap-parlay-card {
   margin: 0 14px 7px; background: var(--bg); border-radius: var(--radius);
   border: 1px solid var(--border); overflow: hidden;
@@ -454,6 +491,7 @@ html, body {
 }
 .rpl-icon.win { background: var(--green-bg); color: var(--green); }
 .rpl-icon.loss { background: var(--red-bg); color: var(--red); }
+.rpl-icon.push { background: var(--bg3); color: var(--text2); }
 .rpl-icon.pend { background: var(--bg3); color: var(--muted2); font-size: 16px; line-height: 1; }
 .rpl-info { flex: 1; min-width: 0; }
 .rpl-name { font-size: 13px; font-weight: 600; color: var(--text); display: block; }
@@ -467,6 +505,7 @@ html, body {
 .rp-meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
 .status-win { color: var(--green); font-size: 16px; font-weight: 700; font-family: 'Lora', serif; font-style: italic; }
 .status-loss { color: var(--red); font-size: 16px; font-weight: 700; font-family: 'Lora', serif; font-style: italic; }
+.status-push { color: var(--text2); font-size: 16px; font-weight: 700; font-family: 'Lora', serif; font-style: italic; }
 .status-pend { color: var(--muted2); font-size: 13px; font-weight: 600; }
 .leg-dots { display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap; }
 .leg-dot {
@@ -474,6 +513,7 @@ html, body {
 }
 .leg-dot.win { background: var(--green); }
 .leg-dot.loss { background: var(--red); }
+.leg-dot.push { background: var(--muted); }
 .leg-dot.pend { background: var(--muted2); opacity: 0.4; }
 .rp-maxpl { color: var(--green); font-size: 11px; font-weight: 600; margin-top: 4px; }
 .rp-maxpl.loss { color: var(--red); }
@@ -697,6 +737,7 @@ html, body {
 .detail-bet-name { color: var(--text2); font-size: 13px; font-weight: 600; }
 .detail-result-win { color: var(--green); font-size: 13px; font-weight: 700; }
 .detail-result-loss { color: var(--red); font-size: 13px; font-weight: 700; }
+.detail-result-push { color: var(--text2); font-size: 13px; font-weight: 700; }
 .detail-result-pend { color: var(--muted2); font-size: 13px; font-weight: 600; }
 </style>
 </head>
@@ -935,6 +976,30 @@ function decToAmerican(d) {
 }
 function calcPayout(ids,stake) { return (parlayDecimal(ids)*stake).toFixed(2); }
 function calcProfit(ids,stake) { return ((parlayDecimal(ids)-1)*stake).toFixed(2); }
+// Effective decimal: pushed legs drop out of the parlay
+function effectiveDecimal(ids) {
+  return ids.reduce((acc,id)=>{
+    const b=S.bets.find(x=>x.id===id);
+    if(!b) return acc;
+    if(S.betResults[id]==='push') return acc;
+    return acc*oddsToDecimal(b.odds);
+  },1);
+}
+function parlayStatus(p) {
+  const results=p.betIds.map(id=>S.betResults[id]||null);
+  if(results.some(r=>r==='loss')) return 'loss';
+  if(results.length>0 && results.every(r=>r==='win'||r==='push')) {
+    return results.every(r=>r==='push')?'push':'win';
+  }
+  return 'pending';
+}
+function effectiveProfit(p) {
+  const status=parlayStatus(p);
+  if(status==='win') return (effectiveDecimal(p.betIds)-1)*p.stake;
+  if(status==='loss') return -p.stake;
+  if(status==='push') return 0;
+  return null;
+}
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function showToast(msg) {
   const t=document.getElementById('toast');
@@ -946,7 +1011,7 @@ function showToast(msg) {
 let currentTab='pool';
 function switchTab(tab) {
   if(tab!=='results') S._confirmClear=false;
-  showPasteForm=false; renamingParlayId=null;
+  showPasteForm=false; renamingParlayId=null; confirmPlaceParlayId=null;
   currentTab=tab;
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   renderScreen();
@@ -1051,6 +1116,7 @@ function renderPool() {
 // ─── BUILDER ───────────────────────────────────────────────────────────────
 let renamingParlayId = null;
 let expandedResultParlayId = null;
+let confirmPlaceParlayId = null;
 function toggleResultParlay(id) { expandedResultParlayId = expandedResultParlayId===id?null:id; render(); }
 function renderBuilder() {
   let html=`<div class="tab-content">
@@ -1065,8 +1131,10 @@ function renderBuilder() {
 
   S.parlays.forEach(p=>{
     const isActive=S.activeParlayId===p.id;
+    const isPlaced=!!p.placed;
     const dec=parlayDecimal(p.betIds);
-    html+=`<div class="parlay-card ${isActive?'active':''}" onclick="toggleParlay('${p.id}')">
+    const cardCls=`parlay-card${isActive?' active':''}${isPlaced?' placed':''}`;
+    html+=`<div class="${cardCls}" onclick="toggleParlay('${p.id}')">
       <div class="parlay-top">
         <div style="flex:1;min-width:0">
           ${renamingParlayId===p.id
@@ -1074,6 +1142,7 @@ function renderBuilder() {
             :`<div class="parlay-name" onclick="event.stopPropagation();renameParlay('${p.id}')" title="Tap to rename">${esc(p.name)}</div>`
           }
           <div class="parlay-meta">${p.betIds.length} leg${p.betIds.length!==1?'s':''}</div>
+          ${isPlaced?`<div class="placed-badge">✓ Placed</div>`:''}
         </div>
         <div style="display:flex;align-items:center;gap:6px">
           <span class="parlay-odds">${p.betIds.length>0?decToAmerican(dec):'—'}</span>
@@ -1085,18 +1154,37 @@ function renderBuilder() {
     if(p.betIds.length>0) {
       html+=`<div class="parlay-pay-row">
         <span class="pay-label">Stake</span>
-        <div class="stake-wrap" onclick="event.stopPropagation()">
+        <div class="stake-wrap" onclick="event.stopPropagation()" style="${isPlaced?'opacity:0.7':''}">
           <span class="stake-dollar">$</span>
           <input class="stake-input" type="text" inputmode="decimal" pattern="[0-9]*" value="${p.stake}"
             data-pid="${p.id}"
             data-mult="${parlayDecimal(p.betIds).toFixed(6)}"
-            onclick="event.stopPropagation();this.select()"
-            oninput="liveStake(this)">
+            ${isPlaced?'readonly':''}
+            onclick="event.stopPropagation();${isPlaced?'':'this.select()'}"
+            ${isPlaced?'':'oninput="liveStake(this)"'}>
         </div>
         <span class="pay-label">→</span>
         <span class="payout-val" id="pv-${p.id}">$${calcPayout(p.betIds,p.stake)}</span>
         <span class="profit-val" id="pr-${p.id}">+$${calcProfit(p.betIds,p.stake)}</span>
       </div>`;
+
+      // Place / unlock / confirm row
+      if(confirmPlaceParlayId===p.id) {
+        html+=`<div class="place-confirm" onclick="event.stopPropagation()">
+          <div class="place-confirm-txt">Place this parlay? Legs and $${p.stake} stake will be locked in.</div>
+          <div class="place-confirm-btns">
+            <button class="place-cancel" onclick="event.stopPropagation();cancelPlaceParlay()">Cancel</button>
+            <button class="place-confirm-yes" onclick="event.stopPropagation();confirmPlaceParlay('${p.id}')">Confirm placed</button>
+          </div>
+        </div>`;
+      } else {
+        html+=`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:flex-end" onclick="event.stopPropagation()">
+          ${isPlaced
+            ?`<button class="unlock-btn" onclick="event.stopPropagation();unlockParlay('${p.id}')">🔓 Unlock</button>`
+            :`<button class="place-btn" onclick="event.stopPropagation();requestPlaceParlay('${p.id}')">Place bet</button>`
+          }
+        </div>`;
+      }
     }
     html+=`</div>`;
 
@@ -1249,6 +1337,7 @@ function renderResults() {
         <div class="wl-row">
           <button class="w-btn ${res==='win'?'on':''}" onclick="setResult('${b.id}','win')">W</button>
           <button class="l-btn ${res==='loss'?'on':''}" onclick="setResult('${b.id}','loss')">L</button>
+          <button class="p-btn ${res==='push'?'on':''}" onclick="setResult('${b.id}','push')" title="Push (tie)">P</button>
         </div>
       </div>`;
     });
@@ -1257,11 +1346,8 @@ function renderResults() {
   if(S.parlays.length>0) {
     html+=`<div class="recap-sub">Parlay outcomes</div>`;
     S.parlays.forEach(p=>{
-      const legRes=p.betIds.map(id=>S.betResults[id]||null);
-      const won=legRes.length>0&&legRes.every(r=>r==='win');
-      const lost=legRes.some(r=>r==='loss');
-      const status=won?'win':lost?'loss':'pending';
-      // Sort legs: colored (win/loss) first, then pending
+      const status=parlayStatus(p);
+      // Sort legs: colored (win/loss/push) first, then pending
       const sortedLegs=[...p.betIds].sort((a,b)=>{
         const ra=S.betResults[a]||null, rb=S.betResults[b]||null;
         if(ra&&!rb) return -1; if(!ra&&rb) return 1; return 0;
@@ -1275,10 +1361,9 @@ function renderResults() {
         if(alreadyLost) {
           plLine=`<div class="rp-maxpl loss">Busted</div>`;
         } else {
-          // Best case: all remaining win → full payout
-          const maxPay=calcProfit(p.betIds,p.stake);
-          // Worst case: a pending leg loses → lose stake
-          plLine=`<div class="rp-maxpl">Best: +$${maxPay}</div>`;
+          // Best case: pushed legs drop, remaining pending all win
+          const maxPay=((effectiveDecimal(p.betIds)*p.betIds.filter(id=>!S.betResults[id]).reduce((acc,id)=>{const b=S.bets.find(x=>x.id===id);return b?acc*oddsToDecimal(b.odds):acc;},1))-1)*p.stake;
+          plLine=`<div class="rp-maxpl">Best: +$${maxPay.toFixed(2)}</div>`;
         }
       }
       const isExpanded=expandedResultParlayId===p.id;
@@ -1290,14 +1375,14 @@ function renderResults() {
             <div class="leg-dots">${sortedLegs.map(id=>{
               const r=S.betResults[id]||null;
               const b=S.bets.find(x=>x.id===id);
-              const cls=r==='win'?'leg-dot win':r==='loss'?'leg-dot loss':'leg-dot pend';
+              const cls=r==='win'?'leg-dot win':r==='loss'?'leg-dot loss':r==='push'?'leg-dot push':'leg-dot pend';
               return `<span class="${cls}" title="${b?esc(b.name):''}"></span>`;
             }).join('')}</div>
             ${plLine}
           </div>
           <div style="display:flex;align-items:center;gap:8px">
-            <div class="${status==='win'?'status-win':status==='loss'?'status-loss':'status-pend'}">
-              ${status==='win'?'+$'+calcProfit(p.betIds,p.stake):status==='loss'?'-$'+p.stake:'Pending'}
+            <div class="${status==='win'?'status-win':status==='loss'?'status-loss':status==='push'?'status-push':'status-pend'}">
+              ${status==='win'?'+$'+((effectiveDecimal(p.betIds)-1)*p.stake).toFixed(2):status==='loss'?'-$'+p.stake:status==='push'?'Push':'Pending'}
             </div>
             <span class="rp-chevron">${isExpanded?'▲':'▼'}</span>
           </div>
@@ -1309,7 +1394,7 @@ function renderResults() {
             const r=S.betResults[id]||null;
             const imp=impliedProb(b.odds).toFixed(0);
             const oc=b.odds>0?'odds-pos':'odds-neg';
-            const icon=r==='win'?'<span class="rpl-icon win">✓</span>':r==='loss'?'<span class="rpl-icon loss">✕</span>':'<span class="rpl-icon pend">·</span>';
+            const icon=r==='win'?'<span class="rpl-icon win">✓</span>':r==='loss'?'<span class="rpl-icon loss">✕</span>':r==='push'?'<span class="rpl-icon push">=</span>':'<span class="rpl-icon pend">·</span>';
             const prob=r?'':`<span class="rpl-prob">${imp}% implied</span>`;
             return `<div class="rpl-row ${r||''}">
               ${icon}
@@ -1334,16 +1419,24 @@ function renderResults() {
     let totalStaked=0, realizedPL=0, bestCasePL=0;
     S.parlays.forEach(p=>{
       totalStaked+=p.stake;
-      const legRes=p.betIds.map(id=>S.betResults[id]||null);
-      const won=legRes.length>0&&legRes.every(r=>r==='win');
-      const lost=legRes.some(r=>r==='loss');
-      if(won) { realizedPL+=parseFloat(calcProfit(p.betIds,p.stake)); bestCasePL+=parseFloat(calcProfit(p.betIds,p.stake)); }
-      else if(lost) { realizedPL-=p.stake; bestCasePL-=p.stake; }
+      const status=parlayStatus(p);
+      if(status==='win') {
+        const profit=(effectiveDecimal(p.betIds)-1)*p.stake;
+        realizedPL+=profit; bestCasePL+=profit;
+      } else if(status==='loss') { realizedPL-=p.stake; bestCasePL-=p.stake; }
+      else if(status==='push') { /* stake returned, 0 P/L */ }
       else {
         // Still pending — not yet lost stake
         const alreadyLost=p.betIds.some(id=>S.betResults[id]==='loss');
         if(alreadyLost) { bestCasePL-=p.stake; }
-        else { bestCasePL+=parseFloat(calcProfit(p.betIds,p.stake)); }
+        else {
+          // Best case: pushes drop out, remaining pending all win
+          const bestDec=p.betIds.reduce((acc,id)=>{
+            if(S.betResults[id]==='push') return acc;
+            const b=S.bets.find(x=>x.id===id); return b?acc*oddsToDecimal(b.odds):acc;
+          },1);
+          bestCasePL+=(bestDec-1)*p.stake;
+        }
       }
     });
     const plColor=realizedPL>0?'var(--green)':realizedPL<0?'var(--red)':'var(--muted)';
@@ -1387,6 +1480,7 @@ let selectedRecapIdx = -1; // -1 = All Time
 function recapNet(r) {
   const wonP=r.parlays.filter(p=>p.result==='win');
   const lostP=r.parlays.filter(p=>p.result==='loss');
+  // Pushes net $0 — stake returned
   return wonP.reduce((s,p)=>s+(p.payout-p.stake),0)-lostP.reduce((s,p)=>s+p.stake,0);
 }
 function recapStaked(r) { return r.parlays.reduce((s,p)=>s+p.stake,0); }
@@ -1481,8 +1575,8 @@ function renderRecap() {
       html+=`<div class="recap-sub">Bets</div>`;
       html+=`<div class="detail-card">`;
       r.bets.forEach(b=>{
-        const rc=b.result==='win'?'detail-result-win':b.result==='loss'?'detail-result-loss':'detail-result-pend';
-        const rl=b.result==='win'?'Win':b.result==='loss'?'Loss':'--';
+        const rc=b.result==='win'?'detail-result-win':b.result==='loss'?'detail-result-loss':b.result==='push'?'detail-result-push':'detail-result-pend';
+        const rl=b.result==='win'?'Win':b.result==='loss'?'Loss':b.result==='push'?'Push':'--';
         html+=`<div class="detail-bet-row">
           <span class="detail-bet-name">${esc(b.name)}</span>
           <span class="${rc}">${rl}</span>
@@ -1500,8 +1594,8 @@ function renderRecap() {
             <div class="rp-name">${esc(p.name)}</div>
             <div class="rp-meta">${(p.betIds||[]).length} legs · $${p.stake} stake</div>
           </div>
-          <div class="${p.result==='win'?'status-win':p.result==='loss'?'status-loss':'status-pend'}">
-            ${p.result==='win'?'+$'+(p.payout-p.stake).toFixed(2):p.result==='loss'?'-$'+p.stake:'Pending'}
+          <div class="${p.result==='win'?'status-win':p.result==='loss'?'status-loss':p.result==='push'?'status-push':'status-pend'}">
+            ${p.result==='win'?'+$'+(p.payout-p.stake).toFixed(2):p.result==='loss'?'-$'+p.stake:p.result==='push'?'Push':'Pending'}
           </div>
         </div>`;
       });
@@ -1554,11 +1648,15 @@ function createParlay(){
 }
 function toggleParlay(id){S.activeParlayId=S.activeParlayId===id?null:id;saveState();render();}
 function deleteParlay(id){
+  const p=S.parlays.find(x=>x.id===id);
+  if(p&&p.placed){ showToast('Unlock parlay before deleting'); return; }
   S.parlays=S.parlays.filter(p=>p.id!==id);
   if(S.activeParlayId===id)S.activeParlayId=null;
   saveState();render();
 }
 function toggleLeg(pid,bid){
+  const p=S.parlays.find(x=>x.id===pid);
+  if(p&&p.placed){ showToast('Parlay is placed — unlock to edit'); return; }
   S.parlays=S.parlays.map(p=>{
     if(p.id!==pid)return p;
     const has=p.betIds.includes(bid);
@@ -1568,6 +1666,8 @@ function toggleLeg(pid,bid){
 }
 function liveStake(input){
   const pid=input.dataset.pid;
+  const p=S.parlays.find(x=>x.id===pid);
+  if(p&&p.placed) return;
   const mult=parseFloat(input.dataset.mult)||1;
   const n=parseFloat(input.value);
   if(isNaN(n)||n<0) return;
@@ -1581,15 +1681,33 @@ function liveStake(input){
   liveStake._t=setTimeout(()=>{ setStake(pid,n); },400);
 }
 function setStake(pid,val){
+  const p=S.parlays.find(x=>x.id===pid);
+  if(p&&p.placed) return;
   const n=parseFloat(val);if(isNaN(n)||n<0)return;
   S.parlays=S.parlays.map(p=>p.id===pid?{...p,stake:n}:p);
   saveState();
+}
+function requestPlaceParlay(id){
+  const p=S.parlays.find(x=>x.id===id);
+  if(!p||p.betIds.length===0){ showToast('Add legs first'); return; }
+  confirmPlaceParlayId=id; render();
+}
+function cancelPlaceParlay(){ confirmPlaceParlayId=null; render(); }
+function confirmPlaceParlay(id){
+  S.parlays=S.parlays.map(p=>p.id===id?{...p,placed:true,placedAt:Date.now()}:p);
+  confirmPlaceParlayId=null;
+  haptic(); saveState(); render(); showToast('Parlay placed ✓');
+}
+function unlockParlay(id){
+  S.parlays=S.parlays.map(p=>p.id===id?{...p,placed:false,placedAt:null}:p);
+  saveState(); render(); showToast('Parlay unlocked');
 }
 // ─── ROUND ROBIN ────────────────────────────────────────────────────────────
 let rrParlayId=null, rrSize=2, rrStake=10;
 function openRoundRobin(pid){
   const p=S.parlays.find(x=>x.id===pid);
   if(!p||p.betIds.length<3) return;
+  if(p.placed){ showToast('Unlock parlay to run round robin'); return; }
   rrParlayId=pid; rrSize=2; rrStake=p.stake||10;
   renderRROverlay();
   document.getElementById('rrOverlay').style.display='block';
@@ -1655,16 +1773,20 @@ function setResult(id,result){
   S.betResults[id]=S.betResults[id]===result?null:result;
   saveState();render();
 }
+function parlayPayoutForArchive(p) {
+  const status=parlayStatus(p);
+  if(status==='win') return effectiveDecimal(p.betIds)*p.stake;
+  if(status==='push') return p.stake;
+  return parseFloat(calcPayout(p.betIds,p.stake));
+}
 function saveRecap(){
   const recap={
     id:uid(),event:S.weekName||S.eventName,
     date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
     bets:S.bets.map(b=>({...b,result:S.betResults[b.id]||null})),
     parlays:S.parlays.map(p=>{
-      const legRes=p.betIds.map(id=>S.betResults[id]||null);
-      const won=legRes.length>0&&legRes.every(r=>r==='win');
-      const lost=legRes.some(r=>r==='loss');
-      return{...p,result:won?'win':lost?'loss':'pending',payout:parseFloat(calcPayout(p.betIds,p.stake))};
+      const status=parlayStatus(p);
+      return{...p,result:status,payout:parlayPayoutForArchive(p)};
     }),
   };
   S.weeklyRecaps=[recap,...S.weeklyRecaps];
