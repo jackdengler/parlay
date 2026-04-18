@@ -84,7 +84,8 @@
     {
       "id": "6x3wirq",
       "name": "Horth ML",
-      "odds": -175
+      "odds": -179,
+      "group": ""
     },
     {
       "id": "f014yxn",
@@ -99,7 +100,8 @@
     {
       "id": "zh1hwgs",
       "name": "Croden ML",
-      "odds": -167
+      "odds": -133,
+      "group": ""
     },
     {
       "id": "9hic7yw",
