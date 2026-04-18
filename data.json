@@ -146,6 +146,12 @@
         "cz35hg0"
       ],
       "stake": 200
+    },
+    {
+      "id": "b8qrnpg",
+      "name": "Parlay 2",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {},
@@ -893,7 +899,7 @@
       ]
     }
   ],
-  "activeParlayId": "77n1x18",
+  "activeParlayId": "b8qrnpg",
   "weekName": "Apr 16, 2026",
   "_confirmClear": false
 }
