@@ -137,22 +137,6 @@
   ],
   "parlays": [
     {
-      "id": "amr3l2w",
-      "name": "Main",
-      "betIds": [
-        "cz35hg0",
-        "4ju7zaz",
-        "z32ydwy",
-        "ptf7nco",
-        "gyueqph",
-        "qh8jadx",
-        "6x3wirq",
-        "zh1hwgs",
-        "2nhtwdq"
-      ],
-      "stake": 100
-    },
-    {
       "id": "q1ke6tz",
       "name": "Early 3",
       "betIds": [
@@ -163,6 +147,12 @@
       "stake": 270,
       "placed": true,
       "placedAt": 1776545790705
+    },
+    {
+      "id": "bemf61e",
+      "name": "Parlay 3",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {
@@ -914,7 +904,7 @@
       ]
     }
   ],
-  "activeParlayId": "amr3l2w",
+  "activeParlayId": "bemf61e",
   "weekName": "Apr 16, 2026",
   "_confirmClear": false
 }
