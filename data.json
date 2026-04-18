@@ -162,7 +162,7 @@
         "z32ydwy",
         "ptf7nco"
       ],
-      "stake": 50
+      "stake": 500
     }
   ],
   "betResults": {},
@@ -910,7 +910,7 @@
       ]
     }
   ],
-  "activeParlayId": null,
+  "activeParlayId": "b8qrnpg",
   "weekName": "Apr 16, 2026",
   "_confirmClear": false
 }
