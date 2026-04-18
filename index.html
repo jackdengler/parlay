@@ -441,6 +441,14 @@ html, body {
 }
 .exp-dot { color: var(--accent); font-size: 8px; }
 .exp-stake { color: var(--muted); font-size: 11px; }
+.exp-tag.busted { background: var(--red-bg); border-color: #F0ADA6; color: var(--red); text-decoration: line-through; }
+.exp-tag.busted .exp-dot { color: var(--red); font-size: 10px; }
+.exp-tag.busted .exp-stake { color: var(--red); opacity: 0.8; }
+.exp-tag.won { background: var(--green-bg); border-color: #9DD3B0; color: var(--green); }
+.exp-tag.won .exp-dot { color: var(--green); font-size: 10px; }
+.exp-tag.won .exp-stake { color: var(--green); opacity: 0.8; }
+.exp-tag.push { background: var(--bg3); border-color: var(--border2); color: var(--muted); }
+.exp-tag.push .exp-dot { color: var(--muted); font-size: 10px; }
 
 /* ── RECAP ── */
 .recap-note { color: var(--muted); font-size: 13px; font-weight: 500; padding: 0 18px 10px; line-height: 1.6; }
@@ -1279,31 +1287,53 @@ function renderExposure() {
 
   S.bets.forEach(b=>{
     const inParlays=S.parlays.filter(p=>p.betIds.includes(b.id));
-    const atRisk=inParlays.reduce((s,p)=>s+p.stake,0);
     const betResult=S.betResults[b.id]||null;
-    const betCovered=betResult==='win';
+    // Classify each parlay by current status so a pending bet in an already-busted parlay
+    // doesn't still count as "at risk".
+    let liveAtRisk=0, bustedStake=0, wonStake=0, pushStake=0;
+    inParlays.forEach(p=>{
+      const st=parlayStatus(p);
+      if(st==='loss') bustedStake+=p.stake;
+      else if(st==='win') wonStake+=p.stake;
+      else if(st==='push') pushStake+=p.stake;
+      else liveAtRisk+=p.stake;
+    });
     const oc=b.odds>0?'odds-pos':'odds-neg';
+    let rightBlock;
+    if(betResult==='win') {
+      rightBlock=`<div class="exp-risk-amt" style="color:var(--green)">Covered</div><div class="exp-risk-lbl">won</div>`;
+    } else if(betResult==='loss') {
+      rightBlock=`<div class="exp-risk-amt" style="color:var(--red)">-$${bustedStake}</div><div class="exp-risk-lbl">lost</div>`;
+    } else if(betResult==='push') {
+      const subLbl=liveAtRisk>0?`$${liveAtRisk} live on others`:bustedStake>0?`parlay${inParlays.length>1?'s':''} busted`:'voided';
+      rightBlock=`<div class="exp-risk-amt" style="color:var(--muted2)">Push</div><div class="exp-risk-lbl">${subLbl}</div>`;
+    } else {
+      // Pending bet
+      if(liveAtRisk===0 && bustedStake>0) {
+        rightBlock=`<div class="exp-risk-amt" style="color:var(--muted2)">$0</div><div class="exp-risk-lbl">parlay${inParlays.length>1?'s':''} busted</div>`;
+      } else if(bustedStake>0) {
+        rightBlock=`<div class="exp-risk-amt" style="color:var(--red)">$${liveAtRisk}</div><div class="exp-risk-lbl">at risk · $${bustedStake} busted</div>`;
+      } else {
+        rightBlock=`<div class="exp-risk-amt" style="color:${liveAtRisk>0?'var(--red)':'var(--muted2)'}">${liveAtRisk>0?'$'+liveAtRisk:'—'}</div><div class="exp-risk-lbl">at risk</div>`;
+      }
+    }
     html+=`<div class="exp-card">
       <div class="exp-top">
         <div>
           <div class="exp-bet-name">${esc(b.name)}</div>
           <span class="${oc}">${fmtOdds(b.odds)}</span>
         </div>
-        <div style="text-align:right">
-          ${betCovered
-            ?`<div class="exp-risk-amt" style="color:var(--green)">Covered</div><div class="exp-risk-lbl">won</div>`
-            :betResult==='loss'
-              ?`<div class="exp-risk-amt" style="color:var(--red)">-$${atRisk}</div><div class="exp-risk-lbl">lost</div>`
-              :`<div class="exp-risk-amt" style="color:${atRisk>0?'var(--red)':'var(--muted2)'}">${atRisk>0?'$'+atRisk:'—'}</div><div class="exp-risk-lbl">at risk</div>`
-          }
-        </div>
+        <div style="text-align:right">${rightBlock}</div>
       </div>`;
     if(inParlays.length===0) {
       html+=`<div class="exp-none">Not in any parlay</div>`;
     } else {
       html+=`<div class="exp-parlays">`;
       inParlays.forEach(p=>{
-        html+=`<div class="exp-tag"><span class="exp-dot">●</span>${esc(p.name)}<span class="exp-stake">$${p.stake}</span></div>`;
+        const st=parlayStatus(p);
+        const tagCls='exp-tag'+(st==='loss'?' busted':st==='win'?' won':st==='push'?' push':'');
+        const icon=st==='loss'?'✕':st==='win'?'✓':st==='push'?'=':'●';
+        html+=`<div class="${tagCls}"><span class="exp-dot">${icon}</span>${esc(p.name)}<span class="exp-stake">$${p.stake}</span></div>`;
       });
       html+=`</div>`;
     }
