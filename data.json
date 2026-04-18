@@ -155,7 +155,9 @@
       "betIds": [
         "2nhtwdq"
       ],
-      "stake": 472
+      "stake": 472,
+      "placed": true,
+      "placedAt": 1776547395318
     }
   ],
   "betResults": {
@@ -907,7 +909,7 @@
       ]
     }
   ],
-  "activeParlayId": "bemf61e",
+  "activeParlayId": null,
   "weekName": "Apr 16, 2026",
   "_confirmClear": false
 }
