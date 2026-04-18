@@ -173,6 +173,12 @@
         "ptf7nco"
       ],
       "stake": 500
+    },
+    {
+      "id": "q1ke6tz",
+      "name": "Parlay 4",
+      "betIds": [],
+      "stake": 50
     }
   ],
   "betResults": {},
@@ -920,7 +926,7 @@
       ]
     }
   ],
-  "activeParlayId": null,
+  "activeParlayId": "q1ke6tz",
   "weekName": "Apr 16, 2026",
   "_confirmClear": false
 }
