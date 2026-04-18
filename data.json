@@ -177,7 +177,9 @@
     {
       "id": "q1ke6tz",
       "name": "Early 3",
-      "betIds": [],
+      "betIds": [
+        "vv6fxoe"
+      ],
       "stake": 50
     }
   ],
