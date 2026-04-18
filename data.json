@@ -146,7 +146,7 @@
         "cz35hg0",
         "gyueqph"
       ],
-      "stake": 200
+      "stake": 100
     },
     {
       "id": "b8qrnpg",
@@ -932,7 +932,7 @@
       ]
     }
   ],
-  "activeParlayId": "b8qrnpg",
+  "activeParlayId": null,
   "weekName": "Apr 16, 2026",
   "_confirmClear": false
 }
