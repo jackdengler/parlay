@@ -149,7 +149,13 @@
     },
     {
       "id": "b8qrnpg",
-      "name": "Parlay 2",
+      "name": "Long Lotto",
+      "betIds": [],
+      "stake": 50
+    },
+    {
+      "id": "amr3l2w",
+      "name": "Parlay 3",
       "betIds": [],
       "stake": 50
     }
@@ -899,7 +905,7 @@
       ]
     }
   ],
-  "activeParlayId": "b8qrnpg",
+  "activeParlayId": "amr3l2w",
   "weekName": "Apr 16, 2026",
   "_confirmClear": false
 }
