@@ -134,37 +134,6 @@
   ],
   "parlays": [
     {
-      "id": "77n1x18",
-      "name": "Short Lotto",
-      "betIds": [
-        "z32ydwy",
-        "ptf7nco",
-        "4ju7zaz",
-        "vv6fxoe",
-        "qh8jadx",
-        "6x3wirq",
-        "cz35hg0",
-        "gyueqph"
-      ],
-      "stake": 100
-    },
-    {
-      "id": "b8qrnpg",
-      "name": "Long Lotto",
-      "betIds": [
-        "4ju7zaz",
-        "cz35hg0",
-        "z32ydwy",
-        "qh8jadx",
-        "ptf7nco",
-        "vv6fxoe",
-        "6x3wirq",
-        "zh1hwgs",
-        "gyueqph"
-      ],
-      "stake": 50
-    },
-    {
       "id": "amr3l2w",
       "name": "Main",
       "betIds": [
