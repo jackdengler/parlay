@@ -156,7 +156,11 @@
     {
       "id": "amr3l2w",
       "name": "Main",
-      "betIds": [],
+      "betIds": [
+        "cz35hg0",
+        "4ju7zaz",
+        "z32ydwy"
+      ],
       "stake": 50
     }
   ],
