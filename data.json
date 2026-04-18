@@ -150,7 +150,9 @@
     {
       "id": "b8qrnpg",
       "name": "Long Lotto",
-      "betIds": [],
+      "betIds": [
+        "4ju7zaz"
+      ],
       "stake": 50
     },
     {
