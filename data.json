@@ -151,7 +151,9 @@
     {
       "id": "bemf61e",
       "name": "Castenada ML",
-      "betIds": [],
+      "betIds": [
+        "2nhtwdq"
+      ],
       "stake": 50
     }
   ],
