@@ -410,6 +410,10 @@ html, body {
   display: flex; align-items: center;
   padding: 8px 0; border-bottom: 1px solid var(--border);
 }
+.compare-row.busted .cmp-name { color: var(--red); text-decoration: line-through; }
+.compare-row.busted .cmp-legs, .compare-row.busted .cmp-stake { opacity: 0.55; }
+.compare-row.won .cmp-name { color: var(--green); }
+.compare-row.push .cmp-name { color: var(--muted); }
 .cmp-name { flex: 2; color: var(--text2); font-size: 13px; font-weight: 600; }
 .cmp-legs { flex: 0.5; color: var(--muted); font-size: 12px; text-align: center; }
 .cmp-odds { flex: 1; color: var(--accent); font-size: 13px; font-weight: 700; font-style: italic; font-family: 'Lora', serif; text-align: center; }
@@ -1245,7 +1249,7 @@ function renderBuilder() {
   });
 
   if(S.parlays.length>1) {
-    const totalRisk=S.parlays.reduce((s,p)=>s+p.stake,0);
+    let liveRisk=0, realizedPL=0;
     html+=`<div class="compare-card">
       <div class="compare-title">Scenario Compare</div>
       <div class="compare-hdr-row">
@@ -1256,19 +1260,56 @@ function renderBuilder() {
         <span class="compare-hdr cmp-payout" style="text-align:right">Payout</span>
       </div>`;
     S.parlays.forEach(p=>{
-      const dec=parlayDecimal(p.betIds);
-      html+=`<div class="compare-row">
+      const status=parlayStatus(p);
+      const liveIds=p.betIds.filter(id=>!S.betResults[id]);
+      const decided=p.betIds.length-liveIds.length;
+      const legsStr=decided>0?`${liveIds.length}/${p.betIds.length}`:`${p.betIds.length}`;
+      const effDec=effectiveDecimal(p.betIds);
+      let oddsStr, payoutStr, payoutColor='var(--green)';
+      if(status==='loss') {
+        oddsStr='—';
+        payoutStr='Busted';
+        payoutColor='var(--red)';
+        realizedPL-=p.stake;
+      } else if(status==='win') {
+        oddsStr=decToAmerican(effDec);
+        payoutStr='$'+(effDec*p.stake).toFixed(2);
+        realizedPL+=(effDec-1)*p.stake;
+      } else if(status==='push') {
+        oddsStr='Push';
+        payoutStr='$'+p.stake.toFixed(2);
+        payoutColor='var(--muted)';
+      } else if(p.betIds.length===0) {
+        oddsStr='—'; payoutStr='—'; payoutColor='var(--muted2)';
+      } else {
+        // Pending — show best-case payout using only remaining live legs (wins baked in).
+        oddsStr=decToAmerican(effDec);
+        payoutStr='$'+(effDec*p.stake).toFixed(2);
+        liveRisk+=p.stake;
+      }
+      const rowCls='compare-row'+(status==='loss'?' busted':status==='win'?' won':status==='push'?' push':'');
+      html+=`<div class="${rowCls}">
         <span class="cmp-name">${esc(p.name)}</span>
-        <span class="cmp-legs">${p.betIds.length}</span>
-        <span class="cmp-odds">${p.betIds.length?decToAmerican(dec):'—'}</span>
+        <span class="cmp-legs">${legsStr}</span>
+        <span class="cmp-odds">${oddsStr}</span>
         <span class="cmp-stake">$${p.stake}</span>
-        <span class="cmp-payout">${p.betIds.length?'$'+calcPayout(p.betIds,p.stake):'—'}</span>
+        <span class="cmp-payout" style="color:${payoutColor}">${payoutStr}</span>
       </div>`;
     });
+    const hasDecided=S.parlays.some(p=>parlayStatus(p)!=='pending');
     html+=`<div class="compare-totals">
-      <span class="cmp-total-lbl">Total at risk</span>
-      <span class="cmp-total-val">$${totalRisk.toFixed(2)}</span>
-    </div></div>`;
+      <span class="cmp-total-lbl">Live at risk</span>
+      <span class="cmp-total-val">$${liveRisk.toFixed(2)}</span>
+    </div>`;
+    if(hasDecided) {
+      const plColor=realizedPL>0?'var(--green)':realizedPL<0?'var(--red)':'var(--muted)';
+      const plSign=realizedPL>0?'+':realizedPL<0?'-':'';
+      html+=`<div class="compare-totals" style="padding-top:4px">
+        <span class="cmp-total-lbl">Locked P/L</span>
+        <span class="cmp-total-val" style="color:${plColor}">${plSign}$${Math.abs(realizedPL).toFixed(2)}</span>
+      </div>`;
+    }
+    html+=`</div>`;
   }
 
   html+=`</div>`;
