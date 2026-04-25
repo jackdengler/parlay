@@ -1217,7 +1217,7 @@ function renderBuilder() {
         </div>`;
       }
       const lgGroups={}, lgUngrouped=[];
-      const availableBets=S.bets.filter(b=>!S.betResults[b.id] || p.betIds.includes(b.id));
+      const availableBets=S.bets.filter(b=>!S.betResults[b.id]);
       availableBets.forEach(b=>{ if(b.group){if(!lgGroups[b.group])lgGroups[b.group]=[];lgGroups[b.group].push(b);}else lgUngrouped.push(b); });
       lgUngrouped.forEach(b=>{ html+=renderLegRow(b); });
       Object.entries(lgGroups).forEach(([g,bets])=>{
