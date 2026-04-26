@@ -1434,7 +1434,7 @@ function renderResults() {
           plLine=`<div class="rp-maxpl loss">Busted</div>`;
         } else {
           // Best case: pushed legs drop, remaining pending all win
-          const maxPay=((effectiveDecimal(p.betIds)*p.betIds.filter(id=>!S.betResults[id]).reduce((acc,id)=>{const b=S.bets.find(x=>x.id===id);return b?acc*oddsToDecimal(b.odds):acc;},1))-1)*p.stake;
+          const maxPay=(effectiveDecimal(p.betIds)-1)*p.stake;
           plLine=`<div class="rp-maxpl">Best: +$${maxPay.toFixed(2)}</div>`;
         }
       }
