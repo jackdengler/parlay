@@ -1847,9 +1847,9 @@ function setResult(id,result){
 }
 function parlayPayoutForArchive(p) {
   const status=parlayStatus(p);
-  if(status==='win') return effectiveDecimal(p.betIds)*p.stake;
+  if(status==='loss') return 0;
   if(status==='push') return p.stake;
-  return parseFloat(calcPayout(p.betIds,p.stake));
+  return effectiveDecimal(p.betIds)*p.stake;
 }
 function saveRecap(){
   const recap={
