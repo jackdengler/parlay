@@ -586,6 +586,16 @@ html, body {
   font-family: 'Source Sans 3', sans-serif;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.has-action {
+  pointer-events: auto; display: inline-flex; align-items: center; gap: 14px;
+  padding: 8px 8px 8px 18px;
+}
+.toast-action {
+  background: var(--bg); color: var(--text); border: none; border-radius: 100px;
+  padding: 6px 14px; font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: 'Source Sans 3', sans-serif;
+}
+.toast-action:active { opacity: 0.8; }
 
 /* ── SYNC INDICATOR ── */
 .sync-dot {
@@ -805,6 +815,7 @@ html, body {
 <div class="toast" id="toast"></div>
 <div id="settingsOverlay" style="display:none"></div>
 <div id="rrOverlay" style="display:none"></div>
+<div id="hedgeOverlay" style="display:none"></div>
 
 <script>
 // ─── STATE ─────────────────────────────────────────────────────────────────
@@ -1013,10 +1024,23 @@ function effectiveProfit(p) {
   return null;
 }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function showToast(msg) {
+function showToast(msg, opts) {
   const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2200);
+  t.classList.remove('has-action');
+  if(opts&&opts.action){
+    t.innerHTML=`<span>${esc(msg)}</span><button class="toast-action" id="toastActionBtn">${esc(opts.action.label)}</button>`;
+    t.classList.add('has-action');
+    document.getElementById('toastActionBtn').onclick=(e)=>{
+      e.stopPropagation();
+      t.classList.remove('show');
+      try{ opts.action.onClick(); }catch(err){}
+    };
+  } else {
+    t.textContent=msg;
+  }
+  t.classList.add('show');
+  clearTimeout(showToast._timer);
+  showToast._timer=setTimeout(()=>t.classList.remove('show'),(opts&&opts.duration)||2200);
 }
 
 // ─── TABS ──────────────────────────────────────────────────────────────────
@@ -1190,7 +1214,11 @@ function renderBuilder() {
           </div>
         </div>`;
       } else {
-        html+=`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:flex-end" onclick="event.stopPropagation()">
+        const pStatus=parlayStatus(p);
+        const someResolved=p.betIds.some(id=>S.betResults[id]==='win'||S.betResults[id]==='push');
+        const showHedge=isPlaced&&pStatus==='pending'&&someResolved;
+        html+=`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px" onclick="event.stopPropagation()">
+          ${showHedge?`<button class="unlock-btn" onclick="event.stopPropagation();openHedge('${p.id}')">⚖ Hedge</button>`:''}
           ${isPlaced
             ?`<button class="unlock-btn" onclick="event.stopPropagation();unlockParlay('${p.id}')">🔓 Unlock</button>`
             :`<button class="place-btn" onclick="event.stopPropagation();requestPlaceParlay('${p.id}')">Place bet</button>`
@@ -1705,10 +1733,28 @@ function saveBet(){
   else{S.bets.push({id:uid(),name,odds,group});}
   haptic();showBetForm=false;editingBetId=null;saveState();render();
 }
+let _trashedBet=null;
 function deleteBet(id){
+  const bet=S.bets.find(b=>b.id===id); if(!bet) return;
+  const idx=S.bets.findIndex(b=>b.id===id);
+  const memberOf=S.parlays.filter(p=>p.betIds.includes(id)).map(p=>p.id);
+  const result=S.betResults[id]||null;
+  _trashedBet={bet:{...bet},idx,memberOf,result};
   haptic([8,40,8]);
   S.bets=S.bets.filter(b=>b.id!==id);
   S.parlays=S.parlays.map(p=>({...p,betIds:p.betIds.filter(x=>x!==id)}));
+  if(result) delete S.betResults[id];
+  saveState();render();
+  showToast('Bet deleted',{action:{label:'Undo',onClick:undoDeleteBet},duration:5000});
+}
+function undoDeleteBet(){
+  const t=_trashedBet; if(!t) return;
+  _trashedBet=null;
+  const insertIdx=Math.min(t.idx,S.bets.length);
+  S.bets.splice(insertIdx,0,t.bet);
+  S.parlays=S.parlays.map(p=>t.memberOf.includes(p.id)?{...p,betIds:[...p.betIds,t.bet.id]}:p);
+  if(t.result) S.betResults[t.bet.id]=t.result;
+  haptic();
   saveState();render();
 }
 function openParlayForm(){} // no-op, kept for safety
@@ -1841,6 +1887,60 @@ function generateRR(){
   haptic();closeRR();saveState();render();
   showToast(`${combos.length} parlays created`);
 }
+
+// ─── HEDGE CALCULATOR ──────────────────────────────────────────────────────
+let hedgeParlayId=null;
+let hedgeOddsInput='';
+function openHedge(pid){
+  const p=S.parlays.find(x=>x.id===pid); if(!p) return;
+  hedgeParlayId=pid; hedgeOddsInput='';
+  renderHedgeOverlay();
+  document.getElementById('hedgeOverlay').style.display='block';
+}
+function closeHedge(){ document.getElementById('hedgeOverlay').style.display='none'; hedgeParlayId=null; }
+function setHedgeOdds(v){ hedgeOddsInput=v; renderHedgeOverlay(); }
+function renderHedgeOverlay(){
+  const p=S.parlays.find(x=>x.id===hedgeParlayId); if(!p) return;
+  const liveDec=effectiveDecimal(p.betIds);
+  const liveBestPayout=liveDec*p.stake;
+  const liveBestProfit=liveBestPayout-p.stake;
+  const decidedLegs=p.betIds.filter(id=>S.betResults[id]==='win'||S.betResults[id]==='push').length;
+  const pendingLegs=p.betIds.filter(id=>!S.betResults[id]).length;
+  const oddsNum=parseFloat(hedgeOddsInput);
+  let hedgeBlock='';
+  if(!isNaN(oddsNum)&&oddsNum!==0&&Math.abs(oddsNum)>=100){
+    const Hd=oddsToDecimal(oddsNum);
+    const hedgeStake=liveBestPayout/Hd;
+    const lockedPL=liveBestPayout-p.stake-hedgeStake;
+    const plColor=lockedPL>0?'var(--green)':lockedPL<0?'var(--red)':'var(--muted)';
+    const plSign=lockedPL>=0?'+':'-';
+    hedgeBlock=`
+      <div class="rr-summary" style="margin-top:14px">
+        <div class="rr-summary-row"><span class="rr-lbl">Hedge stake</span><span class="rr-val">$${hedgeStake.toFixed(2)}</span></div>
+        <div class="rr-summary-row"><span class="rr-lbl">Locked P/L either way</span><span class="rr-val" style="color:${plColor}">${plSign}$${Math.abs(lockedPL).toFixed(2)}</span></div>
+      </div>`;
+  }
+  const overlay=document.getElementById('hedgeOverlay');
+  overlay.innerHTML=`<div class="settings-overlay" onclick="if(event.target===this)closeHedge()">
+    <div class="settings-card">
+      <div class="settings-title">Hedge</div>
+      <div class="rr-from">${esc(p.name)} · ${decidedLegs} hit, ${pendingLegs} pending</div>
+      <div class="rr-summary" style="margin-top:14px">
+        <div class="rr-summary-row"><span class="rr-lbl">If remaining hit</span><span class="rr-val">$${liveBestPayout.toFixed(2)}</span></div>
+        <div class="rr-summary-row"><span class="rr-lbl">Best-case profit</span><span class="rr-val" style="color:var(--green)">+$${liveBestProfit.toFixed(2)}</span></div>
+      </div>
+      <div class="settings-label" style="margin-top:14px">Hedge odds (American)</div>
+      <div class="stake-wrap" style="margin-bottom:8px">
+        <input class="stake-input" type="text" inputmode="numeric" pattern="-?[0-9]*" placeholder="e.g. -150" value="${esc(hedgeOddsInput)}" oninput="setHedgeOdds(this.value)" onclick="this.select()" />
+      </div>
+      ${hedgeBlock}
+      <div class="form-btns" style="margin-top:16px">
+        <button class="cancel-btn" onclick="closeHedge()">Close</button>
+      </div>
+    </div>
+  </div>`;
+}
+
 function setResult(id,result){
   S.betResults[id]=S.betResults[id]===result?null:result;
   saveState();render();
