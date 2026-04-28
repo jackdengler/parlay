@@ -2474,7 +2474,7 @@ function onDragEnd(e) {
 
 // ─── SERVICE WORKER ────────────────────────────────────────────────────────
 if('serviceWorker' in navigator){
-  const swCode=`const CACHE='parlay-v12';
+  const swCode=`const CACHE='parlay-v13';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/'])));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
 self.addEventListener('fetch',e=>{if(e.request.url.includes('fonts.googleapis')||e.request.url.includes('fonts.gstatic'))return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)));});`;
@@ -2482,25 +2482,34 @@ self.addEventListener('fetch',e=>{if(e.request.url.includes('fonts.googleapis')|
   navigator.serviceWorker.register(URL.createObjectURL(swBlob));
 }
 
-// ─── LAST REFRESHED ────────────────────────────────────────────────────────
-function updateLastRefreshed() {
+// ─── LAST UPDATED (latest commit on main affecting index.html) ─────────────
+const APP_REPO = 'jackdengler/parlay';
+async function updateLastRefreshed() {
   const el = document.getElementById('lastRefreshed');
   if (!el) return;
-  const now = new Date();
-  const fmt = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/Los_Angeles',
-    month: 'short', day: 'numeric',
-    hour: 'numeric', minute: '2-digit',
-    timeZoneName: 'short',
-  });
-  el.textContent = 'Last refreshed ' + fmt.format(now);
+  try {
+    const res = await fetch(`https://api.github.com/repos/${APP_REPO}/commits?path=index.html&per_page=1`, {
+      headers: { 'Accept': 'application/vnd.github.v3+json' },
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!Array.isArray(data) || !data.length) return;
+    const date = new Date(data[0].commit.author.date);
+    const fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Los_Angeles',
+      month: 'short', day: 'numeric',
+      hour: 'numeric', minute: '2-digit',
+      timeZoneName: 'short',
+    });
+    el.textContent = 'Updated ' + fmt.format(date);
+  } catch (e) {}
 }
 
 // ─── BOOT ──────────────────────────────────────────────────────────────────
 loadState();render();updateLastRefreshed();
 // Try loading from GitHub (async — will re-render when done)
 if (getToken()) {
-  ghLoad().then(ok => { if (ok) { render(); updateLastRefreshed(); } });
+  ghLoad().then(ok => { if (ok) render(); });
 }
 </script>
 </body>
