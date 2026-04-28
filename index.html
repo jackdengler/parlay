@@ -244,6 +244,41 @@ html, body {
 }
 .add-prop-btn:active { background: var(--bg3); color: var(--text2); }
 
+/* Three-way winner picker for fight ML pair on Results tab */
+.fight-winner-row {
+  display: flex; gap: 4px;
+  margin: 0 14px 8px;
+  align-items: stretch;
+}
+.winner-btn {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 11px;
+  padding: 11px 8px;
+  cursor: pointer; font-family: 'Source Sans 3', sans-serif;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.winner-btn:active { background: var(--bg2); }
+.winner-name {
+  font-size: 13px; font-weight: 700; color: var(--text2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;
+}
+.winner-odds { font-size: 12px; font-weight: 700; }
+.winner-btn.win {
+  background: var(--green-bg); border-color: #9DD3B0;
+}
+.winner-btn.win .winner-name { color: var(--green); }
+.winner-btn.win .winner-odds { color: var(--green); }
+.winner-push {
+  flex: 0 0 56px;
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  letter-spacing: 0.4px; text-transform: uppercase;
+}
+.winner-push.on {
+  background: var(--bg3); border-color: var(--border2); color: var(--text2);
+}
+
 /* Compact W/L/P controls when stacked in a 2-column fight pair on Results */
 .fight-pair-results .recap-bet-row { margin: 0; padding: 8px 10px; gap: 4px; }
 .fight-pair-results .recap-bet-name-wrap { flex: 1; min-width: 0; display: flex; align-items: baseline; flex-wrap: wrap; }
@@ -1647,6 +1682,7 @@ function renderResults() {
 
   if(S.bets.length>0) {
     html+=`<div class="recap-sub">Mark bet results</div>`;
+    // W/L for single bets / props (no push button — fights handle pushes via the winner picker)
     function wlRow(b){
       const res=S.betResults[b.id];
       const oc=b.odds>0?'odds-pos':'odds-neg';
@@ -1658,8 +1694,29 @@ function renderResults() {
         <div class="wl-row">
           <button class="w-btn ${res==='win'?'on':''}" onclick="setResult('${b.id}','win')">W</button>
           <button class="l-btn ${res==='loss'?'on':''}" onclick="setResult('${b.id}','loss')">L</button>
-          <button class="p-btn ${res==='push'?'on':''}" onclick="setResult('${b.id}','push')" title="Push (tie)">P</button>
         </div>
+      </div>`;
+    }
+    // Three-way picker for the ML pair: A wins / Push / B wins
+    function fightWinnerRow(a,b){
+      const ra=S.betResults[a.id], rb=S.betResults[b.id];
+      const aWon = ra==='win' && rb==='loss';
+      const bWon = ra==='loss' && rb==='win';
+      const isPush = ra==='push' && rb==='push';
+      const oa=a.odds>0?'odds-pos':'odds-neg';
+      const ob=b.odds>0?'odds-pos':'odds-neg';
+      return `<div class="fight-winner-row">
+        <button class="winner-btn ${aWon?'win':''}" onclick="setFightWinner('${a.id}','${b.id}','A')">
+          <span class="winner-name">${esc(a.name)}</span>
+          <span class="winner-odds ${oa}">${fmtOdds(a.odds)}</span>
+        </button>
+        <button class="winner-btn winner-push ${isPush?'on':''}" onclick="setFightWinner('${a.id}','${b.id}','push')" title="Push (draw / no contest)">
+          Push
+        </button>
+        <button class="winner-btn ${bWon?'win':''}" onclick="setFightWinner('${a.id}','${b.id}','B')">
+          <span class="winner-name">${esc(b.name)}</span>
+          <span class="winner-odds ${ob}">${fmtOdds(b.odds)}</span>
+        </button>
       </div>`;
     }
     const rGroups={}, rUngrouped=[];
@@ -1669,14 +1726,13 @@ function renderResults() {
       const sides=bets.slice(0,2);
       const props=bets.slice(2);
       html+=`<div class="group-hdr">${esc(g)}</div>`;
-      html+=`<div class="fight-pair fight-pair-results">
-        <div class="fight-side">${sides[0]?wlRow(sides[0]):''}</div>
-        ${sides[1]?`<div class="fight-side">${wlRow(sides[1])}</div>`:`<div class="fight-side fight-side-empty"></div>`}
-      </div>`;
+      if(sides.length===2){
+        html+=fightWinnerRow(sides[0],sides[1]);
+      } else if(sides.length===1){
+        html+=wlRow(sides[0]);
+      }
       if(props.length){
-        html+=`<div class="fight-props">`;
         props.forEach(p=>{ html+=wlRow(p); });
-        html+=`</div>`;
       }
     });
   }
@@ -2186,6 +2242,25 @@ function setResult(id,result){
   S.betResults[id]=S.betResults[id]===result?null:result;
   saveState();render();
 }
+function setFightWinner(idA, idB, mode) {
+  // Toggle: if the same selection is tapped, clear both fighters' results.
+  const ra = S.betResults[idA], rb = S.betResults[idB];
+  const cur = (ra==='win' && rb==='loss') ? 'A'
+            : (ra==='loss' && rb==='win') ? 'B'
+            : (ra==='push' && rb==='push') ? 'push'
+            : null;
+  if (cur === mode) {
+    delete S.betResults[idA]; delete S.betResults[idB];
+  } else if (mode === 'A') {
+    S.betResults[idA]='win'; S.betResults[idB]='loss';
+  } else if (mode === 'B') {
+    S.betResults[idA]='loss'; S.betResults[idB]='win';
+  } else if (mode === 'push') {
+    S.betResults[idA]='push'; S.betResults[idB]='push';
+  }
+  haptic();
+  saveState();render();
+}
 function parlayPayoutForArchive(p) {
   const status=parlayStatus(p);
   if(status==='loss') return 0;
@@ -2399,7 +2474,7 @@ function onDragEnd(e) {
 
 // ─── SERVICE WORKER ────────────────────────────────────────────────────────
 if('serviceWorker' in navigator){
-  const swCode=`const CACHE='parlay-v11';
+  const swCode=`const CACHE='parlay-v12';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/'])));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
 self.addEventListener('fetch',e=>{if(e.request.url.includes('fonts.googleapis')||e.request.url.includes('fonts.gstatic'))return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)));});`;
