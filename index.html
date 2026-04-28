@@ -201,6 +201,57 @@ html, body {
 }
 .add-leg-btn:active { background: var(--bg3); color: var(--text2); }
 
+/* ── FIGHT PAIR (two MLs side-by-side) ── */
+.fight-pair {
+  display: flex; gap: 6px;
+  padding: 0 8px 4px;
+  align-items: flex-start;
+}
+.fight-side { flex: 1 1 0; min-width: 0; }
+.fight-side-empty { visibility: hidden; }
+.fight-pair .bet-card {
+  margin: 0 0 6px 0;
+  padding: 10px 10px;
+}
+.fight-pair .drag-handle { display: none; }
+.fight-pair .bet-name {
+  font-size: 13.5px; line-height: 1.25;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.fight-pair .bet-right { gap: 5px; margin-left: 6px; }
+.fight-pair .odds-pos, .fight-pair .odds-neg { font-size: 14px; }
+.fight-pair .imp-prob { font-size: 10px; }
+.fight-pair .icon-btn { width: 26px; height: 24px; font-size: 12px; }
+
+/* Fight-level props (shared by fight, full width below the ML pair) */
+.fight-props { margin: 0 14px 4px; }
+.fight-props .bet-card {
+  margin: 0 0 6px 0;
+  padding: 9px 12px;
+  background: var(--bg2);
+  border-left-width: 2px;
+}
+.fight-props .bet-name { font-size: 13.5px; color: var(--text2); }
+.add-prop-btn {
+  display: block;
+  margin: 0 14px 12px;
+  background: transparent; color: var(--muted); border: 1px dashed var(--border2);
+  border-radius: 9px; padding: 6px 12px; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.4px; cursor: pointer;
+  font-family: 'Source Sans 3', sans-serif;
+}
+.add-prop-btn:active { background: var(--bg3); color: var(--text2); }
+
+/* Compact W/L/P controls when stacked in a 2-column fight pair on Results */
+.fight-pair-results .recap-bet-row { margin: 0; padding: 8px 10px; gap: 4px; }
+.fight-pair-results .recap-bet-name-wrap { flex: 1; min-width: 0; display: flex; align-items: baseline; flex-wrap: wrap; }
+.fight-pair-results .recap-bet-name { font-size: 13px; margin-right: 4px; }
+.fight-pair-results .wl-row { gap: 3px; }
+.fight-pair-results .w-btn, .fight-pair-results .l-btn, .fight-pair-results .p-btn {
+  width: 26px; height: 26px; font-size: 11px;
+}
+.recap-bet-name-wrap { flex: 1; min-width: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px; }
+
 .paste-hint {
   color: var(--muted2); font-size: 11px; font-weight: 500;
   margin: -4px 2px 8px; line-height: 1.4;
@@ -882,6 +933,7 @@ async function ghLoad() {
     ghSha = data.sha;
     const content = JSON.parse(atob(data.content));
     S = { ...defaultState(), ...content };
+    migrateState();
     localStorage.setItem(STORE_KEY, JSON.stringify(S));
     setSyncStatus('synced');
     return true;
@@ -922,6 +974,22 @@ function debouncedGhSave() {
 
 function loadState() {
   try { const r = localStorage.getItem(STORE_KEY); if (r) S = { ...defaultState(), ...JSON.parse(r) }; } catch (e) {}
+  migrateState();
+}
+function migrateState() {
+  // Props are now shared by fight, not bound to a specific fighter ML.
+  // Any legacy parentId becomes null; the bet stays in its fight via `group`,
+  // and if it had no group it inherits the parent's so the association
+  // survives the migration.
+  if (Array.isArray(S.bets)) {
+    const byId = Object.fromEntries(S.bets.map(b => [b.id, b]));
+    S.bets = S.bets.map(b => {
+      if (!b.parentId) return b;
+      const p = byId[b.parentId];
+      const group = b.group || (p && p.group) || '';
+      return { ...b, parentId: null, group };
+    });
+  }
 }
 function saveState() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {}
@@ -1171,7 +1239,7 @@ function renderScreen() {
 }
 
 // ─── POOL ──────────────────────────────────────────────────────────────────
-let showBetForm=false, editingBetId=null, newLegParentId=null;
+let showBetForm=false, editingBetId=null;
 
 function renderPool() {
   const inParlayIds=new Set(S.parlays.flatMap(p=>p.betIds));
@@ -1188,19 +1256,17 @@ function renderPool() {
     html+=`<div class="empty"><div class="empty-icon"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><div class="empty-txt">No bets yet.<br>Tap + Add bet to get started.</div></div>`;
   }
 
-  // Group bets by fight; within each fight, top-level (no parentId) bets are
-  // "sides" (typically the two MLs) and bets with a parentId are props nested
-  // underneath their parent.
-  const childrenByParent={}; S.bets.forEach(b=>{ if(b.parentId){(childrenByParent[b.parentId]=childrenByParent[b.parentId]||[]).push(b);} });
+  // Group bets by fight. The first two top-level bets in a fight are the
+  // ML sides (rendered side-by-side). Any additional bets in the same fight
+  // are fight-level props rendered full-width below the pair.
   const betGroups={}, ungroupedBets=[];
   S.bets.forEach(b=>{
-    if(b.parentId) return; // rendered under its parent
     if(b.group){(betGroups[b.group]=betGroups[b.group]||[]).push(b);} else ungroupedBets.push(b);
   });
 
   function renderBetCard(b,opts){
-    const isLeg=!!(opts&&opts.isLeg);
-    const cls=(inParlayIds.has(b.id)?'bet-card in-parlay':'bet-card')+(isLeg?' bet-leg':'');
+    const isProp=!!(opts&&opts.isProp);
+    const cls=(inParlayIds.has(b.id)?'bet-card in-parlay':'bet-card')+(isProp?' bet-prop':'');
     const oc=b.odds>0?'odds-pos':'odds-neg';
     return `<div class="${cls}" data-id="${b.id}" style="position:relative">
       <span class="drag-handle">⠿</span>
@@ -1215,22 +1281,23 @@ function renderPool() {
     </div>`;
   }
 
-  function renderSideWithLegs(b){
-    let h=renderBetCard(b);
-    const kids=childrenByParent[b.id]||[];
-    if(kids.length){
-      h+=`<div class="leg-stack">`;
-      kids.forEach(k=>{ h+=renderBetCard(k,{isLeg:true}); });
-      h+=`</div>`;
-    }
-    h+=`<button class="add-leg-btn" onclick="openAddLeg('${b.id}')">+ Leg</button>`;
-    return h;
-  }
-
-  ungroupedBets.forEach(b=>{ html+=renderSideWithLegs(b); });
+  ungroupedBets.forEach(b=>{ html+=renderBetCard(b); });
   Object.entries(betGroups).forEach(([g,bets])=>{
+    const sides=bets.slice(0,2);
+    const props=bets.slice(2);
     html+=`<div class="group-hdr">${esc(g)}</div>`;
-    bets.forEach(b=>{ html+=renderSideWithLegs(b); });
+    // ML pair side-by-side
+    html+=`<div class="fight-pair">
+      <div class="fight-side">${sides[0]?renderBetCard(sides[0]):''}</div>
+      ${sides[1]?`<div class="fight-side">${renderBetCard(sides[1])}</div>`:`<div class="fight-side fight-side-empty"></div>`}
+    </div>`;
+    // Fight-level props (shared, not tied to either side)
+    if(props.length){
+      html+=`<div class="fight-props">`;
+      props.forEach(p=>{ html+=renderBetCard(p,{isProp:true}); });
+      html+=`</div>`;
+    }
+    html+=`<button class="add-prop-btn" data-fight="${esc(g)}" onclick="openAddProp(this.dataset.fight)">+ Prop for fight</button>`;
   });
 
   if(showPasteForm) {
@@ -1248,36 +1315,22 @@ function renderPool() {
   if(showBetForm) {
     const b=editingBetId?S.bets.find(x=>x.id===editingBetId):null;
     const currentOdds=b?b.odds:null;
-    const isNeg=currentOdds!==null?currentOdds<0:true; // default to negative (favorite)
+    const isNeg=currentOdds!==null?currentOdds<0:true;
     const absVal=currentOdds!==null?Math.abs(currentOdds):'';
-    // Determine the effective parent: editing -> current parent; new leg -> newLegParentId
-    const effectiveParentId=b?(b.parentId||''):(newLegParentId||'');
-    const parentSeed=effectiveParentId?S.bets.find(x=>x.id===effectiveParentId):null;
-    const groupSeed=parentSeed?(parentSeed.group||''):(b?(b.group||''):'');
-    // Eligible parents: top-level bets (no parentId), excluding self and own descendants when editing.
-    function descendantsOf(id){ const out=new Set(); function walk(pid){ S.bets.forEach(x=>{ if(x.parentId===pid&&!out.has(x.id)){ out.add(x.id); walk(x.id);} }); } walk(id); return out; }
-    const blocked=editingBetId?descendantsOf(editingBetId):new Set();
-    const parentChoices=S.bets.filter(x=>!x.parentId&&x.id!==editingBetId&&!blocked.has(x.id));
-    const isLeg=!!effectiveParentId;
-    const titleTxt=b?'Edit bet':(isLeg?'New leg':'New bet');
-    let parentField='';
-    if(parentChoices.length){
-      const opts=`<option value="">— Top-level bet —</option>`+
-        parentChoices.map(p=>`<option value="${p.id}" ${effectiveParentId===p.id?'selected':''}>Under: ${esc(p.name)}${p.group?' · '+esc(p.group):''}</option>`).join('');
-      parentField=`<select class="ios-input" id="fBetParent" onchange="onParentChange()">${opts}</select>`;
-    }
+    const groupSeed=b?(b.group||''):(prefillFightLabel||'');
+    const isProp=!!prefillFightLabel && !b;
+    const titleTxt=b?'Edit bet':(isProp?`New prop · ${esc(prefillFightLabel)}`:'New bet');
     html+=`<div class="form-card">
       <div class="form-title">${titleTxt}</div>
-      <input class="ios-input" id="fBetName" type="text" placeholder="${isLeg?'Leg name (e.g. KO/TKO, R1, O2.5)':'Bet name (e.g. Oliveira by Sub)'}" value="${b?esc(b.name):''}" autocomplete="off" />
+      <input class="ios-input" id="fBetName" type="text" placeholder="${isProp?'Prop name (e.g. Goes Distance, O2.5 rounds)':'Bet name (e.g. Oliveira by Sub)'}" value="${b?esc(b.name):''}" autocomplete="off" />
       <div class="odds-input-row">
         <button class="odds-sign-btn ${isNeg?'neg':'pos'}" id="oddsSignBtn" onclick="toggleOddsSign()" type="button">${isNeg?'−':'+'}</button>
         <input class="ios-input odds-input" id="fBetOdds" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="180" value="${absVal}" />
       </div>
-      ${parentField}
-      <input class="ios-input" id="fBetGroup" type="text" placeholder="Fight / group (optional)" value="${esc(groupSeed)}" autocomplete="off" ${isLeg?'readonly style="opacity:0.7"':''} />
+      <input class="ios-input" id="fBetGroup" type="text" placeholder="Fight / group (optional)" value="${esc(groupSeed)}" autocomplete="off" />
       <div class="form-btns">
         <button class="cancel-btn" onclick="closeBetForm()">Cancel</button>
-        <button class="save-btn" onclick="saveBet()">Save ${isLeg?'leg':'bet'}</button>
+        <button class="save-btn" onclick="saveBet()">Save</button>
       </div>
     </div>`;
   }
@@ -1382,20 +1435,14 @@ function renderBuilder() {
         </div>`;
       }
       const availableBets=S.bets.filter(b=>!S.betResults[b.id]);
-      const childMap={}; availableBets.forEach(b=>{ if(b.parentId){(childMap[b.parentId]=childMap[b.parentId]||[]).push(b);} });
-      function renderSideAndKids(b){
-        html+=renderLegRow(b);
-        (childMap[b.id]||[]).forEach(k=>{ html+=renderLegRow(k,{isChild:true}); });
-      }
       const lgGroups={}, lgUngrouped=[];
-      availableBets.filter(b=>!b.parentId).forEach(b=>{ if(b.group){(lgGroups[b.group]=lgGroups[b.group]||[]).push(b);}else lgUngrouped.push(b); });
-      // Orphaned children (parent already settled/removed) — surface them at top.
-      const orphanedChildren=availableBets.filter(b=>b.parentId&&!availableBets.find(x=>x.id===b.parentId));
-      orphanedChildren.forEach(b=>{ html+=renderLegRow(b); });
-      lgUngrouped.forEach(b=>renderSideAndKids(b));
+      availableBets.forEach(b=>{ if(b.group){(lgGroups[b.group]=lgGroups[b.group]||[]).push(b);}else lgUngrouped.push(b); });
+      lgUngrouped.forEach(b=>{ html+=renderLegRow(b); });
       Object.entries(lgGroups).forEach(([g,bets])=>{
         html+=`<div class="leg-picker-title" style="margin-top:10px;margin-bottom:6px">${esc(g)}</div>`;
-        bets.forEach(b=>renderSideAndKids(b));
+        // Within a fight: first 2 are MLs (rendered as children of the fight),
+        // any extras are fight props.
+        bets.forEach((b,i)=>{ html+=renderLegRow(b,{isChild:i>=2}); });
       });
 
       if(p.betIds.length>=3) {
@@ -1575,16 +1622,37 @@ function renderResults() {
 
   if(S.bets.length>0) {
     html+=`<div class="recap-sub">Mark bet results</div>`;
-    S.bets.forEach(b=>{
+    function wlRow(b){
       const res=S.betResults[b.id];
-      html+=`<div class="recap-bet-row">
-        <span class="recap-bet-name">${esc(b.name)}</span>
+      const oc=b.odds>0?'odds-pos':'odds-neg';
+      return `<div class="recap-bet-row">
+        <div class="recap-bet-name-wrap">
+          <span class="recap-bet-name">${esc(b.name)}</span>
+          <span class="${oc}" style="font-size:13px;margin-left:6px">${fmtOdds(b.odds)}</span>
+        </div>
         <div class="wl-row">
           <button class="w-btn ${res==='win'?'on':''}" onclick="setResult('${b.id}','win')">W</button>
           <button class="l-btn ${res==='loss'?'on':''}" onclick="setResult('${b.id}','loss')">L</button>
           <button class="p-btn ${res==='push'?'on':''}" onclick="setResult('${b.id}','push')" title="Push (tie)">P</button>
         </div>
       </div>`;
+    }
+    const rGroups={}, rUngrouped=[];
+    S.bets.forEach(b=>{ if(b.group){(rGroups[b.group]=rGroups[b.group]||[]).push(b);}else rUngrouped.push(b); });
+    rUngrouped.forEach(b=>{ html+=wlRow(b); });
+    Object.entries(rGroups).forEach(([g,bets])=>{
+      const sides=bets.slice(0,2);
+      const props=bets.slice(2);
+      html+=`<div class="group-hdr">${esc(g)}</div>`;
+      html+=`<div class="fight-pair fight-pair-results">
+        <div class="fight-side">${sides[0]?wlRow(sides[0]):''}</div>
+        ${sides[1]?`<div class="fight-side">${wlRow(sides[1])}</div>`:`<div class="fight-side fight-side-empty"></div>`}
+      </div>`;
+      if(props.length){
+        html+=`<div class="fight-props">`;
+        props.forEach(p=>{ html+=wlRow(p); });
+        html+=`</div>`;
+      }
     });
   }
 
@@ -1863,17 +1931,11 @@ function toggleOddsSign(){
   btn.classList.toggle('pos',isNeg);
   btn.textContent=isNeg?'+':'−';
 }
-function openBetForm(){showBetForm=true;editingBetId=null;newLegParentId=null;render();setTimeout(()=>document.getElementById('fBetName')?.focus(),80);}
-function closeBetForm(){showBetForm=false;editingBetId=null;newLegParentId=null;render();}
-function openEditBet(id){showBetForm=true;editingBetId=id;newLegParentId=null;render();setTimeout(()=>document.getElementById('fBetName')?.focus(),80);}
-function openAddLeg(parentId){showBetForm=true;editingBetId=null;newLegParentId=parentId;render();setTimeout(()=>document.getElementById('fBetName')?.focus(),80);}
-function onParentChange(){
-  const sel=document.getElementById('fBetParent'); if(!sel) return;
-  const groupInput=document.getElementById('fBetGroup'); if(!groupInput) return;
-  const parent=S.bets.find(b=>b.id===sel.value);
-  if(parent){ groupInput.value=parent.group||''; groupInput.readOnly=true; groupInput.style.opacity='0.7'; }
-  else { groupInput.readOnly=false; groupInput.style.opacity=''; }
-}
+let prefillFightLabel=null;
+function openBetForm(){showBetForm=true;editingBetId=null;prefillFightLabel=null;render();setTimeout(()=>document.getElementById('fBetName')?.focus(),80);}
+function closeBetForm(){showBetForm=false;editingBetId=null;prefillFightLabel=null;render();}
+function openEditBet(id){showBetForm=true;editingBetId=id;prefillFightLabel=null;render();setTimeout(()=>document.getElementById('fBetName')?.focus(),80);}
+function openAddProp(fightLabel){showBetForm=true;editingBetId=null;prefillFightLabel=fightLabel||'';render();setTimeout(()=>document.getElementById('fBetName')?.focus(),80);}
 
 function saveBet(){
   const name=document.getElementById('fBetName')?.value?.trim();
@@ -1881,67 +1943,33 @@ function saveBet(){
   const isNeg=document.getElementById('oddsSignBtn')?.classList.contains('neg');
   if(!name||isNaN(absVal)||absVal<=0){showToast('Enter a name and valid odds');return;}
   const odds=isNeg?-absVal:absVal;
-  const parentSel=document.getElementById('fBetParent');
-  let parentId=parentSel?(parentSel.value||null):null;
-  // A bet cannot be its own parent or be parented to one of its descendants.
-  if(parentId&&editingBetId){
-    let cur=parentId, guard=0;
-    while(cur&&guard++<50){
-      if(cur===editingBetId){ parentId=null; break; }
-      const pb=S.bets.find(b=>b.id===cur);
-      cur=pb?pb.parentId:null;
-    }
-  }
-  let group=document.getElementById('fBetGroup')?.value?.trim()||'';
-  if(parentId){
-    const parent=S.bets.find(b=>b.id===parentId);
-    if(parent&&parent.group) group=parent.group;
-  }
+  const group=document.getElementById('fBetGroup')?.value?.trim()||'';
   if(editingBetId){
-    const before=S.bets.find(b=>b.id===editingBetId);
-    S.bets=S.bets.map(b=>b.id===editingBetId?{...b,name,odds,group,parentId:parentId||null}:b);
-    // If a top-level bet's fight changed, keep its child legs in sync.
-    if(before&&!parentId&&before.group!==group){
-      S.bets=S.bets.map(b=>b.parentId===editingBetId?{...b,group}:b);
-    }
-  } else{S.bets.push({id:uid(),name,odds,group,parentId:parentId||null});}
-  haptic();showBetForm=false;editingBetId=null;newLegParentId=null;saveState();render();
+    S.bets=S.bets.map(b=>b.id===editingBetId?{...b,name,odds,group}:b);
+  } else { S.bets.push({id:uid(),name,odds,group}); }
+  haptic();showBetForm=false;editingBetId=null;prefillFightLabel=null;saveState();render();
 }
 let _trashedBet=null;
 function deleteBet(id){
   const bet=S.bets.find(b=>b.id===id); if(!bet) return;
-  // Collect this bet plus any descendant legs (recursively).
-  const toRemove=new Set([id]);
-  (function walk(pid){ S.bets.forEach(x=>{ if(x.parentId===pid&&!toRemove.has(x.id)){ toRemove.add(x.id); walk(x.id);} }); })(id);
-  const removed=S.bets.filter(b=>toRemove.has(b.id)).map(b=>({bet:{...b},idx:S.bets.findIndex(x=>x.id===b.id)}));
-  const memberOfBy={}; const resultsBy={};
-  removed.forEach(r=>{
-    memberOfBy[r.bet.id]=S.parlays.filter(p=>p.betIds.includes(r.bet.id)).map(p=>p.id);
-    if(S.betResults[r.bet.id]) resultsBy[r.bet.id]=S.betResults[r.bet.id];
-  });
-  _trashedBet={removed,memberOfBy,resultsBy};
+  const idx=S.bets.findIndex(b=>b.id===id);
+  const memberOf=S.parlays.filter(p=>p.betIds.includes(id)).map(p=>p.id);
+  const result=S.betResults[id]||null;
+  _trashedBet={bet:{...bet},idx,memberOf,result};
   haptic([8,40,8]);
-  S.bets=S.bets.filter(b=>!toRemove.has(b.id));
-  S.parlays=S.parlays.map(p=>({...p,betIds:p.betIds.filter(x=>!toRemove.has(x))}));
-  Object.keys(resultsBy).forEach(rid=>delete S.betResults[rid]);
+  S.bets=S.bets.filter(b=>b.id!==id);
+  S.parlays=S.parlays.map(p=>({...p,betIds:p.betIds.filter(x=>x!==id)}));
+  if(result) delete S.betResults[id];
   saveState();render();
-  const n=removed.length;
-  const msg=n>1?`Bet + ${n-1} leg${n>2?'s':''} deleted`:'Bet deleted';
-  showToast(msg,{action:{label:'Undo',onClick:undoDeleteBet},duration:5000});
+  showToast('Bet deleted',{action:{label:'Undo',onClick:undoDeleteBet},duration:5000});
 }
 function undoDeleteBet(){
   const t=_trashedBet; if(!t) return;
   _trashedBet=null;
-  // Insert in original index order (low → high) so indices stay valid.
-  [...t.removed].sort((a,b)=>a.idx-b.idx).forEach(r=>{
-    const insertIdx=Math.min(r.idx,S.bets.length);
-    S.bets.splice(insertIdx,0,r.bet);
-  });
-  S.parlays=S.parlays.map(p=>{
-    const add=Object.entries(t.memberOfBy).filter(([,pids])=>pids.includes(p.id)).map(([bid])=>bid);
-    return add.length?{...p,betIds:[...p.betIds,...add]}:p;
-  });
-  Object.entries(t.resultsBy).forEach(([bid,res])=>{ S.betResults[bid]=res; });
+  const insertIdx=Math.min(t.idx,S.bets.length);
+  S.bets.splice(insertIdx,0,t.bet);
+  S.parlays=S.parlays.map(p=>t.memberOf.includes(p.id)?{...p,betIds:[...p.betIds,t.bet.id]}:p);
+  if(t.result) S.betResults[t.bet.id]=t.result;
   haptic();
   saveState();render();
 }
@@ -2346,7 +2374,7 @@ function onDragEnd(e) {
 
 // ─── SERVICE WORKER ────────────────────────────────────────────────────────
 if('serviceWorker' in navigator){
-  const swCode=`const CACHE='parlay-v8';
+  const swCode=`const CACHE='parlay-v9';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/'])));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
 self.addEventListener('fetch',e=>{if(e.request.url.includes('fonts.googleapis')||e.request.url.includes('fonts.gstatic'))return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)));});`;
