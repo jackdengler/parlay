@@ -1012,39 +1012,53 @@ function parseTwoSideLine(line) {
 }
 
 function parseBetLines(text) {
-  // Each non-blank line is either:
-  //   - a "fight" line carrying both sides (paired into one fight group), or
-  //   - a single bet (legacy "name, odds" or "name odds").
-  // Lines starting with "#" or "//" are ignored as comments.
-  // Optional fight label can be set as a header line (no parseable odds);
-  // it applies to subsequent bet lines until another header or blank line.
-  const lines = text.split(/\r?\n/);
+  // Accepts either:
+  //   - One-line two-side fights:   "Burns -110 / McGregor -115"
+  //   - Blank-line-separated blocks: each block of 2 single bets is paired
+  //     into a fight; an optional first-line header sets an explicit label.
+  //   - Single bets (ungrouped):    "Lopes ML, +410"
+  // Lines starting with "#" or "//" are ignored.
+  const blocks = text.split(/\r?\n\s*\r?\n/);
   let added = 0, skipped = 0;
-  let pendingHeaderLabel = '';
-  lines.forEach(raw => {
-    const line = raw.trim();
-    if (!line) { pendingHeaderLabel = ''; return; }
-    if (/^(#|\/\/)/.test(line)) return;
-    const two = parseTwoSideLine(line);
-    if (two) {
-      const firstWords = [...new Set(two.sides.map(s => s.name.split(/\s+/)[0]))];
-      const auto = firstWords.length === 1 ? firstWords[0] : firstWords.join(' vs ');
-      const label = two.label || pendingHeaderLabel || auto;
-      two.sides.forEach(s => {
-        S.bets.push({ id: uid(), name: s.name, odds: s.odds, group: label, parentId: null });
+  blocks.forEach(blockText => {
+    const lines = blockText.split(/\r?\n/).map(l => l.trim()).filter(Boolean).filter(l => !/^(#|\/\/)/.test(l));
+    if (!lines.length) return;
+    let blockLabel = '';
+    const pendingSingles = []; // bets seen on plain single-bet lines
+
+    const flushSingles = () => {
+      // Auto-derive a fight label only when there are exactly 2 single bets
+      // pending and no explicit block label.
+      let label = blockLabel;
+      if (!label && pendingSingles.length === 2) {
+        const cleanSides = pendingSingles.map(b => b.name.replace(/\s+(ML|Moneyline)\s*$/i, '').trim());
+        label = cleanSides[0] === cleanSides[1] ? cleanSides[0] : cleanSides.join(' vs ');
+      }
+      pendingSingles.forEach(b => {
+        S.bets.push({ id: uid(), name: b.name, odds: b.odds, group: label || '', parentId: null });
         added++;
       });
-      pendingHeaderLabel = '';
-      return;
-    }
-    const single = parseBetLine(line);
-    if (single) {
-      S.bets.push({ id: uid(), name: single.name, odds: single.odds, group: pendingHeaderLabel || '', parentId: null });
-      added++;
-      return;
-    }
-    // Not a bet line — treat as a header label for the lines that follow.
-    pendingHeaderLabel = line.replace(/[:\-]+$/, '').trim();
+      pendingSingles.length = 0;
+    };
+
+    lines.forEach(line => {
+      const two = parseTwoSideLine(line);
+      if (two) {
+        const cleanSides = two.sides.map(s => s.name.replace(/\s+(ML|Moneyline)\s*$/i, '').trim());
+        const auto = cleanSides[0] === cleanSides[1] ? cleanSides[0] : cleanSides.join(' vs ');
+        const label = two.label || blockLabel || auto;
+        two.sides.forEach(s => {
+          S.bets.push({ id: uid(), name: s.name, odds: s.odds, group: label, parentId: null });
+          added++;
+        });
+        return;
+      }
+      const single = parseBetLine(line);
+      if (single) { pendingSingles.push(single); return; }
+      // Header line — first non-bet line sets the block label
+      if (!blockLabel) blockLabel = line.replace(/[:\-]+$/, '').trim();
+    });
+    flushSingles();
   });
   return { added, skipped };
 }
@@ -2332,7 +2346,7 @@ function onDragEnd(e) {
 
 // ─── SERVICE WORKER ────────────────────────────────────────────────────────
 if('serviceWorker' in navigator){
-  const swCode=`const CACHE='parlay-v7';
+  const swCode=`const CACHE='parlay-v8';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/'])));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
 self.addEventListener('fetch',e=>{if(e.request.url.includes('fonts.googleapis')||e.request.url.includes('fonts.gstatic'))return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)));});`;
