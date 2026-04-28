@@ -432,6 +432,17 @@ html, body {
 .leg-row-child { margin-left: 22px; padding: 8px 10px; }
 .leg-row-child .leg-name { font-size: 13px; color: var(--muted); }
 
+/* Two-column ML pair within the parlay leg picker */
+.leg-pair { display: flex; gap: 6px; margin-bottom: 5px; }
+.leg-pair-side { flex: 1 1 0; min-width: 0; }
+.leg-pair-side .leg-row { margin-bottom: 0; padding: 9px 10px; }
+.leg-pair-side .leg-row .leg-name { font-size: 13px; }
+.leg-pair-side .leg-row .leg-check { width: 20px; height: 20px; font-size: 11px; }
+.leg-pair-side .leg-row .odds-pos, .leg-pair-side .leg-row .odds-neg { font-size: 13px; }
+.leg-pair-side .leg-row .imp-prob { font-size: 10px; }
+.leg-row-prop { background: var(--bg2); margin-left: 8px; padding: 8px 10px; }
+.leg-row-prop .leg-name { font-size: 13px; color: var(--text2); }
+
 /* ── LEG BREAKDOWN ── */
 .leg-breakdown { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
 .lgb-title { color: var(--muted2); font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
@@ -1429,8 +1440,9 @@ function renderBuilder() {
       function renderLegRow(b,opts){
         const on=p.betIds.includes(b.id);
         const oc=b.odds>0?'odds-pos':'odds-neg';
-        const isChild=!!(opts&&opts.isChild);
-        return `<div class="leg-row ${on?'on':''}${isChild?' leg-row-child':''}" onclick="toggleLeg('${p.id}','${b.id}')">
+        const variant=(opts&&opts.variant)||'';
+        const cls='leg-row '+(on?'on ':'')+variant;
+        return `<div class="${cls}" onclick="toggleLeg('${p.id}','${b.id}')">
           <div class="leg-check ${on?'on':'off'}">${on?'✓':'+'}</div>
           <span class="leg-name">${esc(b.name)}</span>
           <div style="display:flex;flex-direction:column;align-items:flex-end">
@@ -1444,10 +1456,18 @@ function renderBuilder() {
       availableBets.forEach(b=>{ if(b.group){(lgGroups[b.group]=lgGroups[b.group]||[]).push(b);}else lgUngrouped.push(b); });
       lgUngrouped.forEach(b=>{ html+=renderLegRow(b); });
       Object.entries(lgGroups).forEach(([g,bets])=>{
+        const sides=bets.slice(0,2);
+        const props=bets.slice(2);
         html+=`<div class="leg-picker-title" style="margin-top:10px;margin-bottom:6px">${esc(g)}</div>`;
-        // Within a fight: first 2 are MLs (rendered as children of the fight),
-        // any extras are fight props.
-        bets.forEach((b,i)=>{ html+=renderLegRow(b,{isChild:i>=2}); });
+        // ML pair side-by-side
+        html+=`<div class="leg-pair">
+          <div class="leg-pair-side">${sides[0]?renderLegRow(sides[0],{variant:'leg-row-side'}):''}</div>
+          ${sides[1]?`<div class="leg-pair-side">${renderLegRow(sides[1],{variant:'leg-row-side'})}</div>`:`<div class="leg-pair-side fight-side-empty"></div>`}
+        </div>`;
+        // Fight props full-width below
+        if(props.length){
+          props.forEach(b=>{ html+=renderLegRow(b,{variant:'leg-row-prop'}); });
+        }
       });
 
       if(p.betIds.length>=3) {
@@ -2379,7 +2399,7 @@ function onDragEnd(e) {
 
 // ─── SERVICE WORKER ────────────────────────────────────────────────────────
 if('serviceWorker' in navigator){
-  const swCode=`const CACHE='parlay-v10';
+  const swCode=`const CACHE='parlay-v11';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/'])));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
 self.addEventListener('fetch',e=>{if(e.request.url.includes('fonts.googleapis')||e.request.url.includes('fonts.gstatic'))return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)));});`;
