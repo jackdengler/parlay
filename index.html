@@ -987,35 +987,64 @@ function parseBetLine(line) {
   return null;
 }
 
+// Detects a single line carrying both sides of a fight, e.g.
+//   Burns -110 / McGregor -115
+//   Topuria -350 vs Holloway +280
+//   Burns ML, -110 | McGregor ML, -115
+//   Burns vs McGregor: Burns -110 / McGregor -115
+// Separator between sides: /, |, ;, comma, or the word "vs".
+// Optional fight label prefix ending in ":". Returns {label, sides:[a,b]} or null.
+function parseTwoSideLine(line) {
+  const m = line.match(/^(.+?)\s+([+-]?\d+)\s*(?:\/|\||;|,|\bvs\b)\s*(.+?)\s+([+-]?\d+)\s*$/i);
+  if (!m) return null;
+  let nameA = m[1].replace(/[,;:\/|]+$/,'').trim();
+  let nameB = m[3].replace(/[,;:\/|]+$/,'').trim();
+  const oddsA = parseInt(m[2]);
+  const oddsB = parseInt(m[4]);
+  let label = '';
+  const colon = nameA.indexOf(':');
+  if (colon >= 0) {
+    label = nameA.slice(0, colon).trim();
+    nameA = nameA.slice(colon + 1).trim();
+  }
+  if (!nameA || !nameB || isNaN(oddsA) || isNaN(oddsB) || oddsA === 0 || oddsB === 0) return null;
+  return { label, sides: [{ name: nameA, odds: oddsA }, { name: nameB, odds: oddsB }] };
+}
+
 function parseBetLines(text) {
-  // Blocks are separated by blank lines; bets within a block belong to the
-  // same fight and get the same `group` label. An optional first line (no
-  // parseable odds) sets the fight name; otherwise we derive it from the
-  // first whitespace-separated token of each bet name (e.g. "Pereira ML" +
-  // "Adesanya ML" → "Pereira vs Adesanya").
-  const blocks = text.split(/\r?\n\s*\r?\n/);
+  // Each non-blank line is either:
+  //   - a "fight" line carrying both sides (paired into one fight group), or
+  //   - a single bet (legacy "name, odds" or "name odds").
+  // Lines starting with "#" or "//" are ignored as comments.
+  // Optional fight label can be set as a header line (no parseable odds);
+  // it applies to subsequent bet lines until another header or blank line.
+  const lines = text.split(/\r?\n/);
   let added = 0, skipped = 0;
-  blocks.forEach(block => {
-    const lines = block.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-    if (!lines.length) return;
-    let fightLabel = '';
-    if (!parseBetLine(lines[0])) { fightLabel = lines.shift(); }
-    const parsed = [];
-    lines.forEach(line => {
-      const b = parseBetLine(line);
-      if (b) parsed.push(b); else skipped++;
-    });
-    // Auto-derive a fight label only when the block clearly represents one
-    // fight: exactly 2 bets (the two sides). For 1 bet or 3+ bets without
-    // an explicit label, leave ungrouped to avoid mislabeling.
-    if (!fightLabel && parsed.length === 2) {
-      const firstWords = [...new Set(parsed.map(b => b.name.split(/\s+/)[0]))];
-      fightLabel = firstWords.length === 1 ? firstWords[0] : firstWords.join(' vs ');
+  let pendingHeaderLabel = '';
+  lines.forEach(raw => {
+    const line = raw.trim();
+    if (!line) { pendingHeaderLabel = ''; return; }
+    if (/^(#|\/\/)/.test(line)) return;
+    const two = parseTwoSideLine(line);
+    if (two) {
+      const firstWords = [...new Set(two.sides.map(s => s.name.split(/\s+/)[0]))];
+      const auto = firstWords.length === 1 ? firstWords[0] : firstWords.join(' vs ');
+      const label = two.label || pendingHeaderLabel || auto;
+      two.sides.forEach(s => {
+        S.bets.push({ id: uid(), name: s.name, odds: s.odds, group: label, parentId: null });
+        added++;
+      });
+      pendingHeaderLabel = '';
+      return;
     }
-    parsed.forEach(b => {
-      S.bets.push({ id: uid(), name: b.name, odds: b.odds, group: fightLabel || '', parentId: null });
+    const single = parseBetLine(line);
+    if (single) {
+      S.bets.push({ id: uid(), name: single.name, odds: single.odds, group: pendingHeaderLabel || '', parentId: null });
       added++;
-    });
+      return;
+    }
+    // Not a bet line — treat as a header label for the lines that follow.
+    pendingHeaderLabel = line.replace(/[:\-]+$/, '').trim();
   });
   return { added, skipped };
 }
@@ -1193,8 +1222,8 @@ function renderPool() {
   if(showPasteForm) {
     html+=`<div class="form-card">
       <div class="form-title">Paste bets</div>
-      <textarea class="ios-input" id="pasteInput" rows="8" placeholder="Pereira ML, -200&#10;Adesanya ML, +180&#10;&#10;Topuria ML, -350&#10;Holloway ML, +280&#10;&#10;Lopes ML, +410" style="resize:none;font-size:13px;line-height:1.6"></textarea>
-      <div class="paste-hint">Blank line between fights — both sides get paired.</div>
+      <textarea class="ios-input" id="pasteInput" rows="8" placeholder="Burns -110 / McGregor -115&#10;Topuria -350 / Holloway +280&#10;Lopes ML, +410" style="resize:none;font-size:13px;line-height:1.6"></textarea>
+      <div class="paste-hint">One fight per line — separator can be <code>/</code>, <code>vs</code>, <code>|</code>, <code>;</code>, or <code>,</code>. Single bets work too.</div>
       <div class="form-btns">
         <button class="cancel-btn" onclick="closePasteForm()">Cancel</button>
         <button class="save-btn" onclick="submitPaste()">Add bets</button>
