@@ -2072,11 +2072,29 @@ function deleteParlay(id){
 function toggleLeg(pid,bid){
   const p=S.parlays.find(x=>x.id===pid);
   if(p&&p.placed){ showToast('Parlay is placed — unlock to edit'); return; }
-  S.parlays=S.parlays.map(p=>{
-    if(p.id!==pid)return p;
-    const has=p.betIds.includes(bid);
-    return {...p,betIds:has?p.betIds.filter(x=>x!==bid):[...p.betIds,bid]};
+  const bet=S.bets.find(b=>b.id===bid);
+  let swapped=false;
+  S.parlays=S.parlays.map(par=>{
+    if(par.id!==pid)return par;
+    const has=par.betIds.includes(bid);
+    if(has) return {...par,betIds:par.betIds.filter(x=>x!==bid)};
+    // Adding a leg. If it's one of the two ML sides of a fight, drop the
+    // other side from the parlay first — you can't combine both sides of
+    // the same fight.
+    let toRemove=null;
+    if(bet&&bet.group){
+      const sides=S.bets.filter(b=>b.group===bet.group).slice(0,2);
+      const isMlSide=sides.some(s=>s.id===bid);
+      if(isMlSide){
+        const other=sides.find(s=>s.id!==bid);
+        if(other&&par.betIds.includes(other.id)) toRemove=other.id;
+      }
+    }
+    const baseIds=toRemove?par.betIds.filter(x=>x!==toRemove):par.betIds;
+    if(toRemove) swapped=true;
+    return {...par,betIds:[...baseIds,bid]};
   });
+  if(swapped) showToast('Swapped ML side');
   saveState();render();
 }
 function liveStake(input){
@@ -2474,7 +2492,7 @@ function onDragEnd(e) {
 
 // ─── SERVICE WORKER ────────────────────────────────────────────────────────
 if('serviceWorker' in navigator){
-  const swCode=`const CACHE='parlay-v13';
+  const swCode=`const CACHE='parlay-v14';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/'])));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
 self.addEventListener('fetch',e=>{if(e.request.url.includes('fonts.googleapis')||e.request.url.includes('fonts.gstatic'))return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)));});`;
