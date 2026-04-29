@@ -405,6 +405,11 @@ html, body {
   border-radius: 9px; padding: 10px; font-size: 13px; font-weight: 700; cursor: pointer;
   font-family: 'Source Sans 3', sans-serif;
 }
+.delete-confirm-yes {
+  flex: 2; background: var(--red); color: #fff; border: none;
+  border-radius: 9px; padding: 10px; font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: 'Source Sans 3', sans-serif;
+}
 .parlay-top { display: flex; justify-content: space-between; align-items: flex-start; }
 .parlay-name { color: var(--text); font-family: 'Lora', serif; font-size: 16px; font-weight: 700; margin-bottom: 2px; }
 .parlay-meta { color: var(--muted); font-size: 12px; font-weight: 500; }
@@ -554,6 +559,68 @@ html, body {
 
 /* ── EXPOSURE ── */
 .exp-note { color: var(--muted); font-size: 13px; font-weight: 500; padding: 0 18px 10px; line-height: 1.6; }
+.exp-summary {
+  margin: 0 14px 12px; background: var(--bg); border-radius: var(--radius-lg);
+  padding: 14px 16px; border: 1px solid var(--border);
+}
+.exp-summary-title {
+  font-family: 'Lora', serif; color: var(--text2); font-size: 14px;
+  font-weight: 700; margin-bottom: 10px;
+}
+.exp-summary-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+}
+.exp-stat { text-align: center; padding: 6px 4px; }
+.exp-stat-val {
+  font-family: 'Lora', serif; font-size: 18px; font-weight: 700; font-style: italic;
+  color: var(--text); display: block; line-height: 1.1;
+}
+.exp-stat-val.risk { color: var(--red); }
+.exp-stat-val.win { color: var(--green); }
+.exp-stat-lbl {
+  color: var(--muted); font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; display: block;
+}
+.exp-section-title {
+  font-family: 'Lora', serif; color: var(--text2); font-size: 14px;
+  font-weight: 700; padding: 8px 18px 8px;
+}
+.exp-section-title:first-of-type { padding-top: 4px; }
+.exp-scenario {
+  margin: 0 14px 8px; background: var(--bg); border-radius: var(--radius);
+  border: 1px solid var(--border); overflow: hidden;
+}
+.exp-scenario-hdr {
+  padding: 10px 14px 8px; border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+.exp-scenario-fight {
+  font-family: 'Lora', serif; color: var(--text); font-size: 13px; font-weight: 700;
+}
+.exp-scenario-sub { color: var(--muted); font-size: 11px; margin-top: 1px; }
+.exp-outcome-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+}
+.exp-outcome {
+  padding: 10px 12px; border-right: 1px solid var(--border);
+}
+.exp-outcome:last-child { border-right: none; }
+.exp-outcome-name {
+  color: var(--text2); font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; gap: 5px; margin-bottom: 6px;
+}
+.exp-outcome-name .arrow { color: var(--muted2); font-size: 9px; }
+.exp-outcome-delta {
+  font-family: 'Lora', serif; font-size: 17px; font-weight: 700; font-style: italic;
+  line-height: 1.1; margin-bottom: 4px;
+}
+.exp-outcome-delta.win { color: var(--green); }
+.exp-outcome-delta.loss { color: var(--red); }
+.exp-outcome-delta.flat { color: var(--muted2); }
+.exp-outcome-detail {
+  color: var(--muted); font-size: 11px; line-height: 1.4;
+}
+.exp-outcome-detail strong { color: var(--text2); font-weight: 700; }
 .exp-card {
   margin: 0 14px 8px; background: var(--bg); border-radius: var(--radius);
   padding: 13px 14px; border: 1px solid var(--border);
@@ -957,7 +1024,7 @@ let ghSha = null;
 let syncStatus = 'offline'; // synced | saving | error | offline
 
 function defaultState() {
-  return { eventName:'', bets:[], parlays:[], betResults:{}, weeklyRecaps:[], activeParlayId:null, weekName:'' };
+  return { eventName:'', bets:[], parlays:[], betResults:{}, betResultsAt:{}, weeklyRecaps:[], activeParlayId:null, weekName:'' };
 }
 let S = defaultState();
 
@@ -1041,9 +1108,24 @@ function migrateState() {
       return { ...b, parentId: null, group };
     });
   }
+  if (!S.betResultsAt || typeof S.betResultsAt !== 'object') S.betResultsAt = {};
 }
+let _quotaWarned = false;
 function saveState() {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {}
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(S));
+    _quotaWarned = false;
+  } catch (e) {
+    // Quota exceeded — surface this so the user notices BEFORE losing data
+    const isQuota = e && (e.name === 'QuotaExceededError' || e.code === 22 || e.code === 1014);
+    if (isQuota && !_quotaWarned) {
+      _quotaWarned = true;
+      try { showToast('Storage full — archive old recaps to free space', { duration: 5000 }); } catch (_) {}
+      console.error('localStorage quota exceeded', e);
+    } else if (!isQuota) {
+      console.error('saveState failed', e);
+    }
+  }
   debouncedGhSave();
 }
 
@@ -1265,7 +1347,7 @@ function showToast(msg, opts) {
 let currentTab='pool';
 function switchTab(tab) {
   if(tab!=='results') S._confirmClear=false;
-  showPasteForm=false; renamingParlayId=null; confirmPlaceParlayId=null;
+  showPasteForm=false; renamingParlayId=null; confirmPlaceParlayId=null; confirmDeleteParlayId=null;
   currentTab=tab;
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   renderScreen();
@@ -1393,6 +1475,7 @@ function renderPool() {
 let renamingParlayId = null;
 let expandedResultParlayId = null;
 let confirmPlaceParlayId = null;
+let confirmDeleteParlayId = null;
 function toggleResultParlay(id) { expandedResultParlayId = expandedResultParlayId===id?null:id; render(); }
 function renderBuilder() {
   let html=`<div class="tab-content">
@@ -1445,7 +1528,15 @@ function renderBuilder() {
       </div>`;
 
       // Place / unlock / confirm row
-      if(confirmPlaceParlayId===p.id) {
+      if(confirmDeleteParlayId===p.id) {
+        html+=`<div class="place-confirm" onclick="event.stopPropagation()">
+          <div class="place-confirm-txt">Delete <strong>${esc(p.name)}</strong>? Its ${p.betIds.length} leg${p.betIds.length!==1?'s':''} will be removed.</div>
+          <div class="place-confirm-btns">
+            <button class="place-cancel" onclick="event.stopPropagation();cancelDeleteParlay()">Cancel</button>
+            <button class="delete-confirm-yes" onclick="event.stopPropagation();confirmDeleteParlay('${p.id}')">Delete parlay</button>
+          </div>
+        </div>`;
+      } else if(confirmPlaceParlayId===p.id) {
         html+=`<div class="place-confirm" onclick="event.stopPropagation()">
           <div class="place-confirm-txt">Place this parlay? Legs and $${p.stake} stake will be locked in.</div>
           <div class="place-confirm-btns">
@@ -1598,70 +1689,214 @@ function renderBuilder() {
 }
 
 // ─── EXPOSURE ──────────────────────────────────────────────────────────────
-function renderExposure() {
-  let html=`<div class="tab-content">
-  <div class="section-hdr"><span class="section-title">Bet Exposure</span></div>
-  <p class="exp-note">If a bet loses, every parlay containing it busts. See how much is riding on each pick.</p>`;
+// Simulate the parlay status if `assumed` (a map of betId -> 'win'|'loss'|'push')
+// were applied on top of the existing recorded results. Returns 'win'|'loss'|'push'|'pending'.
+function simulateParlayStatus(p, assumed) {
+  const results = p.betIds.map(id => assumed[id] || S.betResults[id] || null);
+  if (results.some(r => r === 'loss')) return 'loss';
+  if (results.length > 0 && results.every(r => r === 'win' || r === 'push')) {
+    return results.every(r => r === 'push') ? 'push' : 'win';
+  }
+  return 'pending';
+}
+// Profit (stake-weighted) under an assumption. For still-pending parlays we credit
+// the *max* potential profit (i.e., assume remaining legs hit) to give an upper bound.
+function simulateParlayProfit(p, assumed) {
+  const st = simulateParlayStatus(p, assumed);
+  if (st === 'loss') return -p.stake;
+  if (st === 'push') return 0;
+  // win or still-pending: potential profit if remaining legs all hit, with pushed legs dropped
+  const dec = p.betIds.reduce((acc, id) => {
+    const b = S.bets.find(x => x.id === id); if (!b) return acc;
+    const r = assumed[id] || S.betResults[id] || null;
+    if (r === 'push') return acc;
+    return acc * oddsToDecimal(b.odds);
+  }, 1);
+  return (dec - 1) * p.stake;
+}
 
-  if(S.bets.length===0) {
-    html+=`<div class="empty"><div class="empty-icon">🔍</div><div class="empty-txt">Add bets to see your exposure analysis.</div></div>`;
+function renderExposure() {
+  let html = `<div class="tab-content">
+  <div class="section-hdr"><span class="section-title">Exposure</span></div>`;
+
+  if (S.bets.length === 0) {
+    html += `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-txt">Add bets to see your exposure analysis.</div></div></div>`;
+    return html;
+  }
+  if (S.parlays.length === 0) {
+    html += `<p class="exp-note">If a bet loses, every parlay containing it busts. Build a parlay to see scenario impact.</p>
+      <div class="empty" style="padding-top:20px"><div class="empty-icon">🎯</div><div class="empty-txt">No parlays yet.</div></div></div>`;
+    return html;
   }
 
-  S.bets.forEach(b=>{
-    const inParlays=S.parlays.filter(p=>p.betIds.includes(b.id));
-    const betResult=S.betResults[b.id]||null;
-    // Classify each parlay by current status so a pending bet in an already-busted parlay
-    // doesn't still count as "at risk".
-    let liveAtRisk=0, bustedStake=0, wonStake=0, pushStake=0;
-    inParlays.forEach(p=>{
-      const st=parlayStatus(p);
-      if(st==='loss') bustedStake+=p.stake;
-      else if(st==='win') wonStake+=p.stake;
-      else if(st==='push') pushStake+=p.stake;
-      else liveAtRisk+=p.stake;
+  // ─── Top summary ────────────────────────────────────────────────────────
+  const pendingParlays = S.parlays.filter(p => parlayStatus(p) === 'pending');
+  const liveAtRisk = pendingParlays.reduce((s, p) => s + (Number(p.stake) || 0), 0);
+  const maxWin = pendingParlays.reduce((s, p) => s + ((parlayDecimal(p.betIds) - 1) * p.stake), 0);
+  const realizedLoss = S.parlays.filter(p => parlayStatus(p) === 'loss').reduce((s, p) => s + p.stake, 0);
+  const realizedProfit = S.parlays.reduce((s, p) => {
+    const ep = effectiveProfit(p);
+    return ep === null ? s : s + ep;
+  }, 0);
+
+  html += `<div class="exp-summary">
+    <div class="exp-summary-title">Live exposure</div>
+    <div class="exp-summary-grid">
+      <div class="exp-stat">
+        <span class="exp-stat-val ${liveAtRisk > 0 ? 'risk' : ''}">$${liveAtRisk.toFixed(0)}</span>
+        <span class="exp-stat-lbl">At risk</span>
+      </div>
+      <div class="exp-stat">
+        <span class="exp-stat-val ${maxWin > 0 ? 'win' : ''}">+$${maxWin.toFixed(0)}</span>
+        <span class="exp-stat-lbl">Max win</span>
+      </div>
+      <div class="exp-stat">
+        <span class="exp-stat-val">${pendingParlays.length}/${S.parlays.length}</span>
+        <span class="exp-stat-lbl">Pending</span>
+      </div>
+    </div>
+    ${(realizedLoss > 0 || realizedProfit !== 0) ? `<div style="display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)">
+      <span>Settled so far</span>
+      <span style="font-weight:700;color:${realizedProfit >= 0 ? 'var(--green)' : 'var(--red)'}">${realizedProfit >= 0 ? '+' : '-'}$${Math.abs(realizedProfit).toFixed(2)}</span>
+    </div>` : ''}
+  </div>`;
+
+  // ─── Fight scenarios ────────────────────────────────────────────────────
+  // Group bets by fight, find ML pairs (first two bets in group), and simulate
+  // both outcomes against currently-pending parlays.
+  const fightGroups = {};
+  S.bets.forEach(b => {
+    if (!b.group) return;
+    (fightGroups[b.group] = fightGroups[b.group] || []).push(b);
+  });
+  const scenarioCards = [];
+  Object.entries(fightGroups).forEach(([fightName, bets]) => {
+    const sides = bets.slice(0, 2);
+    if (sides.length < 2) return;
+    const [A, B] = sides;
+    // Skip already-resolved fights
+    const resA = S.betResults[A.id], resB = S.betResults[B.id];
+    if (resA || resB) return;
+    // Only show fights that affect at least one pending parlay
+    const touchesPending = pendingParlays.some(p =>
+      p.betIds.includes(A.id) || p.betIds.includes(B.id)
+    );
+    if (!touchesPending) return;
+
+    function summarize(assumed) {
+      let bust = 0, advance = 0, advanceCount = 0, bustCount = 0, winCount = 0;
+      let advanceMaxProfit = 0;
+      pendingParlays.forEach(p => {
+        const st = simulateParlayStatus(p, assumed);
+        if (st === 'loss') { bust += p.stake; bustCount++; }
+        else if (st === 'win') { advance += p.stake; advanceCount++; winCount++; advanceMaxProfit += simulateParlayProfit(p, assumed); }
+        else { advance += p.stake; advanceCount++; advanceMaxProfit += simulateParlayProfit(p, assumed); }
+      });
+      return { bust, bustCount, advanceCount, winCount, advanceMaxProfit };
+    }
+    const ifA = summarize({ [A.id]: 'win', [B.id]: 'loss' });
+    const ifB = summarize({ [A.id]: 'loss', [B.id]: 'win' });
+
+    function outcomeBlock(name, odds, sim) {
+      const oc = odds > 0 ? 'odds-pos' : 'odds-neg';
+      const deltaCls = sim.bust > 0 ? 'loss' : (sim.advanceCount > 0 ? 'win' : 'flat');
+      const deltaTxt = sim.bust > 0 ? `-$${sim.bust.toFixed(0)}` : (sim.advanceCount > 0 ? `+$${sim.advanceMaxProfit.toFixed(0)} max` : '—');
+      const settledTag = sim.winCount > 0 ? `<strong>${sim.winCount}</strong> win${sim.winCount !== 1 ? 's' : ''} · ` : '';
+      return `<div class="exp-outcome">
+        <div class="exp-outcome-name">
+          <span class="arrow">▸</span>
+          <span>${esc(name)}</span>
+          <span class="${oc}" style="margin-left:auto;font-size:11px">${fmtOdds(odds)}</span>
+        </div>
+        <div class="exp-outcome-delta ${deltaCls}">${deltaTxt}</div>
+        <div class="exp-outcome-detail">
+          ${settledTag}<strong>${sim.advanceCount}</strong> live · <strong>${sim.bustCount}</strong> bust
+        </div>
+      </div>`;
+    }
+
+    scenarioCards.push(`<div class="exp-scenario">
+      <div class="exp-scenario-hdr">
+        <div class="exp-scenario-fight">${esc(fightName)}</div>
+        <div class="exp-scenario-sub">If this fight resolves now</div>
+      </div>
+      <div class="exp-outcome-row">
+        ${outcomeBlock(A.name, A.odds, ifA)}
+        ${outcomeBlock(B.name, B.odds, ifB)}
+      </div>
+    </div>`);
+  });
+
+  if (scenarioCards.length > 0) {
+    html += `<div class="exp-section-title">Fight scenarios</div>`;
+    html += scenarioCards.join('');
+  }
+
+  // ─── Per-bet exposure (sorted by live risk) ─────────────────────────────
+  const betRows = S.bets.map(b => {
+    const inParlays = S.parlays.filter(p => p.betIds.includes(b.id));
+    const betResult = S.betResults[b.id] || null;
+    let liveRisk = 0, bustedStake = 0, wonStake = 0, pushStake = 0;
+    inParlays.forEach(p => {
+      const st = parlayStatus(p);
+      if (st === 'loss') bustedStake += p.stake;
+      else if (st === 'win') wonStake += p.stake;
+      else if (st === 'push') pushStake += p.stake;
+      else liveRisk += p.stake;
     });
-    const oc=b.odds>0?'odds-pos':'odds-neg';
+    return { b, inParlays, betResult, liveRisk, bustedStake, wonStake, pushStake };
+  }).sort((a, b) => {
+    // Pending bets in parlays first, sorted by live risk desc; then orphans
+    const aActive = a.liveRisk + a.bustedStake;
+    const bActive = b.liveRisk + b.bustedStake;
+    if (a.liveRisk !== b.liveRisk) return b.liveRisk - a.liveRisk;
+    return bActive - aActive;
+  });
+
+  html += `<div class="exp-section-title">By bet</div>`;
+  betRows.forEach(({ b, inParlays, betResult, liveRisk, bustedStake }) => {
+    const oc = b.odds > 0 ? 'odds-pos' : 'odds-neg';
     let rightBlock;
-    if(betResult==='win') {
-      rightBlock=`<div class="exp-risk-amt" style="color:var(--green)">Covered</div><div class="exp-risk-lbl">won</div>`;
-    } else if(betResult==='loss') {
-      rightBlock=`<div class="exp-risk-amt" style="color:var(--red)">-$${bustedStake}</div><div class="exp-risk-lbl">lost</div>`;
-    } else if(betResult==='push') {
-      const subLbl=liveAtRisk>0?`$${liveAtRisk} live on others`:bustedStake>0?`parlay${inParlays.length>1?'s':''} busted`:'voided';
-      rightBlock=`<div class="exp-risk-amt" style="color:var(--muted2)">Push</div><div class="exp-risk-lbl">${subLbl}</div>`;
+    if (betResult === 'win') {
+      rightBlock = `<div class="exp-risk-amt" style="color:var(--green)">Covered</div><div class="exp-risk-lbl">won</div>`;
+    } else if (betResult === 'loss') {
+      rightBlock = `<div class="exp-risk-amt" style="color:var(--red)">-$${bustedStake.toFixed(0)}</div><div class="exp-risk-lbl">lost</div>`;
+    } else if (betResult === 'push') {
+      const subLbl = liveRisk > 0 ? `$${liveRisk.toFixed(0)} live on others` : bustedStake > 0 ? `parlay${inParlays.length > 1 ? 's' : ''} busted` : 'voided';
+      rightBlock = `<div class="exp-risk-amt" style="color:var(--muted2)">Push</div><div class="exp-risk-lbl">${subLbl}</div>`;
     } else {
-      // Pending bet
-      if(liveAtRisk===0 && bustedStake>0) {
-        rightBlock=`<div class="exp-risk-amt" style="color:var(--muted2)">$0</div><div class="exp-risk-lbl">parlay${inParlays.length>1?'s':''} busted</div>`;
-      } else if(bustedStake>0) {
-        rightBlock=`<div class="exp-risk-amt" style="color:var(--red)">$${liveAtRisk}</div><div class="exp-risk-lbl">at risk · $${bustedStake} busted</div>`;
+      if (liveRisk === 0 && bustedStake > 0) {
+        rightBlock = `<div class="exp-risk-amt" style="color:var(--muted2)">$0</div><div class="exp-risk-lbl">parlay${inParlays.length > 1 ? 's' : ''} busted</div>`;
+      } else if (bustedStake > 0) {
+        rightBlock = `<div class="exp-risk-amt" style="color:var(--red)">$${liveRisk.toFixed(0)}</div><div class="exp-risk-lbl">at risk · $${bustedStake.toFixed(0)} busted</div>`;
       } else {
-        rightBlock=`<div class="exp-risk-amt" style="color:${liveAtRisk>0?'var(--red)':'var(--muted2)'}">${liveAtRisk>0?'$'+liveAtRisk:'—'}</div><div class="exp-risk-lbl">at risk</div>`;
+        rightBlock = `<div class="exp-risk-amt" style="color:${liveRisk > 0 ? 'var(--red)' : 'var(--muted2)'}">${liveRisk > 0 ? '$' + liveRisk.toFixed(0) : '—'}</div><div class="exp-risk-lbl">at risk</div>`;
       }
     }
-    html+=`<div class="exp-card">
+    html += `<div class="exp-card">
       <div class="exp-top">
         <div>
           <div class="exp-bet-name">${esc(b.name)}</div>
           <span class="${oc}">${fmtOdds(b.odds)}</span>
+          ${b.group ? `<span style="color:var(--muted2);font-size:11px;margin-left:6px">${esc(b.group)}</span>` : ''}
         </div>
         <div style="text-align:right">${rightBlock}</div>
       </div>`;
-    if(inParlays.length===0) {
-      html+=`<div class="exp-none">Not in any parlay</div>`;
+    if (inParlays.length === 0) {
+      html += `<div class="exp-none">Not in any parlay</div>`;
     } else {
-      html+=`<div class="exp-parlays">`;
-      inParlays.forEach(p=>{
-        const st=parlayStatus(p);
-        const tagCls='exp-tag'+(st==='loss'?' busted':st==='win'?' won':st==='push'?' push':'');
-        const icon=st==='loss'?'✕':st==='win'?'✓':st==='push'?'=':'●';
-        html+=`<div class="${tagCls}"><span class="exp-dot">${icon}</span>${esc(p.name)}<span class="exp-stake">$${p.stake}</span></div>`;
+      html += `<div class="exp-parlays">`;
+      inParlays.forEach(p => {
+        const st = parlayStatus(p);
+        const tagCls = 'exp-tag' + (st === 'loss' ? ' busted' : st === 'win' ? ' won' : st === 'push' ? ' push' : '');
+        const icon = st === 'loss' ? '✕' : st === 'win' ? '✓' : st === 'push' ? '=' : '●';
+        html += `<div class="${tagCls}"><span class="exp-dot">${icon}</span>${esc(p.name)}<span class="exp-stake">$${p.stake}</span></div>`;
       });
-      html+=`</div>`;
+      html += `</div>`;
     }
-    html+=`</div>`;
+    html += `</div>`;
   });
-  html+=`</div>`;
+  html += `</div>`;
   return html;
 }
 
@@ -2022,9 +2257,13 @@ function saveBet(){
   const name=document.getElementById('fBetName')?.value?.trim();
   const absVal=parseInt(document.getElementById('fBetOdds')?.value);
   const isNeg=document.getElementById('oddsSignBtn')?.classList.contains('neg');
-  if(!name||isNaN(absVal)||absVal<=0){showToast('Enter a name and valid odds');return;}
+  if(!name){showToast('Enter a bet name');return;}
+  if(name.length>120){showToast('Bet name too long (max 120)');return;}
+  if(isNaN(absVal)||absVal<100){showToast('Odds must be ≥ 100 (American)');return;}
+  if(absVal>100000){showToast('Odds out of range');return;}
   const odds=isNeg?-absVal:absVal;
   const group=document.getElementById('fBetGroup')?.value?.trim()||'';
+  if(group.length>120){showToast('Fight label too long');return;}
   if(editingBetId){
     S.bets=S.bets.map(b=>b.id===editingBetId?{...b,name,odds,group}:b);
   } else { S.bets.push({id:uid(),name,odds,group}); }
@@ -2036,11 +2275,12 @@ function deleteBet(id){
   const idx=S.bets.findIndex(b=>b.id===id);
   const memberOf=S.parlays.filter(p=>p.betIds.includes(id)).map(p=>p.id);
   const result=S.betResults[id]||null;
-  _trashedBet={bet:{...bet},idx,memberOf,result};
+  const resultAt=S.betResultsAt[id]||null;
+  _trashedBet={bet:{...bet},idx,memberOf,result,resultAt};
   haptic([8,40,8]);
   S.bets=S.bets.filter(b=>b.id!==id);
   S.parlays=S.parlays.map(p=>({...p,betIds:p.betIds.filter(x=>x!==id)}));
-  if(result) delete S.betResults[id];
+  if(result){ delete S.betResults[id]; delete S.betResultsAt[id]; }
   saveState();render();
   showToast('Bet deleted',{action:{label:'Undo',onClick:undoDeleteBet},duration:5000});
 }
@@ -2050,7 +2290,7 @@ function undoDeleteBet(){
   const insertIdx=Math.min(t.idx,S.bets.length);
   S.bets.splice(insertIdx,0,t.bet);
   S.parlays=S.parlays.map(p=>t.memberOf.includes(p.id)?{...p,betIds:[...p.betIds,t.bet.id]}:p);
-  if(t.result) S.betResults[t.bet.id]=t.result;
+  if(t.result){ S.betResults[t.bet.id]=t.result; if(t.resultAt) S.betResultsAt[t.bet.id]=t.resultAt; }
   haptic();
   saveState();render();
 }
@@ -2064,10 +2304,34 @@ function createParlay(){
 function toggleParlay(id){S.activeParlayId=S.activeParlayId===id?null:id;saveState();render();}
 function deleteParlay(id){
   const p=S.parlays.find(x=>x.id===id);
-  if(p&&p.placed){ showToast('Unlock parlay before deleting'); return; }
+  if(!p) return;
+  if(p.placed){ showToast('Unlock parlay before deleting'); return; }
+  // Bare/empty parlays — nothing to lose, delete immediately.
+  if(p.betIds.length===0){
+    S.parlays=S.parlays.filter(x=>x.id!==id);
+    if(S.activeParlayId===id) S.activeParlayId=null;
+    saveState();render();
+    return;
+  }
+  // Otherwise require confirmation inline.
+  confirmDeleteParlayId=id;
+  confirmPlaceParlayId=null;
+  S.activeParlayId=id; // expand so the inline confirm is visible
+  render();
+}
+function cancelDeleteParlay(){ confirmDeleteParlayId=null; render(); }
+function confirmDeleteParlay(id){
+  const trashed=S.parlays.find(x=>x.id===id);
   S.parlays=S.parlays.filter(p=>p.id!==id);
-  if(S.activeParlayId===id)S.activeParlayId=null;
+  if(S.activeParlayId===id) S.activeParlayId=null;
+  confirmDeleteParlayId=null;
+  haptic([8,40,8]);
   saveState();render();
+  if(trashed){
+    showToast('Parlay deleted',{action:{label:'Undo',onClick:()=>{
+      S.parlays.push(trashed); saveState(); render();
+    }},duration:5000});
+  }
 }
 function toggleLeg(pid,bid){
   const p=S.parlays.find(x=>x.id===pid);
@@ -2097,13 +2361,14 @@ function toggleLeg(pid,bid){
   if(swapped) showToast('Swapped ML side');
   saveState();render();
 }
+const STAKE_MAX = 1000000;
 function liveStake(input){
   const pid=input.dataset.pid;
   const p=S.parlays.find(x=>x.id===pid);
   if(p&&p.placed) return;
   const mult=parseFloat(input.dataset.mult)||1;
   const n=parseFloat(input.value);
-  if(isNaN(n)||n<0) return;
+  if(isNaN(n)||n<0||n>STAKE_MAX) return;
   // Update DOM directly — no re-render needed
   const pv=document.getElementById('pv-'+pid);
   const pr=document.getElementById('pr-'+pid);
@@ -2116,13 +2381,15 @@ function liveStake(input){
 function setStake(pid,val){
   const p=S.parlays.find(x=>x.id===pid);
   if(p&&p.placed) return;
-  const n=parseFloat(val);if(isNaN(n)||n<0)return;
+  const n=parseFloat(val);
+  if(isNaN(n)||n<0||n>STAKE_MAX)return;
   S.parlays=S.parlays.map(p=>p.id===pid?{...p,stake:n}:p);
   saveState();
 }
 function requestPlaceParlay(id){
   const p=S.parlays.find(x=>x.id===id);
   if(!p||p.betIds.length===0){ showToast('Add legs first'); return; }
+  if(!(p.stake>0)){ showToast('Set a stake greater than $0'); return; }
   confirmPlaceParlayId=id; render();
 }
 function cancelPlaceParlay(){ confirmPlaceParlayId=null; render(); }
@@ -2256,8 +2523,13 @@ function renderHedgeOverlay(){
   </div>`;
 }
 
+function _stampResult(id, val) {
+  if (val) { S.betResults[id] = val; S.betResultsAt[id] = Date.now(); }
+  else { delete S.betResults[id]; delete S.betResultsAt[id]; }
+}
 function setResult(id,result){
-  S.betResults[id]=S.betResults[id]===result?null:result;
+  const cur = S.betResults[id];
+  _stampResult(id, cur === result ? null : result);
   saveState();render();
 }
 function setFightWinner(idA, idB, mode) {
@@ -2268,13 +2540,13 @@ function setFightWinner(idA, idB, mode) {
             : (ra==='push' && rb==='push') ? 'push'
             : null;
   if (cur === mode) {
-    delete S.betResults[idA]; delete S.betResults[idB];
+    _stampResult(idA, null); _stampResult(idB, null);
   } else if (mode === 'A') {
-    S.betResults[idA]='win'; S.betResults[idB]='loss';
+    _stampResult(idA, 'win'); _stampResult(idB, 'loss');
   } else if (mode === 'B') {
-    S.betResults[idA]='loss'; S.betResults[idB]='win';
+    _stampResult(idA, 'loss'); _stampResult(idB, 'win');
   } else if (mode === 'push') {
-    S.betResults[idA]='push'; S.betResults[idB]='push';
+    _stampResult(idA, 'push'); _stampResult(idB, 'push');
   }
   haptic();
   saveState();render();
@@ -2289,7 +2561,7 @@ function saveRecap(){
   const recap={
     id:uid(),event:S.weekName||S.eventName,
     date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
-    bets:S.bets.map(b=>({...b,result:S.betResults[b.id]||null})),
+    bets:S.bets.map(b=>({...b,result:S.betResults[b.id]||null,resultAt:S.betResultsAt[b.id]||null})),
     parlays:S.parlays.map(p=>{
       const status=parlayStatus(p);
       return{...p,result:status,payout:parlayPayoutForArchive(p)};
@@ -2304,7 +2576,7 @@ function deleteRecap(id){
   saveState();render();
 }
 function newWeek(){
-  S.bets=[];S.parlays=[];S.betResults={};S.activeParlayId=null;S._confirmClear=false;
+  S.bets=[];S.parlays=[];S.betResults={};S.betResultsAt={};S.activeParlayId=null;S._confirmClear=false;
   S.weekName='';
   saveState();render();showToast('New week started ✓');
 }
