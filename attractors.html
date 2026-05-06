@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Strange Attractor Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #050608; color: #e8e6e1; font-family: 'Source Sans 3', system-ui, sans-serif; }
+  canvas { position: fixed; inset: 0; display: block; cursor: grab; }
+  canvas:active { cursor: grabbing; }
+
+  .panel {
+    position: fixed; top: 16px; left: 16px;
+    width: 320px; max-width: calc(100vw - 32px);
+    background: rgba(10, 12, 16, 0.72);
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: 14px;
+    padding: 18px 18px 14px;
+    z-index: 10;
+    transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s;
+  }
+  .panel.collapsed { transform: translateX(calc(-100% - 24px)); opacity: 0; pointer-events: none; }
+
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .title { font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; color: #c8c5be; font-weight: 500; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #C96442; box-shadow: 0 0 12px #C96442; animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .label-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #8a8680; }
+  .value { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #e8e6e1; }
+
+  select, button, input[type=range] { font: inherit; color: inherit; }
+
+  .select-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  }
+  .pill {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #c8c5be;
+    padding: 8px 10px;
+    font-size: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .18s;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: center;
+    letter-spacing: 0.04em;
+  }
+  .pill:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .pill.active { background: rgba(201,100,66,0.18); border-color: rgba(201,100,66,0.55); color: #ffb89e; }
+
+  input[type=range] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 999px; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #C96442; cursor: pointer;
+    box-shadow: 0 0 0 3px rgba(201,100,66,0.18);
+    transition: box-shadow .18s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px rgba(201,100,66,0.28); }
+  input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #C96442; cursor: pointer; border: none;
+  }
+
+  .actions { display: flex; gap: 6px; margin-top: 8px; }
+  .btn {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #e8e6e1;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    transition: all .18s;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .btn:hover { background: rgba(255,255,255,0.09); }
+  .btn.primary {
+    background: linear-gradient(135deg, #C96442, #DA7756);
+    border-color: transparent;
+    color: #fff;
+  }
+  .btn.primary:hover { filter: brightness(1.1); }
+
+  .toggle {
+    position: fixed; top: 16px; left: 16px; z-index: 11;
+    width: 38px; height: 38px;
+    background: rgba(10, 12, 16, 0.72);
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: 10px;
+    cursor: pointer;
+    display: none;
+    align-items: center; justify-content: center;
+  }
+  .toggle.show { display: flex; }
+  .toggle svg { width: 16px; height: 16px; stroke: #e8e6e1; }
+
+  .legend {
+    position: fixed; bottom: 14px; right: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.1em;
+    color: rgba(232,230,225,0.42);
+    text-align: right;
+    line-height: 1.7;
+    pointer-events: none;
+  }
+  .legend kbd {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: inherit;
+    font-size: 9px;
+    color: #c8c5be;
+  }
+
+  .stat {
+    position: fixed; bottom: 14px; left: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.1em;
+    color: rgba(232,230,225,0.42);
+    pointer-events: none;
+  }
+  .stat span { color: #ffb89e; }
+
+  @media (max-width: 600px) {
+    .panel { width: calc(100vw - 32px); }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<button class="toggle" id="toggle" aria-label="Toggle panel">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+
+<div class="panel" id="panel">
+  <div class="header">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="dot"></div>
+      <div class="title">Strange Attractors</div>
+    </div>
+    <button class="pill" id="hide" style="padding: 4px 10px; font-size: 11px;">×</button>
+  </div>
+
+  <div class="row">
+    <div class="label">System</div>
+    <div class="select-grid" id="systems"></div>
+  </div>
+
+  <div class="row" id="paramsRow"></div>
+
+  <div class="row">
+    <div class="label-row"><span class="label">Particles</span><span class="value" id="vCount">3000</span></div>
+    <input type="range" id="count" min="200" max="12000" step="100" value="3000">
+  </div>
+
+  <div class="row">
+    <div class="label-row"><span class="label">Speed</span><span class="value" id="vSpeed">1.00</span></div>
+    <input type="range" id="speed" min="0.05" max="3" step="0.01" value="1">
+  </div>
+
+  <div class="row">
+    <div class="label-row"><span class="label">Trails</span><span class="value" id="vTrail">0.92</span></div>
+    <input type="range" id="trail" min="0.6" max="0.995" step="0.001" value="0.92">
+  </div>
+
+  <div class="row">
+    <div class="label-row"><span class="label">Hue Drift</span><span class="value" id="vHue">14</span></div>
+    <input type="range" id="hue" min="0" max="120" step="1" value="14">
+  </div>
+
+  <div class="actions">
+    <button class="btn" id="reset">Reset</button>
+    <button class="btn primary" id="surprise">Surprise me</button>
+  </div>
+</div>
+
+<div class="stat">FPS <span id="fps">—</span> · STEP <span id="step">0</span></div>
+
+<div class="legend">
+  drag <kbd>mouse</kbd> rotate · <kbd>wheel</kbd> zoom<br>
+  <kbd>space</kbd> pause · <kbd>r</kbd> reset · <kbd>s</kbd> surprise
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d', { alpha: false });
+
+  let W = 0, H = 0, DPR = 1;
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = canvas.width = Math.floor(window.innerWidth * DPR);
+    H = canvas.height = Math.floor(window.innerHeight * DPR);
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    ctx.fillStyle = '#050608';
+    ctx.fillRect(0, 0, W, H);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // ───────── Attractor systems ─────────
+  // Each: dt (recommended step), scale (visual fit), params {name: [min,max,default]}, derive(p) -> step fn
+  const SYSTEMS = {
+    lorenz: {
+      label: 'Lorenz',
+      dt: 0.005, scale: 11,
+      init: () => ({ x: rand(-1,1), y: rand(-1,1), z: rand(0.5, 2) }),
+      params: {
+        sigma: [1, 30, 10],
+        rho:   [1, 60, 28],
+        beta:  [0.5, 6, 8/3],
+      },
+      step: (p) => (s, dt) => {
+        const dx = p.sigma * (s.y - s.x);
+        const dy = s.x * (p.rho - s.z) - s.y;
+        const dz = s.x * s.y - p.beta * s.z;
+        s.x += dx * dt; s.y += dy * dt; s.z += dz * dt;
+      },
+    },
+    aizawa: {
+      label: 'Aizawa',
+      dt: 0.01, scale: 90,
+      init: () => ({ x: rand(-0.1,0.1), y: rand(-0.1,0.1), z: rand(-0.1,0.1) }),
+      params: {
+        a: [0.1, 1.2, 0.95],
+        b: [0.1, 1.2, 0.7],
+        c: [0.1, 1.2, 0.6],
+        d: [1.0, 5.0, 3.5],
+      },
+      step: (p) => (s, dt) => {
+        const e = 0.25, f = 0.1;
+        const dx = (s.z - p.b) * s.x - p.d * s.y;
+        const dy = p.d * s.x + (s.z - p.b) * s.y;
+        const dz = p.c + p.a * s.z - (s.z*s.z*s.z)/3 - (s.x*s.x + s.y*s.y) * (1 + e * s.z) + f * s.z * (s.x*s.x*s.x);
+        s.x += dx * dt; s.y += dy * dt; s.z += dz * dt;
+      },
+    },
+    thomas: {
+      label: 'Thomas',
+      dt: 0.05, scale: 35,
+      init: () => ({ x: rand(0.5,1.5), y: rand(0.5,1.5), z: rand(0.5,1.5) }),
+      params: { b: [0.1, 0.3, 0.208186] },
+      step: (p) => (s, dt) => {
+        const dx = Math.sin(s.y) - p.b * s.x;
+        const dy = Math.sin(s.z) - p.b * s.y;
+        const dz = Math.sin(s.x) - p.b * s.z;
+        s.x += dx * dt; s.y += dy * dt; s.z += dz * dt;
+      },
+    },
+    halvorsen: {
+      label: 'Halvorsen',
+      dt: 0.005, scale: 18,
+      init: () => ({ x: rand(-1,1), y: rand(-1,1), z: rand(-1,1) }),
+      params: { a: [0.5, 3, 1.4] },
+      step: (p) => (s, dt) => {
+        const dx = -p.a * s.x - 4*s.y - 4*s.z - s.y*s.y;
+        const dy = -p.a * s.y - 4*s.z - 4*s.x - s.z*s.z;
+        const dz = -p.a * s.z - 4*s.x - 4*s.y - s.x*s.x;
+        s.x += dx * dt; s.y += dy * dt; s.z += dz * dt;
+      },
+    },
+    chen: {
+      label: 'Chen',
+      dt: 0.003, scale: 12,
+      init: () => ({ x: rand(-1,1), y: rand(-1,1), z: rand(0,2) }),
+      params: {
+        a: [20, 50, 35],
+        b: [1, 10, 3],
+        c: [10, 35, 28],
+      },
+      step: (p) => (s, dt) => {
+        const dx = p.a * (s.y - s.x);
+        const dy = (p.c - p.a) * s.x - s.x * s.z + p.c * s.y;
+        const dz = s.x * s.y - p.b * s.z;
+        s.x += dx * dt; s.y += dy * dt; s.z += dz * dt;
+      },
+    },
+    rossler: {
+      label: 'Rössler',
+      dt: 0.02, scale: 12,
+      init: () => ({ x: rand(-1,1), y: rand(-1,1), z: rand(0,1) }),
+      params: {
+        a: [0.05, 0.5, 0.2],
+        b: [0.05, 0.5, 0.2],
+        c: [3, 12, 5.7],
+      },
+      step: (p) => (s, dt) => {
+        const dx = -s.y - s.z;
+        const dy = s.x + p.a * s.y;
+        const dz = p.b + s.z * (s.x - p.c);
+        s.x += dx * dt; s.y += dy * dt; s.z += dz * dt;
+      },
+    },
+    dadras: {
+      label: 'Dadras',
+      dt: 0.01, scale: 12,
+      init: () => ({ x: rand(-1,1), y: rand(-1,1), z: rand(-1,1) }),
+      params: {
+        a: [1, 6, 3],
+        b: [1, 5, 2.7],
+        c: [1, 3, 1.7],
+        d: [1, 4, 2],
+        e: [5, 15, 9],
+      },
+      step: (p) => (s, dt) => {
+        const dx = s.y - p.a * s.x + p.b * s.y * s.z;
+        const dy = p.c * s.y - s.x * s.z + s.z;
+        const dz = p.d * s.x * s.y - p.e * s.z;
+        s.x += dx * dt; s.y += dy * dt; s.z += dz * dt;
+      },
+    },
+    sprottB: {
+      label: 'Sprott-B',
+      dt: 0.012, scale: 10,
+      init: () => ({ x: rand(-0.5,0.5), y: rand(-0.5,0.5), z: rand(-0.5,0.5) }),
+      params: {
+        a: [0.2, 1.4, 0.4],
+      },
+      step: (p) => (s, dt) => {
+        const dx = s.y * s.z;
+        const dy = s.x - s.y;
+        const dz = 1 - s.x * s.y * p.a;
+        s.x += dx * dt; s.y += dy * dt; s.z += dz * dt;
+      },
+    },
+  };
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  // ───────── State ─────────
+  const state = {
+    sysKey: 'lorenz',
+    params: {},
+    particles: [],
+    count: 3000,
+    speed: 1.0,
+    trail: 0.92,
+    hueDrift: 14,
+    paused: false,
+    rotX: -0.35,
+    rotY: 0.6,
+    zoom: 1.0,
+    step: 0,
+    hueOffset: 0,
+  };
+
+  function loadSystem(key) {
+    state.sysKey = key;
+    const sys = SYSTEMS[key];
+    state.params = {};
+    Object.keys(sys.params).forEach(k => state.params[k] = sys.params[k][2]);
+    spawnParticles();
+    renderParamUI();
+    paintHighlight();
+  }
+
+  function spawnParticles() {
+    const sys = SYSTEMS[state.sysKey];
+    state.particles = [];
+    for (let i = 0; i < state.count; i++) {
+      state.particles.push(sys.init());
+    }
+    ctx.fillStyle = '#050608';
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  // ───────── UI ─────────
+  const sysContainer = document.getElementById('systems');
+  Object.keys(SYSTEMS).forEach(k => {
+    const b = document.createElement('button');
+    b.className = 'pill';
+    b.textContent = SYSTEMS[k].label;
+    b.dataset.key = k;
+    b.addEventListener('click', () => loadSystem(k));
+    sysContainer.appendChild(b);
+  });
+
+  function paintHighlight() {
+    [...sysContainer.children].forEach(el => {
+      el.classList.toggle('active', el.dataset.key === state.sysKey);
+    });
+  }
+
+  const paramsRow = document.getElementById('paramsRow');
+  function renderParamUI() {
+    paramsRow.innerHTML = '';
+    const sys = SYSTEMS[state.sysKey];
+    Object.keys(sys.params).forEach(name => {
+      const [min, max] = sys.params[name];
+      const wrap = document.createElement('div');
+      wrap.style.marginBottom = '8px';
+      wrap.innerHTML = `
+        <div class="label-row"><span class="label">${name}</span><span class="value" data-v="${name}">${state.params[name].toFixed(2)}</span></div>
+        <input type="range" min="${min}" max="${max}" step="${(max-min)/200}" value="${state.params[name]}" data-p="${name}">
+      `;
+      paramsRow.appendChild(wrap);
+    });
+    paramsRow.querySelectorAll('input[type=range]').forEach(input => {
+      input.addEventListener('input', (e) => {
+        const k = e.target.dataset.p;
+        state.params[k] = parseFloat(e.target.value);
+        const v = paramsRow.querySelector(`[data-v="${k}"]`);
+        if (v) v.textContent = state.params[k].toFixed(2);
+      });
+    });
+  }
+
+  function bindRange(id, key, fmt) {
+    const input = document.getElementById(id);
+    const value = document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1));
+    input.addEventListener('input', (e) => {
+      state[key] = parseFloat(e.target.value);
+      if (key === 'count') {
+        state.count = Math.round(state.count);
+        spawnParticles();
+      }
+      value.textContent = fmt(state[key]);
+    });
+  }
+  bindRange('count', 'count', v => Math.round(v).toString());
+  bindRange('speed', 'speed', v => v.toFixed(2));
+  bindRange('trail', 'trail', v => v.toFixed(3));
+  bindRange('hue',   'hueDrift', v => Math.round(v).toString());
+
+  document.getElementById('reset').addEventListener('click', () => {
+    const sys = SYSTEMS[state.sysKey];
+    Object.keys(sys.params).forEach(k => state.params[k] = sys.params[k][2]);
+    spawnParticles();
+    renderParamUI();
+  });
+
+  document.getElementById('surprise').addEventListener('click', surprise);
+
+  function surprise() {
+    const keys = Object.keys(SYSTEMS);
+    const k = keys[Math.floor(Math.random() * keys.length)];
+    state.sysKey = k;
+    const sys = SYSTEMS[k];
+    state.params = {};
+    Object.keys(sys.params).forEach(p => {
+      const [mn, mx, def] = sys.params[p];
+      // bias toward parameters near defaults but with chaos
+      const t = Math.random();
+      state.params[p] = def * (0.7 + t * 0.6);
+      state.params[p] = Math.max(mn, Math.min(mx, state.params[p]));
+    });
+    state.hueDrift = Math.round(rand(0, 80));
+    state.trail = rand(0.85, 0.97);
+    document.getElementById('hue').value = state.hueDrift;
+    document.getElementById('vHue').textContent = state.hueDrift;
+    document.getElementById('trail').value = state.trail;
+    document.getElementById('vTrail').textContent = state.trail.toFixed(3);
+    spawnParticles();
+    renderParamUI();
+    paintHighlight();
+  }
+
+  // ───────── Interaction ─────────
+  let dragging = false, lastX = 0, lastY = 0;
+  canvas.addEventListener('pointerdown', (e) => {
+    dragging = true; lastX = e.clientX; lastY = e.clientY;
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const dx = (e.clientX - lastX) * 0.005;
+    const dy = (e.clientY - lastY) * 0.005;
+    state.rotY += dx;
+    state.rotX += dy;
+    lastX = e.clientX; lastY = e.clientY;
+  });
+  canvas.addEventListener('pointerup', () => dragging = false);
+  canvas.addEventListener('pointercancel', () => dragging = false);
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    state.zoom *= Math.exp(-e.deltaY * 0.001);
+    state.zoom = Math.max(0.3, Math.min(5, state.zoom));
+  }, { passive: false });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.code === 'Space') { e.preventDefault(); state.paused = !state.paused; }
+    else if (e.key === 'r' || e.key === 'R') document.getElementById('reset').click();
+    else if (e.key === 's' || e.key === 'S') surprise();
+    else if (e.key === 'h' || e.key === 'H') togglePanel();
+  });
+
+  const panel = document.getElementById('panel');
+  const toggleBtn = document.getElementById('toggle');
+  function togglePanel() {
+    panel.classList.toggle('collapsed');
+    toggleBtn.classList.toggle('show', panel.classList.contains('collapsed'));
+  }
+  document.getElementById('hide').addEventListener('click', togglePanel);
+  toggleBtn.addEventListener('click', togglePanel);
+
+  // ───────── Render loop ─────────
+  let lastT = performance.now();
+  let frameCount = 0;
+  let fpsAccum = 0;
+  const fpsEl = document.getElementById('fps');
+  const stepEl = document.getElementById('step');
+
+  function frame(now) {
+    const dt = Math.min(0.05, (now - lastT) / 1000);
+    lastT = now;
+    fpsAccum += dt;
+    frameCount++;
+    if (fpsAccum > 0.5) {
+      fpsEl.textContent = Math.round(frameCount / fpsAccum);
+      frameCount = 0; fpsAccum = 0;
+    }
+
+    // Fade prior frame for trails
+    ctx.fillStyle = `rgba(5, 6, 8, ${1 - state.trail})`;
+    ctx.fillRect(0, 0, W, H);
+
+    if (!state.paused) {
+      const sys = SYSTEMS[state.sysKey];
+      const stepFn = sys.step(state.params);
+      const integrationDt = sys.dt * state.speed;
+      // sub-steps for stability when speed high
+      const sub = Math.max(1, Math.ceil(state.speed * 1.5));
+      const subDt = integrationDt / sub;
+
+      const cx = Math.cos(state.rotX), sx = Math.sin(state.rotX);
+      const cy = Math.cos(state.rotY), sy = Math.sin(state.rotY);
+      const baseScale = (Math.min(W, H) / sys.scale) * 0.42 * state.zoom;
+      const ox = W * 0.5, oy = H * 0.5;
+
+      const hueBase = (state.step * state.hueDrift * 0.01) % 360;
+      ctx.globalCompositeOperation = 'lighter';
+
+      for (let i = 0; i < state.particles.length; i++) {
+        const p = state.particles[i];
+        for (let s = 0; s < sub; s++) stepFn(p, subDt);
+
+        // rotate around Y, then X
+        const x1 = p.x * cy + p.z * sy;
+        const z1 = -p.x * sy + p.z * cy;
+        const y1 = p.y * cx - z1 * sx;
+        const z2 = p.y * sx + z1 * cx;
+
+        // perspective
+        const persp = 1 / (1 + z2 * 0.012);
+        const sxp = ox + x1 * baseScale * persp;
+        const syp = oy + y1 * baseScale * persp;
+
+        if (sxp < 0 || sxp >= W || syp < 0 || syp >= H) continue;
+
+        const hue = (hueBase + i * 0.04 + z2 * 0.5) % 360;
+        const lum = 55 + 12 * persp;
+        const alpha = 0.65 * persp;
+        ctx.fillStyle = `hsla(${hue}, 85%, ${lum}%, ${alpha})`;
+        const r = Math.max(0.6, 1.4 * persp * DPR);
+        ctx.fillRect(sxp - r/2, syp - r/2, r, r);
+      }
+      ctx.globalCompositeOperation = 'source-over';
+
+      state.step++;
+      if (state.step % 30 === 0) stepEl.textContent = state.step;
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  // ───────── Boot ─────────
+  loadSystem('lorenz');
+  // Slight random initial rotation for charm
+  state.rotY = rand(0.3, 1.0);
+  requestAnimationFrame((t) => { lastT = t; requestAnimationFrame(frame); });
+})();
+</script>
+</body>
+</html>
