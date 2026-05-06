@@ -769,6 +769,16 @@ html, body {
   font-family: 'Source Sans 3', sans-serif;
 }
 .save-recap-btn:active { opacity: 0.85; }
+.export-slip-btn {
+  margin: 16px 14px 0; width: calc(100% - 28px);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--bg); color: var(--text2);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer;
+  font-family: 'Source Sans 3', sans-serif;
+}
+.export-slip-btn:active { background: var(--bg2); }
+.export-slip-btn svg { color: var(--accent); }
 .archive-card {
   margin: 0 14px 8px; background: var(--bg); border-radius: var(--radius);
   padding: 13px 14px; border: 1px solid var(--border);
@@ -1345,6 +1355,109 @@ function effectiveProfit(p) {
   if(status==='loss') return -p.stake;
   if(status==='push') return 0;
   return null;
+}
+
+// Compute Worst/Current/Best totals across all parlays.
+// Best case respects mutual exclusivity — bets in the same `group` (e.g. opposite
+// sides of a fight) cannot both win, so we search over feasible group→winner
+// assignments to find the true maximum profit. Worst case stays simple: every
+// pending parlay loses its stake.
+function computeWeekTotals() {
+  let totalStaked=0, realizedPL=0;
+  const pending=[];
+  let lockedDelta=0;
+  let pendingStakeTotal=0;
+
+  S.parlays.forEach(p=>{
+    totalStaked+=p.stake;
+    const status=parlayStatus(p);
+    if(status==='win'){
+      const profit=(effectiveDecimal(p.betIds)-1)*p.stake;
+      realizedPL+=profit; lockedDelta+=profit;
+    } else if(status==='loss'){
+      realizedPL-=p.stake; lockedDelta-=p.stake;
+    } else if(status==='push'){
+      /* 0 */
+    } else {
+      const liveLegs=p.betIds.filter(id=>S.betResults[id]!=='push');
+      const winDec=liveLegs.reduce((acc,id)=>{
+        const b=S.bets.find(x=>x.id===id); return b?acc*oddsToDecimal(b.odds):acc;
+      },1);
+      pending.push({stake:p.stake, winProfit:(winDec-1)*p.stake, legBetIds:liveLegs});
+      pendingStakeTotal+=p.stake;
+    }
+  });
+
+  if(!pending.length){
+    return {totalStaked, realizedPL, bestCasePL:lockedDelta, worstCasePL:lockedDelta};
+  }
+
+  const worstCasePL=lockedDelta-pendingStakeTotal;
+
+  // Best-case search: pick one bet per involved group as the winner.
+  const involved=new Set();
+  for(const pp of pending) for(const id of pp.legBetIds) involved.add(id);
+  const groups=new Map(); const ungrouped=[];
+  for(const id of involved){
+    const b=S.bets.find(x=>x.id===id); if(!b) continue;
+    if(b.group){ if(!groups.has(b.group)) groups.set(b.group,[]); groups.get(b.group).push(id); }
+    else ungrouped.push(id);
+  }
+  const groupKeys=[...groups.keys()];
+  const groupChoices=groupKeys.map(g=>groups.get(g));
+  const totalCombos=groupChoices.reduce((a,arr)=>a*arr.length,1);
+
+  const evalWinners=(winnersSet)=>{
+    let t=0;
+    for(const pp of pending){
+      const ok=pp.legBetIds.every(id=>winnersSet.has(id));
+      t+=ok?pp.winProfit:-pp.stake;
+    }
+    return t;
+  };
+
+  let best=-Infinity;
+  if(totalCombos<=200000){
+    const winners=new Set(ungrouped);
+    const recurse=(i)=>{
+      if(i===groupKeys.length){
+        const t=evalWinners(winners); if(t>best) best=t;
+        return;
+      }
+      for(const choice of groupChoices[i]){
+        winners.add(choice);
+        recurse(i+1);
+        winners.delete(choice);
+      }
+    };
+    recurse(0);
+  } else {
+    // Greedy fallback for very large search spaces
+    const sorted=[...pending].sort((a,b)=>(b.winProfit+b.stake)-(a.winProfit+a.stake));
+    const winners=new Set(ungrouped);
+    for(const pp of sorted){
+      let conflict=false;
+      const adds=[];
+      for(const id of pp.legBetIds){
+        const b=S.bets.find(x=>x.id===id); if(!b) continue;
+        if(b.group){
+          let existing=null;
+          for(const gid of groups.get(b.group)) if(winners.has(gid)){ existing=gid; break; }
+          if(existing && existing!==id){ conflict=true; break; }
+        }
+        adds.push(id);
+      }
+      if(!conflict) for(const id of adds) winners.add(id);
+    }
+    // Ensure every group has a winner picked (default to first bet) so eval is meaningful
+    for(const g of groupKeys){
+      const has=groups.get(g).some(gid=>winners.has(gid));
+      if(!has) winners.add(groups.get(g)[0]);
+    }
+    best=evalWinners(winners);
+  }
+
+  return {totalStaked, realizedPL, bestCasePL:lockedDelta+best, worstCasePL};
 }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function showToast(msg, opts) {
@@ -2068,26 +2181,9 @@ function renderResults() {
     });
 
     // Week summary card
-    let totalStaked=0, realizedPL=0, bestCasePL=0, worstCasePL=0;
-    S.parlays.forEach(p=>{
-      totalStaked+=p.stake;
-      const status=parlayStatus(p);
-      if(status==='win') {
-        const profit=(effectiveDecimal(p.betIds)-1)*p.stake;
-        realizedPL+=profit; bestCasePL+=profit; worstCasePL+=profit;
-      } else if(status==='loss') { realizedPL-=p.stake; bestCasePL-=p.stake; worstCasePL-=p.stake; }
-      else if(status==='push') { /* stake returned, 0 P/L */ }
-      else {
-        // Pending — worst case: all remaining bets lose => -stake
-        worstCasePL-=p.stake;
-        // Best case: pushes drop out, remaining pending all win
-        const bestDec=p.betIds.reduce((acc,id)=>{
-          if(S.betResults[id]==='push') return acc;
-          const b=S.bets.find(x=>x.id===id); return b?acc*oddsToDecimal(b.odds):acc;
-        },1);
-        bestCasePL+=(bestDec-1)*p.stake;
-      }
-    });
+    const __wt=computeWeekTotals();
+    const totalStaked=__wt.totalStaked, realizedPL=__wt.realizedPL,
+          bestCasePL=__wt.bestCasePL, worstCasePL=__wt.worstCasePL;
     const fmtPL=v=>`${v>0?'+':v<0?'-':''}$${Math.abs(v).toFixed(2)}`;
     const colorPL=v=>v>0?'var(--green)':v<0?'var(--red)':'var(--muted)';
     const covered=worstCasePL>=0 && totalStaked>0;
@@ -2111,6 +2207,9 @@ function renderResults() {
   }
 
   if(S.bets.length>0||S.parlays.length>0) {
+    if(S.parlays.length>0) {
+      html+=`<button class="export-slip-btn" onclick="exportSlipImage()" title="Export betslip image"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export betslip image</button>`;
+    }
     html+=`<button class="save-recap-btn" onclick="saveRecap()">Save & archive this week</button>`;
 
     // New week / clear button
@@ -2604,6 +2703,254 @@ function saveRecap(){
 function deleteRecap(id){
   S.weeklyRecaps=S.weeklyRecaps.filter(r=>r.id!==id);
   saveState();render();
+}
+
+// ─── EXPORT BETSLIP IMAGE ───────────────────────────────────────────────
+async function exportSlipImage(){
+  if(!S.parlays.length){ showToast('No parlays to export'); return; }
+  try{ if(document.fonts&&document.fonts.ready) await document.fonts.ready; }catch(e){}
+
+  const wt=computeWeekTotals();
+  const totalStaked=wt.totalStaked, realizedPL=wt.realizedPL,
+        bestCasePL=wt.bestCasePL, worstCasePL=wt.worstCasePL;
+  const fmtPL=v=>`${v>0?'+':v<0?'-':''}$${Math.abs(v).toFixed(2)}`;
+
+  // Layout constants
+  const W=820, PAD=28, RADIUS=14;
+  const HEADER_H=92, FOOTER_H=44;
+  const PARLAY_HEAD=58, BET_ROW=30, PARLAY_FOOT=42, PARLAY_GAP=14;
+  const SUMMARY_H=178;
+
+  // Pre-measure body height
+  let bodyH=0;
+  S.parlays.forEach(p=>{
+    bodyH+=PARLAY_HEAD + p.betIds.length*BET_ROW + PARLAY_FOOT + PARLAY_GAP;
+  });
+  bodyH+=SUMMARY_H+PARLAY_GAP;
+  const H=HEADER_H+bodyH+FOOTER_H+PAD;
+
+  // High-DPI canvas
+  const dpr=Math.min(window.devicePixelRatio||1, 2);
+  const canvas=document.createElement('canvas');
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.textBaseline='alphabetic';
+
+  // Theme colors (read live from CSS so dark/light follows)
+  const cs=getComputedStyle(document.documentElement);
+  const c={
+    bg:cs.getPropertyValue('--bg').trim()||'#FAF9F7',
+    bg2:cs.getPropertyValue('--bg2').trim()||'#F3F1ED',
+    border:cs.getPropertyValue('--border').trim()||'#E2DDD6',
+    border2:cs.getPropertyValue('--border2').trim()||'#D4CEC5',
+    text:cs.getPropertyValue('--text').trim()||'#1A1916',
+    text2:cs.getPropertyValue('--text2').trim()||'#3D3B37',
+    muted:cs.getPropertyValue('--muted').trim()||'#8A8680',
+    muted2:cs.getPropertyValue('--muted2').trim()||'#B5B0A8',
+    accent:cs.getPropertyValue('--accent').trim()||'#C96442',
+    green:cs.getPropertyValue('--green').trim()||'#2D7D52',
+    red:cs.getPropertyValue('--red').trim()||'#C0392B',
+  };
+
+  // Background
+  ctx.fillStyle=c.bg; ctx.fillRect(0,0,W,H);
+
+  // Helpers
+  const roundRect=(x,y,w,h,r)=>{ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); };
+  const setFont=(size,weight,fam)=>{ ctx.font=`${weight} ${size}px ${fam||"'Source Sans 3', sans-serif"}`; };
+  const ellipsize=(str,maxW)=>{
+    if(ctx.measureText(str).width<=maxW) return str;
+    let lo=0, hi=str.length;
+    while(lo<hi){ const mid=(lo+hi)>>1; const t=str.slice(0,mid)+'…'; if(ctx.measureText(t).width<=maxW) lo=mid+1; else hi=mid; }
+    return str.slice(0,Math.max(0,lo-1))+'…';
+  };
+
+  // Header band
+  ctx.fillStyle=c.accent; ctx.fillRect(0,0,W,HEADER_H);
+  setFont(28,'700',"'Lora', serif");
+  ctx.fillStyle='#fff'; ctx.fillText('Parlay Slip', PAD, 44);
+  setFont(13,'500');
+  ctx.fillStyle='rgba(255,255,255,0.85)';
+  const dateStr=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const weekLabel=S.weekName||S.eventName||dateStr;
+  ctx.fillText(weekLabel, PAD, 68);
+  setFont(13,'500');
+  const dateW=ctx.measureText(dateStr).width;
+  ctx.fillText(dateStr, W-PAD-dateW, 68);
+
+  // Body
+  let y=HEADER_H+PAD;
+  S.parlays.forEach((p,idx)=>{
+    const dec=effectiveDecimal(p.betIds);
+    const payout=dec*p.stake;
+    const status=parlayStatus(p);
+    const cardX=PAD, cardW=W-PAD*2;
+    const cardH=PARLAY_HEAD + p.betIds.length*BET_ROW + PARLAY_FOOT;
+
+    // Card bg
+    ctx.fillStyle=c.bg; ctx.strokeStyle=c.border; ctx.lineWidth=1;
+    roundRect(cardX,y,cardW,cardH,RADIUS); ctx.fill(); ctx.stroke();
+
+    // Header strip
+    ctx.fillStyle=c.bg2;
+    roundRect(cardX,y,cardW,PARLAY_HEAD,RADIUS); ctx.fill();
+    ctx.fillRect(cardX, y+PARLAY_HEAD-RADIUS, cardW, RADIUS);
+    ctx.fillStyle=c.border;
+    ctx.fillRect(cardX, y+PARLAY_HEAD-1, cardW, 1);
+
+    // Title and stake
+    setFont(15,'700',"'Lora', serif");
+    ctx.fillStyle=c.text;
+    const title=p.name||`Parlay ${idx+1}`;
+    ctx.fillText(ellipsize(title, cardW*0.55), cardX+18, y+24);
+    setFont(12,'500');
+    ctx.fillStyle=c.muted;
+    ctx.fillText(`${p.betIds.length} legs · ${dec.toFixed(2)}x`, cardX+18, y+44);
+    // Stake right-aligned
+    setFont(11,'600');
+    ctx.fillStyle=c.muted;
+    const stakeLbl='STAKE';
+    const stakeLblW=ctx.measureText(stakeLbl).width;
+    ctx.fillText(stakeLbl, cardX+cardW-18-stakeLblW, y+22);
+    setFont(17,'700',"'Lora', serif");
+    ctx.fillStyle=c.text;
+    const stakeStr=`$${p.stake.toFixed(2)}`;
+    const stakeW=ctx.measureText(stakeStr).width;
+    ctx.fillText(stakeStr, cardX+cardW-18-stakeW, y+44);
+
+    // Bet rows
+    let by=y+PARLAY_HEAD;
+    p.betIds.forEach((id,i)=>{
+      const b=S.bets.find(x=>x.id===id);
+      const r=S.betResults[id];
+      const rowY=by+i*BET_ROW;
+      if(i>0){
+        ctx.strokeStyle=c.border;
+        ctx.beginPath(); ctx.moveTo(cardX+18,rowY); ctx.lineTo(cardX+cardW-18,rowY); ctx.stroke();
+      }
+      // status dot
+      const dotColor=r==='win'?c.green:r==='loss'?c.red:r==='push'?c.muted:c.muted2;
+      ctx.fillStyle=dotColor;
+      ctx.beginPath(); ctx.arc(cardX+26, rowY+BET_ROW/2, 4, 0, Math.PI*2); ctx.fill();
+      // name
+      setFont(13,'500');
+      ctx.fillStyle=r==='loss'?c.muted:c.text2;
+      const name=b?b.name:'(missing)';
+      ctx.fillText(ellipsize(name, cardW-130), cardX+40, rowY+BET_ROW/2+5);
+      // odds
+      if(b){
+        setFont(13,'700');
+        ctx.fillStyle=b.odds>0?c.green:c.red;
+        const o=fmtOdds(b.odds);
+        const ow=ctx.measureText(o).width;
+        ctx.fillText(o, cardX+cardW-18-ow, rowY+BET_ROW/2+5);
+      }
+    });
+
+    // Footer of card: payout
+    const fy=y+cardH-PARLAY_FOOT;
+    ctx.fillStyle=c.border;
+    ctx.fillRect(cardX, fy, cardW, 1);
+    setFont(12,'600');
+    ctx.fillStyle=c.muted;
+    const payoutLbl=status==='win'?'WON':status==='loss'?'LOST':'TO PAY';
+    ctx.fillText(payoutLbl, cardX+18, fy+26);
+    setFont(18,'700',"'Lora', serif");
+    ctx.fillStyle=status==='loss'?c.red:status==='win'?c.green:c.text;
+    const payoutStr=status==='loss'?`-$${p.stake.toFixed(2)}`:`$${payout.toFixed(2)}`;
+    const pw=ctx.measureText(payoutStr).width;
+    ctx.fillText(payoutStr, cardX+cardW-18-pw, fy+28);
+
+    y+=cardH+PARLAY_GAP;
+  });
+
+  // Summary card
+  const sx=PAD, sw=W-PAD*2, sh=SUMMARY_H;
+  ctx.fillStyle=c.bg; ctx.strokeStyle=c.border; ctx.lineWidth=1;
+  roundRect(sx,y,sw,sh,RADIUS); ctx.fill(); ctx.stroke();
+  setFont(13,'700',"'Lora', serif");
+  ctx.fillStyle=c.text2;
+  ctx.fillText('Week Summary', sx+18, y+26);
+
+  // Three columns
+  const labels=['Worst case','Current','Best case'];
+  const values=[worstCasePL, realizedPL, bestCasePL];
+  const colColor=v=>v>0?c.green:v<0?c.red:c.muted;
+  const colW=(sw-36)/3;
+  labels.forEach((lbl,i)=>{
+    const cx=sx+18+colW*i+colW/2;
+    setFont(11,'600');
+    ctx.fillStyle=c.muted;
+    const lw=ctx.measureText(lbl.toUpperCase()).width;
+    ctx.fillText(lbl.toUpperCase(), cx-lw/2, y+58);
+    setFont(22,'700',"'Lora', serif");
+    ctx.fillStyle=colColor(values[i]);
+    const vstr=fmtPL(values[i]);
+    const vw=ctx.measureText(vstr).width;
+    ctx.fillText(vstr, cx-vw/2, y+92);
+  });
+
+  // Range bar
+  const range=bestCasePL-worstCasePL;
+  if(range>0.001){
+    const bx=sx+24, bw=sw-48, byBar=y+sh-44, bh=8;
+    const zeroPct=(worstCasePL<=0 && bestCasePL>=0)?((0-worstCasePL)/range):null;
+    // track
+    ctx.fillStyle=c.bg2; roundRect(bx,byBar,bw,bh,bh/2); ctx.fill();
+    if(zeroPct!==null){
+      const zx=bx+bw*zeroPct;
+      ctx.save();
+      ctx.fillStyle=c.red; ctx.globalAlpha=0.32;
+      roundRect(bx,byBar,zx-bx,bh,bh/2); ctx.fill();
+      ctx.fillStyle=c.green;
+      roundRect(zx,byBar,bx+bw-zx,bh,bh/2); ctx.fill();
+      ctx.restore();
+      // zero tick
+      ctx.fillStyle=c.muted2;
+      ctx.fillRect(zx-0.5, byBar-3, 1, bh+6);
+    } else {
+      ctx.save();
+      ctx.fillStyle=worstCasePL>=0?c.green:c.red; ctx.globalAlpha=0.32;
+      roundRect(bx,byBar,bw,bh,bh/2); ctx.fill();
+      ctx.restore();
+    }
+    // current marker
+    const curPct=Math.max(0,Math.min(1,(realizedPL-worstCasePL)/range));
+    const mx=bx+bw*curPct, my=byBar+bh/2;
+    ctx.fillStyle=c.bg;
+    ctx.beginPath(); ctx.arc(mx,my,9,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=c.text;
+    ctx.beginPath(); ctx.arc(mx,my,7,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle=c.border2; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.arc(mx,my,9,0,Math.PI*2); ctx.stroke();
+    // endpoint labels
+    setFont(10,'600');
+    ctx.fillStyle=c.muted;
+    ctx.fillText(fmtPL(worstCasePL), bx, byBar+bh+18);
+    const bestStr=fmtPL(bestCasePL); const bsw=ctx.measureText(bestStr).width;
+    ctx.fillText(bestStr, bx+bw-bsw, byBar+bh+18);
+  }
+  y+=sh+PARLAY_GAP;
+
+  // Footer
+  setFont(11,'500');
+  ctx.fillStyle=c.muted2;
+  const footStr=`parlay · ${dateStr} · ${S.parlays.length} parlay${S.parlays.length===1?'':'s'} · $${totalStaked.toFixed(2)} staked`;
+  const fw=ctx.measureText(footStr).width;
+  ctx.fillText(footStr, (W-fw)/2, H-18);
+
+  // Trigger download
+  canvas.toBlob(blob=>{
+    if(!blob){ showToast('Export failed'); return; }
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    const fname=`parlay-slip-${new Date().toISOString().slice(0,10)}.png`;
+    a.href=url; a.download=fname;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    showToast('Betslip image exported ✓');
+  },'image/png');
 }
 function newWeek(){
   S.bets=[];S.parlays=[];S.betResults={};S.betResultsAt={};S.activeParlayId=null;S._confirmClear=false;
