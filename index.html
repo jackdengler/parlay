@@ -334,7 +334,12 @@ html, body {
   color: var(--red); border-color: color-mix(in srgb, var(--red) 45%, transparent);
   background: color-mix(in srgb, var(--red) 12%, transparent);
 }
-.bet-card.stay-away { opacity: 0.45; }
+.bet-card.stay-away {
+  border-color: color-mix(in srgb, var(--red) 30%, var(--border));
+  border-left-color: var(--red);
+  background: color-mix(in srgb, var(--red) 7%, var(--bg));
+}
+.bet-card.stay-away .bet-name { color: var(--red); }
 
 /* ── DRAG TO REORDER (fights, ungrouped bets, parlays) ── */
 .drag-item.drag-over-top { box-shadow: 0 -2px 0 var(--accent); }
