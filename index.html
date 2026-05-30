@@ -309,6 +309,32 @@ html, body {
   text-transform: uppercase; color: var(--muted);
 }
 .group-hdr:first-child { padding-top: 0; }
+.group-hdr {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.group-hdr-label { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
+.group-hdr-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.group-hdr.stay-away .group-hdr-name { color: var(--red); }
+.stay-away-badge {
+  flex: none; font-size: 9px; font-weight: 800; letter-spacing: 0.6px;
+  text-transform: uppercase; color: var(--red);
+  background: color-mix(in srgb, var(--red) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--red) 40%, transparent);
+  border-radius: 5px; padding: 1px 5px;
+}
+.stay-away-btn {
+  flex: none; font-family: 'Source Sans 3', sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase;
+  color: var(--muted2); background: var(--bg2);
+  border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px;
+  cursor: pointer; transition: opacity 0.15s, transform 0.1s;
+}
+.stay-away-btn:active { opacity: 0.7; transform: scale(0.96); }
+.stay-away-btn.on {
+  color: var(--red); border-color: color-mix(in srgb, var(--red) 45%, transparent);
+  background: color-mix(in srgb, var(--red) 12%, transparent);
+}
+.bet-card.stay-away { opacity: 0.45; }
 
 /* ── IMPLIED PROB ── */
 .imp-prob {
@@ -1057,7 +1083,7 @@ let ghSha = null;
 let syncStatus = 'offline'; // synced | saving | error | offline
 
 function defaultState() {
-  return { eventName:'', bets:[], parlays:[], betResults:{}, betResultsAt:{}, weeklyRecaps:[], activeParlayId:null, weekName:'' };
+  return { eventName:'', bets:[], parlays:[], betResults:{}, betResultsAt:{}, weeklyRecaps:[], activeParlayId:null, weekName:'', stayAway:[] };
 }
 let S = defaultState();
 
@@ -1142,6 +1168,7 @@ function migrateState() {
     });
   }
   if (!S.betResultsAt || typeof S.betResultsAt !== 'object') S.betResultsAt = {};
+  if (!Array.isArray(S.stayAway)) S.stayAway = [];
 }
 let _quotaWarned = false;
 function saveState() {
@@ -1544,7 +1571,8 @@ function renderPool() {
 
   function renderBetCard(b,opts){
     const isProp=!!(opts&&opts.isProp);
-    const cls=(inParlayIds.has(b.id)?'bet-card in-parlay':'bet-card')+(isProp?' bet-prop':'');
+    const away=!!(opts&&opts.away);
+    const cls=(inParlayIds.has(b.id)?'bet-card in-parlay':'bet-card')+(isProp?' bet-prop':'')+(away?' stay-away':'');
     const oc=b.odds>0?'odds-pos':'odds-neg';
     return `<div class="${cls}" data-id="${b.id}" style="position:relative">
       <span class="drag-handle">⠿</span>
@@ -1563,16 +1591,20 @@ function renderPool() {
   Object.entries(betGroups).forEach(([g,bets])=>{
     const sides=bets.slice(0,2);
     const props=bets.slice(2);
-    html+=`<div class="group-hdr">${esc(g)}</div>`;
+    const away=isStayAway(g);
+    html+=`<div class="group-hdr${away?' stay-away':''}">
+      <span class="group-hdr-label"><span class="group-hdr-name">${esc(g)}</span>${away?'<span class="stay-away-badge">Stay away</span>':''}</span>
+      <button class="stay-away-btn${away?' on':''}" data-fight="${esc(g)}" onclick="toggleStayAway(this.dataset.fight)">${away?'✓ Avoiding':'Stay away'}</button>
+    </div>`;
     // ML pair side-by-side
     html+=`<div class="fight-pair">
-      <div class="fight-side">${sides[0]?renderBetCard(sides[0]):''}</div>
-      ${sides[1]?`<div class="fight-side">${renderBetCard(sides[1])}</div>`:`<div class="fight-side fight-side-empty"></div>`}
+      <div class="fight-side">${sides[0]?renderBetCard(sides[0],{away}):''}</div>
+      ${sides[1]?`<div class="fight-side">${renderBetCard(sides[1],{away})}</div>`:`<div class="fight-side fight-side-empty"></div>`}
     </div>`;
     // Fight-level props (shared, not tied to either side)
     if(props.length){
       html+=`<div class="fight-props">`;
-      props.forEach(p=>{ html+=renderBetCard(p,{isProp:true}); });
+      props.forEach(p=>{ html+=renderBetCard(p,{isProp:true,away}); });
       html+=`</div>`;
     }
     html+=`<button class="add-prop-btn" data-fight="${esc(g)}" onclick="openAddProp(this.dataset.fight)">+ Prop for fight</button>`;
@@ -2392,6 +2424,16 @@ function openBetForm(){showBetForm=true;editingBetId=null;prefillFightLabel=null
 function closeBetForm(){showBetForm=false;editingBetId=null;prefillFightLabel=null;render();}
 function openEditBet(id){showBetForm=true;editingBetId=id;prefillFightLabel=null;render();setTimeout(()=>document.getElementById('fBetName')?.focus(),80);}
 function openAddProp(fightLabel){showBetForm=true;editingBetId=null;prefillFightLabel=fightLabel||'';render();setTimeout(()=>document.getElementById('fBetName')?.focus(),80);}
+
+// Fights can be flagged "stay away" — a reminder to skip them. The flag lives
+// on the fight label (group), so it persists across that fight's bets.
+function isStayAway(g){ return !!g && Array.isArray(S.stayAway) && S.stayAway.includes(g); }
+function toggleStayAway(g){
+  if(!g) return;
+  if(!Array.isArray(S.stayAway)) S.stayAway=[];
+  S.stayAway = S.stayAway.includes(g) ? S.stayAway.filter(x=>x!==g) : [...S.stayAway, g];
+  haptic();saveState();render();
+}
 
 function saveBet(){
   const name=document.getElementById('fBetName')?.value?.trim();
