@@ -181,6 +181,9 @@ html, body {
 .conf-chip.low  { background: var(--bg3); border-color: var(--border2); color: var(--muted); }
 .fight-pair .conf-chip { width: 18px; height: 18px; font-size: 10px; margin-right: 6px; border-radius: 6px; }
 .fight-props .conf-chip { width: 19px; height: 19px; font-size: 10px; margin-right: 7px; }
+.leg-row .conf-chip { width: 20px; height: 20px; font-size: 10px; margin-right: 8px; border-radius: 6px; }
+.leg-pair-side .conf-chip { width: 17px; height: 17px; font-size: 9px; margin-right: 5px; border-radius: 5px; }
+.lgb-name .conf-chip { width: 18px; height: 18px; font-size: 10px; margin-right: 7px; border-radius: 5px; }
 .bet-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: 12px; }
 .odds-pos {
   color: var(--green); font-size: 15px; font-weight: 700;
@@ -1803,6 +1806,7 @@ function renderBuilder() {
         const click=blocked?'':` onclick="toggleLeg('${p.id}','${b.id}')"`;
         return `<div class="${cls}"${click}>
           <div class="leg-check ${on?'on':'off'}">${on?'✓':(blocked?'✕':'+')}</div>
+          ${confChip(b)}
           <span class="leg-name">${esc(b.name)}</span>
           <div style="display:flex;flex-direction:column;align-items:flex-end">
             <span class="${oc}">${fmtOdds(b.odds)}</span>
@@ -1843,7 +1847,7 @@ function renderBuilder() {
           html+=`<div class="lgb-row${away?' stay-away':''}">
             <div class="lgb-num">${i+1}</div>
             <div class="lgb-info">
-              <div class="lgb-name">${esc(b.name)}${away?'<span class="stay-away-badge">Stay away</span>':''}</div>
+              <div class="lgb-name">${confChip(b)}${esc(b.name)}${away?'<span class="stay-away-badge">Stay away</span>':''}</div>
               ${sisters.length>1?`<span class="shared-tag">Shared in ${sisters.length} parlays</span>`:`<span class="unique-tag">Only in this parlay</span>`}
             </div>
             <span class="${oc}">${fmtOdds(b.odds)}</span>
@@ -2492,7 +2496,7 @@ function confChip(b){
   const cls='conf-chip'+(c?(' '+c):'');
   const label=CONF_LABEL[c]||'·';
   const title=c?`Confidence: ${CONF_NAME[c]} — tap to change`:'Set confidence';
-  return `<button class="${cls}" data-id="${b.id}" onclick="cycleConf(this.dataset.id)" title="${title}">${label}</button>`;
+  return `<button class="${cls}" data-id="${b.id}" onclick="event.stopPropagation();cycleConf(this.dataset.id)" title="${title}">${label}</button>`;
 }
 function cycleConf(id){
   const b=S.bets.find(x=>x.id===id); if(!b) return;
