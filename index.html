@@ -379,6 +379,76 @@ html, body {
 .group-hdr .reorder-ctrl { margin-right: 0; }
 .parlay-top .reorder-ctrl { margin-top: 1px; }
 
+/* ── A11Y: visible keyboard focus ── */
+button:focus-visible, input:focus-visible, a:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+.tab-btn:focus-visible { outline-offset: -3px; border-radius: 10px; }
+.reorder-btn:focus-visible { outline-offset: 1px; }
+
+/* ── CORRELATED LEGS ── */
+.correlated-badge {
+  display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;
+  font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+  color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+  border-radius: 100px; padding: 2px 8px; font-family: 'Source Sans 3', sans-serif;
+}
+.correlated-tag {
+  font-size: 10px; font-weight: 700; color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-radius: 5px; padding: 1px 6px; margin-left: 6px; white-space: nowrap;
+}
+
+/* ── BANKROLL ── */
+.bankroll-card {
+  margin: 0 14px 10px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 12px 14px;
+}
+.bankroll-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.bk-lbl { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; }
+.bk-balance { font-family: 'Lora', serif; font-size: 22px; font-weight: 700; color: var(--text); line-height: 1.15; }
+.bk-balance.neg { color: var(--red); }
+.bk-figs { display: flex; gap: 18px; align-items: center; }
+.bk-fig { display: flex; flex-direction: column; align-items: flex-end; }
+.bk-fig-lbl { color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+.bk-fig-val { font-size: 15px; font-weight: 700; font-family: 'Lora', serif; color: var(--text2); }
+.bk-fig-val.neg { color: var(--red); }
+.bk-manage-btn {
+  background: var(--bg2); color: var(--muted); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 12px; font-weight: 700; cursor: pointer;
+  font-family: 'Source Sans 3', sans-serif; flex-shrink: 0;
+}
+.bk-warning {
+  margin-top: 10px; color: var(--red); font-size: 12px; font-weight: 600; line-height: 1.4;
+  background: color-mix(in srgb, var(--red) 9%, transparent);
+  border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
+  border-radius: 8px; padding: 7px 10px;
+}
+.bankroll-form { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+.bk-input {
+  flex: 1; min-width: 0; background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px; font-size: 15px; font-weight: 700; color: var(--text);
+  font-family: 'Source Sans 3', sans-serif; outline: none;
+}
+.bk-input:focus { border-color: var(--accent); }
+.bk-deposit, .bk-withdraw {
+  border: none; border-radius: 8px; padding: 8px 13px; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: 'Source Sans 3', sans-serif; flex-shrink: 0;
+}
+.bk-deposit { background: var(--green); color: #fff; }
+.bk-withdraw { background: var(--bg2); color: var(--text2); border: 1px solid var(--border); }
+
+/* ── PARLAY STATUS FILTER ── */
+.parlay-filter { display: flex; gap: 6px; padding: 0 14px 6px; flex-wrap: wrap; align-items: center; }
+.pf-chip {
+  background: var(--bg2); color: var(--muted); border: 1px solid var(--border);
+  border-radius: 100px; padding: 5px 12px; font-size: 12px; font-weight: 700; cursor: pointer;
+  font-family: 'Source Sans 3', sans-serif;
+}
+.pf-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.pf-empty { padding: 18px 14px; text-align: center; color: var(--muted2); font-size: 13px; }
+
 /* ── IMPLIED PROB ── */
 .imp-prob {
   font-size: 11px; font-weight: 600; color: var(--muted2);
@@ -1081,7 +1151,7 @@ html, body {
         <span class="app-wordmark">parlay</span>
       </div>
       <span class="sync-dot offline" id="syncDot" title="Sync status"></span>
-      <button class="gear-btn" onclick="openSettings()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
+      <button class="gear-btn" onclick="openSettings()" aria-label="Settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
     </div>
     <div class="event-meta-row">
       <div class="event-meta" id="eventMeta">0 bets · 0 parlays</div>
@@ -1092,25 +1162,25 @@ html, body {
   <div id="screen"></div>
 
   <div class="tab-bar">
-    <button class="tab-btn active" data-tab="pool" onclick="switchTab('pool')">
+    <button class="tab-btn active" data-tab="pool" aria-pressed="true" aria-label="Bets" onclick="switchTab('pool')">
       <span class="tab-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
       <span class="tab-label">Bets</span>
       <span class="tab-badge" id="badge-pool" style="display:none"></span>
     </button>
-    <button class="tab-btn" data-tab="builder" onclick="switchTab('builder')">
+    <button class="tab-btn" data-tab="builder" aria-pressed="false" aria-label="Builder" onclick="switchTab('builder')">
       <span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span>
       <span class="tab-label">Builder</span>
       <span class="tab-badge" id="badge-builder" style="display:none"></span>
     </button>
-    <button class="tab-btn" data-tab="exposure" onclick="switchTab('exposure')">
+    <button class="tab-btn" data-tab="exposure" aria-pressed="false" aria-label="Exposure" onclick="switchTab('exposure')">
       <span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
       <span class="tab-label">Exposure</span>
     </button>
-    <button class="tab-btn" data-tab="results" onclick="switchTab('results')">
+    <button class="tab-btn" data-tab="results" aria-pressed="false" aria-label="Results" onclick="switchTab('results')">
       <span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
       <span class="tab-label">Results</span>
     </button>
-    <button class="tab-btn" data-tab="recap" onclick="switchTab('recap')">
+    <button class="tab-btn" data-tab="recap" aria-pressed="false" aria-label="History" onclick="switchTab('recap')">
       <span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg></span>
       <span class="tab-label">History</span>
     </button>
@@ -1132,7 +1202,7 @@ let ghSha = null;
 let syncStatus = 'offline'; // synced | saving | error | offline
 
 function defaultState() {
-  return { eventName:'', bets:[], parlays:[], betResults:{}, betResultsAt:{}, weeklyRecaps:[], activeParlayId:null, weekName:'', stayAway:[] };
+  return { eventName:'', bets:[], parlays:[], betResults:{}, betResultsAt:{}, weeklyRecaps:[], activeParlayId:null, weekName:'', stayAway:[], bankrollLog:[] };
 }
 let S = defaultState();
 
@@ -1218,6 +1288,7 @@ function migrateState() {
   }
   if (!S.betResultsAt || typeof S.betResultsAt !== 'object') S.betResultsAt = {};
   if (!Array.isArray(S.stayAway)) S.stayAway = [];
+  if (!Array.isArray(S.bankrollLog)) S.bankrollLog = [];
 }
 let _quotaWarned = false;
 function saveState() {
@@ -1433,6 +1504,61 @@ function effectiveProfit(p) {
   return null;
 }
 
+// ─── CORRELATED LEGS ────────────────────────────────────────────────────────
+// Two legs from the same fight (shared non-empty `group`) are correlated —
+// most books void or restrict same-game combos, so we surface a warning.
+function correlatedGroups(p){
+  const counts={};
+  p.betIds.forEach(id=>{ const b=S.bets.find(x=>x.id===id); if(b&&b.group){ counts[b.group]=(counts[b.group]||0)+1; } });
+  return Object.keys(counts).filter(g=>counts[g]>1);
+}
+function isCorrelatedLeg(p,bid){
+  const b=S.bets.find(x=>x.id===bid);
+  if(!b||!b.group) return false;
+  return p.betIds.filter(id=>{ const x=S.bets.find(y=>y.id===id); return x&&x.group===b.group; }).length>1;
+}
+
+// ─── BANKROLL ───────────────────────────────────────────────────────────────
+// Balance = sum of manual deposits/withdrawals + this week's realized P/L
+// (settled parlays). Placed-but-pending parlays reserve their stake as
+// "at risk", so available = balance − at risk. Banked at "Start new week".
+function bankrollDeposited(){ return (S.bankrollLog||[]).reduce((s,e)=>s+(Number(e.amount)||0),0); }
+function bankrollAtRisk(){
+  return S.parlays.filter(p=>p.placed && parlayStatus(p)==='pending').reduce((s,p)=>s+(Number(p.stake)||0),0);
+}
+function bankrollBalance(){ return bankrollDeposited()+computeWeekTotals().realizedPL; }
+function bankrollAvailable(){ return bankrollBalance()-bankrollAtRisk(); }
+function hasBankrollActivity(){ return (S.bankrollLog&&S.bankrollLog.length>0)||bankrollAtRisk()>0; }
+function bankrollCardHtml(){
+  const bal=bankrollBalance(), risk=bankrollAtRisk(), avail=bankrollAvailable();
+  const fmt=v=>(v<0?'-$':'$')+Math.abs(v).toFixed(2);
+  let h=`<div class="bankroll-card">
+    <div class="bankroll-top">
+      <div>
+        <div class="bk-lbl">Bankroll</div>
+        <div class="bk-balance${bal<0?' neg':''}">${fmt(bal)}</div>
+      </div>
+      <div class="bk-figs">
+        <div class="bk-fig"><span class="bk-fig-lbl">At risk</span><span class="bk-fig-val">${fmt(risk)}</span></div>
+        <div class="bk-fig"><span class="bk-fig-lbl">Available</span><span class="bk-fig-val${avail<-0.0001?' neg':''}">${fmt(avail)}</span></div>
+        <button class="bk-manage-btn" aria-expanded="${showBankrollForm?'true':'false'}" onclick="event.stopPropagation();toggleBankrollForm()">${showBankrollForm?'Close':'Manage'}</button>
+      </div>
+    </div>`;
+  if(avail<-0.0001){
+    h+=`<div class="bk-warning">⚠ ${fmt(avail)} over your available bankroll — deposit more or unlock a placed parlay.</div>`;
+  }
+  if(showBankrollForm){
+    h+=`<div class="bankroll-form" onclick="event.stopPropagation()">
+      <input class="bk-input" id="bankrollAmt" type="text" inputmode="decimal" pattern="[0-9.]*" placeholder="Amount" autocomplete="off" aria-label="Deposit or withdrawal amount"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();bankrollAdjust(1);}">
+      <button class="bk-deposit" onclick="event.stopPropagation();bankrollAdjust(1)">Deposit</button>
+      <button class="bk-withdraw" onclick="event.stopPropagation();bankrollAdjust(-1)">Withdraw</button>
+    </div>`;
+  }
+  h+=`</div>`;
+  return h;
+}
+
 // Compute Worst/Current/Best totals across all parlays.
 // Best case respects mutual exclusivity — bets in the same `group` (e.g. opposite
 // sides of a fight) cannot both win, so we search over feasible group→winner
@@ -1568,9 +1694,13 @@ function showToast(msg, opts) {
 let currentTab='pool';
 function switchTab(tab) {
   if(tab!=='results') S._confirmClear=false;
-  showPasteForm=false; renamingParlayId=null; confirmPlaceParlayId=null; confirmDeleteParlayId=null;
+  showPasteForm=false; renamingParlayId=null; confirmPlaceParlayId=null; confirmDeleteParlayId=null; showBankrollForm=false;
   currentTab=tab;
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    const on=b.dataset.tab===tab;
+    b.classList.toggle('active',on);
+    b.setAttribute('aria-pressed', on?'true':'false');
+  });
   renderScreen();
 }
 
@@ -1633,7 +1763,7 @@ function renderPool() {
           <span class="${oc}">${fmtOdds(b.odds)}</span>
           <span class="imp-prob">${impliedProb(b.odds).toFixed(0)}%</span>
         </div>
-        <button class="icon-btn" onclick="openEditBet('${b.id}')">✎</button>
+        <button class="icon-btn" onclick="openEditBet('${b.id}')" aria-label="Edit bet">✎</button>
       </div>
     </div>`;
   }
@@ -1656,7 +1786,7 @@ function renderPool() {
     html+=`<div class="pool-block">`;
     html+=`<div class="group-hdr${away?' stay-away':''}">
       <span class="group-hdr-label">${reorderBtns('pool',key,isFirst,isLast)}<span class="group-hdr-name">${esc(g)}</span>${away?'<span class="stay-away-badge">Stay away</span>':''}</span>
-      <button class="stay-away-btn${away?' on':''}" data-fight="${esc(g)}" onclick="toggleStayAway(this.dataset.fight)">${away?'✓ Avoiding':'Stay away'}</button>
+      <button class="stay-away-btn${away?' on':''}" data-fight="${esc(g)}" aria-pressed="${away?'true':'false'}" onclick="toggleStayAway(this.dataset.fight)">${away?'✓ Avoiding':'Stay away'}</button>
     </div>`;
     // ML pair side-by-side
     html+=`<div class="fight-pair">
@@ -1716,6 +1846,8 @@ let renamingParlayId = null;
 let expandedResultParlayId = null;
 let confirmPlaceParlayId = null;
 let confirmDeleteParlayId = null;
+let parlayFilter = 'all'; // all | open | won | lost | push
+let showBankrollForm = false;
 function toggleResultParlay(id) { expandedResultParlayId = expandedResultParlayId===id?null:id; render(); }
 function renderBuilder() {
   let html=`<div class="tab-content">
@@ -1724,18 +1856,42 @@ function renderBuilder() {
     <button class="add-btn" onclick="createParlay()">+ New parlay</button>
   </div>`;
 
+  html+=bankrollCardHtml();
+
+  // Status filter + settled/open split.
+  if(S.parlays.length>0) {
+    const counts={all:S.parlays.length,open:0,won:0,lost:0,push:0};
+    S.parlays.forEach(p=>{
+      const st=parlayStatus(p);
+      counts[st==='pending'?'open':st==='win'?'won':st==='loss'?'lost':'push']++;
+    });
+    const chips=[['all','All',counts.all],['open','Open',counts.open],['won','Won',counts.won],['lost','Lost',counts.lost]];
+    if(counts.push>0) chips.push(['push','Push',counts.push]);
+    html+=`<div class="parlay-filter" role="group" aria-label="Filter parlays by status">`;
+    chips.forEach(([key,label,cnt])=>{
+      const active=parlayFilter===key;
+      html+=`<button class="pf-chip${active?' active':''}" aria-pressed="${active?'true':'false'}" onclick="setParlayFilter('${key}')">${label} ${cnt}</button>`;
+    });
+    html+=`</div>`;
+  }
+
   if(S.parlays.length===0) {
     html+=`<div class="empty"><div class="empty-icon"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="empty-txt">No parlays yet.<br>Create one to start planning scenarios.</div></div>`;
   }
 
+  let shownCount=0;
   S.parlays.forEach((p,pIdx)=>{
+    const _st=parlayStatus(p);
+    const _bucket=_st==='pending'?'open':_st==='win'?'won':_st==='loss'?'lost':'push';
+    if(parlayFilter!=='all' && _bucket!==parlayFilter) return;
+    shownCount++;
     const isActive=S.activeParlayId===p.id;
     const isPlaced=!!p.placed;
     const dec=parlayDecimal(p.betIds);
     const cardCls=`parlay-card${isActive?' active':''}${isPlaced?' placed':''}`;
     html+=`<div class="${cardCls}" onclick="toggleParlay('${p.id}')">
       <div class="parlay-top">
-        ${reorderBtns('parlays',p.id,pIdx===0,pIdx===S.parlays.length-1)}
+        ${parlayFilter==='all'?reorderBtns('parlays',p.id,pIdx===0,pIdx===S.parlays.length-1):''}
         <div style="flex:1;min-width:0">
           ${renamingParlayId===p.id
             ?`<input class="parlay-rename-input" id="parlayNameInput" value="${esc(p.name)}" onclick="event.stopPropagation()" onblur="submitRenameParlay()" onkeydown="if(event.key==='Enter')this.blur()" />`
@@ -1743,11 +1899,12 @@ function renderBuilder() {
           }
           <div class="parlay-meta">${p.betIds.length} leg${p.betIds.length!==1?'s':''}</div>
           ${isPlaced?`<div class="placed-badge">✓ Placed</div>`:''}
+          ${correlatedGroups(p).length?`<div class="correlated-badge" title="Two or more legs from the same fight — many books void or restrict same-game parlays.">⚠ Correlated</div>`:''}
         </div>
         <div style="display:flex;align-items:center;gap:6px">
           <span class="parlay-odds">${p.betIds.length>0?decToAmerican(dec):'—'}</span>
-          <button class="del-btn" onclick="event.stopPropagation();shareParlay('${p.id}')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></button>
-          <button class="del-btn" onclick="event.stopPropagation();deleteParlay('${p.id}')">✕</button>
+          <button class="del-btn" onclick="event.stopPropagation();shareParlay('${p.id}')" title="Share" aria-label="Share parlay"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></button>
+          <button class="del-btn" onclick="event.stopPropagation();deleteParlay('${p.id}')" aria-label="Delete parlay">✕</button>
         </div>
       </div>`;
 
@@ -1853,10 +2010,11 @@ function renderBuilder() {
           const sisters=S.parlays.filter(pp=>pp.betIds.includes(bid));
           const oc=b.odds>0?'odds-pos':'odds-neg';
           const away=isStayAwayMl(b);
-          html+=`<div class="lgb-row${away?' stay-away':''}">
+          const corr=isCorrelatedLeg(p,bid);
+          html+=`<div class="lgb-row${away?' stay-away':''}${corr?' correlated':''}">
             <div class="lgb-num">${i+1}</div>
             <div class="lgb-info">
-              <div class="lgb-name">${confChip(b)}${esc(b.name)}${away?'<span class="stay-away-badge">Stay away</span>':''}</div>
+              <div class="lgb-name">${confChip(b)}${esc(b.name)}${away?'<span class="stay-away-badge">Stay away</span>':''}${corr?'<span class="correlated-tag">Correlated</span>':''}</div>
               ${sisters.length>1?`<span class="shared-tag">Shared in ${sisters.length} parlays</span>`:`<span class="unique-tag">Only in this parlay</span>`}
             </div>
             <span class="${oc}">${fmtOdds(b.odds)}</span>
@@ -1867,6 +2025,10 @@ function renderBuilder() {
       html+=`</div>`;
     }
   });
+
+  if(S.parlays.length>0 && shownCount===0) {
+    html+=`<div class="pf-empty">No ${parlayFilter} parlays.</div>`;
+  }
 
   if(S.parlays.length>1) {
     let liveRisk=0, realizedPL=0;
@@ -2175,8 +2337,8 @@ function renderResults() {
           <span class="${oc}" style="font-size:13px;margin-left:6px">${fmtOdds(b.odds)}</span>
         </div>
         <div class="wl-row">
-          <button class="w-btn ${res==='win'?'on':''}" onclick="setResult('${b.id}','win')">W</button>
-          <button class="l-btn ${res==='loss'?'on':''}" onclick="setResult('${b.id}','loss')">L</button>
+          <button class="w-btn ${res==='win'?'on':''}" aria-pressed="${res==='win'?'true':'false'}" aria-label="Mark win" onclick="setResult('${b.id}','win')">W</button>
+          <button class="l-btn ${res==='loss'?'on':''}" aria-pressed="${res==='loss'?'true':'false'}" aria-label="Mark loss" onclick="setResult('${b.id}','loss')">L</button>
         </div>
       </div>`;
     }
@@ -2189,14 +2351,14 @@ function renderResults() {
       const oa=a.odds>0?'odds-pos':'odds-neg';
       const ob=b.odds>0?'odds-pos':'odds-neg';
       return `<div class="fight-winner-row">
-        <button class="winner-btn ${aWon?'win':''}" onclick="setFightWinner('${a.id}','${b.id}','A')">
+        <button class="winner-btn ${aWon?'win':''}" aria-pressed="${aWon?'true':'false'}" aria-label="${esc(a.name)} wins" onclick="setFightWinner('${a.id}','${b.id}','A')">
           <span class="winner-name">${esc(a.name)}</span>
           <span class="winner-odds ${oa}">${fmtOdds(a.odds)}</span>
         </button>
-        <button class="winner-btn winner-push ${isPush?'on':''}" onclick="setFightWinner('${a.id}','${b.id}','push')" title="Push (draw / no contest)">
+        <button class="winner-btn winner-push ${isPush?'on':''}" aria-pressed="${isPush?'true':'false'}" onclick="setFightWinner('${a.id}','${b.id}','push')" title="Push (draw / no contest)" aria-label="Push">
           Push
         </button>
-        <button class="winner-btn ${bWon?'win':''}" onclick="setFightWinner('${a.id}','${b.id}','B')">
+        <button class="winner-btn ${bWon?'win':''}" aria-pressed="${bWon?'true':'false'}" aria-label="${esc(b.name)} wins" onclick="setFightWinner('${a.id}','${b.id}','B')">
           <span class="winner-name">${esc(b.name)}</span>
           <span class="winner-odds ${ob}">${fmtOdds(b.odds)}</span>
         </button>
@@ -2305,8 +2467,13 @@ function renderResults() {
     const curPct=range>0?Math.max(0,Math.min(100,((realizedPL-worstCasePL)/range)*100)):50;
     const zeroPct=(range>0 && worstCasePL<=0 && bestCasePL>=0)?((0-worstCasePL)/range)*100:null;
     const showBar=S.parlays.length>0 && range>0.001;
+    let _pOpen=0,_pWon=0,_pLost=0,_pPush=0;
+    S.parlays.forEach(p=>{ const st=parlayStatus(p); if(st==='pending')_pOpen++;else if(st==='win')_pWon++;else if(st==='loss')_pLost++;else _pPush++; });
+    const _settled=_pWon+_pLost+_pPush;
+    const _splitParts=[`${_settled} settled`,`${_pOpen} open`];
     html+=`<div class="week-summary-card">
       <div class="week-summary-title">Week Summary</div>
+      <div class="week-summary-row"><span class="ws-lbl">Parlays</span><span class="ws-val" style="font-family:'Source Sans 3',sans-serif;font-size:12px;font-weight:600;color:var(--muted)">${_splitParts.join(' · ')}${_settled>0?` (${_pWon}W · ${_pLost}L${_pPush>0?` · ${_pPush}P`:''})`:''}</span></div>
       <div class="week-summary-row"><span class="ws-lbl">Worst case</span><span class="ws-val" style="color:${colorPL(worstCasePL)}">${fmtPL(worstCasePL)}</span></div>
       <div class="week-summary-row"><span class="ws-lbl">Current</span><span class="ws-val">${covered?'<span class="ws-covered">Covered</span>':''}<span style="color:${colorPL(realizedPL)}">${fmtPL(realizedPL)}</span></span></div>
       <div class="week-summary-row"><span class="ws-lbl">Expected value</span><span class="ws-val" style="color:${colorPL(expectedPL)}">${fmtPL(expectedPL)}</span></div>
@@ -2505,7 +2672,7 @@ function confChip(b){
   const cls='conf-chip'+(c?(' '+c):'');
   const label=CONF_LABEL[c]||'·';
   const title=c?`Confidence: ${CONF_NAME[c]} — tap to change`:'Set confidence';
-  return `<button class="${cls}" data-id="${b.id}" onclick="event.stopPropagation();cycleConf(this.dataset.id)" title="${title}">${label}</button>`;
+  return `<button class="${cls}" data-id="${b.id}" onclick="event.stopPropagation();cycleConf(this.dataset.id)" title="${title}" aria-label="${title}">${label}</button>`;
 }
 function cycleConf(id){
   const b=S.bets.find(x=>x.id===id); if(!b) return;
@@ -2573,6 +2740,7 @@ function closeParlayForm(){render();}
 function createParlay(){
   const num=S.parlays.length+1;
   const p={id:uid(),name:`Parlay ${num}`,betIds:[],stake:50};
+  parlayFilter='all'; // ensure the new (open) parlay is visible
   S.parlays.push(p);S.activeParlayId=p.id;saveState();render();
 }
 function toggleParlay(id){S.activeParlayId=S.activeParlayId===id?null:id;saveState();render();}
@@ -2613,6 +2781,7 @@ function toggleLeg(pid,bid){
   const bet=S.bets.find(b=>b.id===bid);
   // Block adding a stay-away ML side (removing one already in is still allowed).
   if(bet&&p&&!p.betIds.includes(bid)&&isStayAwayMl(bet)){ showToast('Fight marked stay away — ML unavailable'); return; }
+  const wasAdded = !!(p && !p.betIds.includes(bid));
   let swapped=false;
   S.parlays=S.parlays.map(par=>{
     if(par.id!==pid)return par;
@@ -2635,6 +2804,10 @@ function toggleLeg(pid,bid){
     return {...par,betIds:[...baseIds,bid]};
   });
   if(swapped) showToast('Swapped ML side');
+  else if(wasAdded){
+    const np=S.parlays.find(x=>x.id===pid);
+    if(np&&isCorrelatedLeg(np,bid)) showToast('Heads up — correlated leg (same fight)');
+  }
   saveState();render();
 }
 const STAKE_MAX = 1000000;
@@ -2670,14 +2843,40 @@ function requestPlaceParlay(id){
 }
 function cancelPlaceParlay(){ confirmPlaceParlayId=null; render(); }
 function confirmPlaceParlay(id){
+  const p=S.parlays.find(x=>x.id===id);
+  // Available bankroll is measured before placing (stake not yet reserved).
+  const overdraw = hasBankrollActivity() && p && (Number(p.stake)||0) > bankrollAvailable()+0.0001;
   S.parlays=S.parlays.map(p=>p.id===id?{...p,placed:true,placedAt:Date.now()}:p);
   confirmPlaceParlayId=null;
-  haptic(); saveState(); render(); showToast('Parlay placed ✓');
+  haptic(); saveState(); render();
+  if(overdraw) showToast('Parlay placed — over available bankroll ⚠',{duration:3500});
+  else showToast('Parlay placed ✓');
 }
 function unlockParlay(id){
   S.parlays=S.parlays.map(p=>p.id===id?{...p,placed:false,placedAt:null}:p);
   saveState(); render(); showToast('Parlay unlocked');
 }
+
+// ─── BANKROLL ACTIONS ───────────────────────────────────────────────────────
+function toggleBankrollForm(){
+  showBankrollForm=!showBankrollForm; render();
+  if(showBankrollForm) setTimeout(()=>document.getElementById('bankrollAmt')?.focus(),60);
+}
+function bankrollAdjust(sign){
+  const el=document.getElementById('bankrollAmt');
+  const n=parseFloat(el?.value);
+  if(isNaN(n)||n<=0){ showToast('Enter an amount'); return; }
+  if(n>STAKE_MAX){ showToast('Amount too large'); return; }
+  if(!Array.isArray(S.bankrollLog)) S.bankrollLog=[];
+  S.bankrollLog.push({id:uid(),amount:sign*n,note:sign>0?'Deposit':'Withdrawal',at:Date.now()});
+  showBankrollForm=false;
+  haptic(); saveState(); render();
+  showToast((sign>0?'Deposited $':'Withdrew $')+n.toFixed(2));
+}
+
+// ─── PARLAY FILTER ──────────────────────────────────────────────────────────
+function setParlayFilter(f){ parlayFilter=f; render(); }
+
 // ─── ROUND ROBIN ────────────────────────────────────────────────────────────
 let rrParlayId=null, rrSize=2, rrStake=10;
 function openRoundRobin(pid){
@@ -3109,10 +3308,30 @@ async function exportSlipImage(){
     downloadBlob(blob);
   },'image/png');
 }
+let _trashedWeek=null;
 function newWeek(){
+  const wt=computeWeekTotals();
+  const snap={bets:S.bets,parlays:S.parlays,betResults:S.betResults,betResultsAt:S.betResultsAt,
+              activeParlayId:S.activeParlayId,weekName:S.weekName,bankedEntryId:null};
+  // Bank this week's realized P/L so the running bankroll carries forward.
+  if(Math.abs(wt.realizedPL)>0.005){
+    if(!Array.isArray(S.bankrollLog)) S.bankrollLog=[];
+    const entry={id:uid(),amount:wt.realizedPL,note:'Week result'+(S.weekName?(' · '+S.weekName):''),at:Date.now(),auto:true};
+    S.bankrollLog.push(entry);
+    snap.bankedEntryId=entry.id;
+  }
+  _trashedWeek=snap;
   S.bets=[];S.parlays=[];S.betResults={};S.betResultsAt={};S.activeParlayId=null;S._confirmClear=false;
   S.weekName='';
-  saveState();render();showToast('New week started ✓');
+  saveState();render();
+  showToast('New week started',{action:{label:'Undo',onClick:undoNewWeek},duration:5000});
+}
+function undoNewWeek(){
+  const t=_trashedWeek; if(!t) return; _trashedWeek=null;
+  S.bets=t.bets; S.parlays=t.parlays; S.betResults=t.betResults;
+  S.betResultsAt=t.betResultsAt; S.activeParlayId=t.activeParlayId; S.weekName=t.weekName;
+  if(t.bankedEntryId) S.bankrollLog=(S.bankrollLog||[]).filter(e=>e.id!==t.bankedEntryId);
+  haptic(); saveState(); render(); showToast('Week restored ✓');
 }
 
 // ─── PARLAY RENAME ──────────────────────────────────────────────────────────
@@ -3218,6 +3437,14 @@ function initSwipe() {
 // ─── ATTACH HANDLERS ───────────────────────────────────────────────────────
 function attachHandlers(){
   initSwipe();
+  // Restore focus to a reorder control after a keyboard-driven move so the
+  // user can keep nudging an item with the arrow keys.
+  if(_focusReorder){
+    const want=_focusReorder; _focusReorder=null;
+    document.querySelectorAll('.reorder-btn').forEach(btn=>{
+      if(btn.dataset.id===want.id && btn.dataset.dir===want.dir && !btn.disabled) btn.focus();
+    });
+  }
 }
 
 // ─── REORDER (up/down buttons) ──────────────────────────────────────────────
@@ -3235,12 +3462,19 @@ function poolOrderKeys() {
 }
 
 // Up/down control for a reorderable item. `id` is the parlay id, or a pool key.
+// Arrow Up/Down also move the item while either button is focused.
+let _focusReorder = null;
 function reorderBtns(list, id, isFirst, isLast) {
   const a = `data-list="${list}" data-id="${esc(id)}"`;
-  return `<span class="reorder-ctrl" onclick="event.stopPropagation()">`
-    + `<button class="reorder-btn" ${a}${isFirst?' disabled':''} onclick="event.stopPropagation();moveItem(this.dataset.list,this.dataset.id,-1)" aria-label="Move up">▲</button>`
-    + `<button class="reorder-btn" ${a}${isLast?' disabled':''} onclick="event.stopPropagation();moveItem(this.dataset.list,this.dataset.id,1)" aria-label="Move down">▼</button>`
+  const kd = `onkeydown="reorderKey(event,this.dataset.list,this.dataset.id)"`;
+  return `<span class="reorder-ctrl" role="group" aria-label="Reorder item" onclick="event.stopPropagation()">`
+    + `<button class="reorder-btn" data-dir="up" ${a} ${kd}${isFirst?' disabled':''} onclick="event.stopPropagation();moveItem(this.dataset.list,this.dataset.id,-1)" aria-label="Move up">▲</button>`
+    + `<button class="reorder-btn" data-dir="down" ${a} ${kd}${isLast?' disabled':''} onclick="event.stopPropagation();moveItem(this.dataset.list,this.dataset.id,1)" aria-label="Move down">▼</button>`
     + `</span>`;
+}
+function reorderKey(e, list, id){
+  if(e.key==='ArrowUp'){ e.preventDefault(); _focusReorder={id:String(id),dir:'up'}; moveItem(list,id,-1); }
+  else if(e.key==='ArrowDown'){ e.preventDefault(); _focusReorder={id:String(id),dir:'down'}; moveItem(list,id,1); }
 }
 
 // Move an item one step up (-1) or down (+1) within its list, then persist.
