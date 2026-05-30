@@ -520,7 +520,8 @@ html, body {
   font-size: 11px; font-weight: 700; flex-shrink: 0;
 }
 .lgb-info { flex: 1; }
-.lgb-name { color: var(--text2); font-size: 13px; font-weight: 600; }
+.lgb-name { color: var(--text2); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 7px; }
+.lgb-row.stay-away .lgb-name { color: var(--red); }
 .shared-tag {
   display: inline-block; background: var(--red-bg); color: var(--red);
   font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px;
@@ -1784,10 +1785,11 @@ function renderBuilder() {
           const b=S.bets.find(x=>x.id===bid); if(!b) return;
           const sisters=S.parlays.filter(pp=>pp.betIds.includes(bid));
           const oc=b.odds>0?'odds-pos':'odds-neg';
-          html+=`<div class="lgb-row">
+          const away=isStayAway(b.group);
+          html+=`<div class="lgb-row${away?' stay-away':''}">
             <div class="lgb-num">${i+1}</div>
             <div class="lgb-info">
-              <div class="lgb-name">${esc(b.name)}</div>
+              <div class="lgb-name">${esc(b.name)}${away?'<span class="stay-away-badge">Stay away</span>':''}</div>
               ${sisters.length>1?`<span class="shared-tag">Shared in ${sisters.length} parlays</span>`:`<span class="unique-tag">Only in this parlay</span>`}
             </div>
             <span class="${oc}">${fmtOdds(b.odds)}</span>
