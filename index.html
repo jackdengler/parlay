@@ -50,6 +50,8 @@ document.head.appendChild(link);
   --green-bg:  #EBF5EF;
   --red:       #C0392B;
   --red-bg:    #FDECEA;
+  --amber:     #B7791F;
+  --amber-bg:  #FAF3E4;
 
   --safe-top: env(safe-area-inset-top, 44px);
   --safe-bot: env(safe-area-inset-bottom, 34px);
@@ -164,7 +166,21 @@ html, body {
   flex-shrink: 0; touch-action: none; user-select: none; line-height: 1;
 }
 .drag-handle:active { cursor: grabbing; color: var(--muted); }
-.bet-name { color: var(--text); font-size: 15px; font-weight: 600; }
+.bet-name { color: var(--text); font-size: 15px; font-weight: 600; flex: 1; min-width: 0; }
+/* ── PER-BET CONFIDENCE CHIP ── */
+.conf-chip {
+  flex-shrink: 0; width: 22px; height: 22px; border-radius: 7px; margin-right: 9px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: 'Source Sans 3', sans-serif; font-size: 11px; font-weight: 800; line-height: 1;
+  border: 1px solid var(--border2); background: var(--bg2); color: var(--muted2);
+  cursor: pointer; user-select: none; transition: transform 0.1s;
+}
+.conf-chip:active { transform: scale(0.9); }
+.conf-chip.high { background: var(--green-bg); border-color: color-mix(in srgb, var(--green) 45%, transparent); color: var(--green); }
+.conf-chip.med  { background: var(--amber-bg); border-color: color-mix(in srgb, var(--amber) 50%, transparent); color: var(--amber); }
+.conf-chip.low  { background: var(--bg3); border-color: var(--border2); color: var(--muted); }
+.fight-pair .conf-chip { width: 18px; height: 18px; font-size: 10px; margin-right: 6px; border-radius: 6px; }
+.fight-props .conf-chip { width: 19px; height: 19px; font-size: 10px; margin-right: 7px; }
 .bet-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: 12px; }
 .odds-pos {
   color: var(--green); font-size: 15px; font-weight: 700;
@@ -1595,6 +1611,7 @@ function renderPool() {
     const dragAttrs=dragId?` data-drag-list="pool" data-drag-id="${dragId}"`:'';
     return `<div class="${cls}" data-id="${b.id}"${dragAttrs} style="position:relative">
       <span class="drag-handle">⠿</span>
+      ${confChip(b)}
       <div class="bet-name">${esc(b.name)}</div>
       <div class="bet-right">
         <div style="display:flex;flex-direction:column;align-items:flex-end">
@@ -2458,6 +2475,24 @@ function closeBetForm(){showBetForm=false;editingBetId=null;prefillFightLabel=nu
 function openEditBet(id){showBetForm=true;editingBetId=id;prefillFightLabel=null;render();setTimeout(()=>document.getElementById('fBetName')?.focus(),80);}
 function openAddProp(fightLabel){showBetForm=true;editingBetId=null;prefillFightLabel=fightLabel||'';render();setTimeout(()=>document.getElementById('fBetName')?.focus(),80);}
 
+// Per-bet confidence: tap the chip to cycle none → High → Medium → Low.
+const CONF_CYCLE=[null,'high','med','low'];
+const CONF_LABEL={high:'H',med:'M',low:'L'};
+const CONF_NAME={high:'High',med:'Medium',low:'Low'};
+function confChip(b){
+  const c=(b&&b.conf)||'';
+  const cls='conf-chip'+(c?(' '+c):'');
+  const label=CONF_LABEL[c]||'·';
+  const title=c?`Confidence: ${CONF_NAME[c]} — tap to change`:'Set confidence';
+  return `<button class="${cls}" data-id="${b.id}" onclick="cycleConf(this.dataset.id)" title="${title}">${label}</button>`;
+}
+function cycleConf(id){
+  const b=S.bets.find(x=>x.id===id); if(!b) return;
+  const next=CONF_CYCLE[(CONF_CYCLE.indexOf(b.conf||null)+1)%CONF_CYCLE.length];
+  if(next) b.conf=next; else delete b.conf;
+  haptic();saveState();render();
+}
+
 // Fights can be flagged "stay away" — a reminder to skip them. The flag lives
 // on the fight label (group), so it persists across that fight's bets.
 function isStayAway(g){ return !!g && Array.isArray(S.stayAway) && S.stayAway.includes(g); }
@@ -3112,7 +3147,7 @@ function initSwipe() {
   document.querySelectorAll('.bet-card[data-id]').forEach(card => {
     let sx=0, sy=0, tracking=false, didSwipe=false;
     card.addEventListener('touchstart', e => {
-      if (e.target.closest('.drag-handle')||e.target.closest('.icon-btn')) return;
+      if (e.target.closest('.drag-handle')||e.target.closest('.icon-btn')||e.target.closest('.conf-chip')) return;
       sx=e.touches[0].clientX; sy=e.touches[0].clientY; tracking=true; didSwipe=false;
     }, {passive:true});
     card.addEventListener('touchmove', e => {
