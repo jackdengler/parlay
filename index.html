@@ -365,13 +365,13 @@ html, body {
 .pool-block .group-hdr { padding-top: 12px; }
 .tab-content > .pool-block:first-child .group-hdr { padding-top: 0; }
 .reorder-ctrl {
-  display: inline-flex; flex-direction: column; gap: 2px; flex-shrink: 0; margin-right: 9px;
+  display: inline-flex; flex-direction: column; gap: 5px; flex-shrink: 0; margin-right: 9px;
 }
 .reorder-btn {
-  width: 22px; height: 15px; padding: 0; line-height: 1;
+  width: 30px; height: 22px; padding: 0; line-height: 1;
   display: flex; align-items: center; justify-content: center;
-  font-size: 9px; color: var(--muted); background: var(--bg2);
-  border: 1px solid var(--border); border-radius: 5px; cursor: pointer;
+  font-size: 11px; color: var(--muted); background: var(--bg2);
+  border: 1px solid var(--border); border-radius: 6px; cursor: pointer;
   font-family: 'Source Sans 3', sans-serif;
 }
 .reorder-btn:active { background: var(--bg3); color: var(--text2); }
@@ -2322,7 +2322,7 @@ function renderResults() {
 
   if(S.bets.length>0||S.parlays.length>0) {
     if(S.parlays.length>0) {
-      html+=`<button class="export-slip-btn" onclick="exportSlipImage()" title="Export betslip image"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export betslip image</button>`;
+      html+=`<button class="export-slip-btn" onclick="exportSlipImage()" title="Copy betslip image to clipboard"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy betslip image</button>`;
     }
     html+=`<button class="save-recap-btn" onclick="saveRecap()">Save & archive this week</button>`;
 
@@ -3087,16 +3087,26 @@ async function exportSlipImage(){
   const fw=ctx.measureText(footStr).width;
   ctx.fillText(footStr, (W-fw)/2, H-18);
 
-  // Trigger download
-  canvas.toBlob(blob=>{
-    if(!blob){ showToast('Export failed'); return; }
+  // Copy image to clipboard; fall back to a file download where unsupported.
+  const downloadBlob=blob=>{
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     const fname=`parlay-slip-${new Date().toISOString().slice(0,10)}.png`;
     a.href=url; a.download=fname;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),1000);
-    showToast('Betslip image exported ✓');
+    showToast('Betslip image downloaded ✓');
+  };
+  canvas.toBlob(async blob=>{
+    if(!blob){ showToast('Export failed'); return; }
+    if(navigator.clipboard && window.ClipboardItem){
+      try{
+        await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+        showToast('Betslip copied to clipboard ✓');
+        return;
+      }catch(e){ /* clipboard blocked/unsupported — fall through to download */ }
+    }
+    downloadBlob(blob);
   },'image/png');
 }
 function newWeek(){
