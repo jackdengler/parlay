@@ -2019,7 +2019,9 @@ function renderBuilder() {
         const pStatus=parlayStatus(p);
         const someResolved=p.betIds.some(id=>S.betResults[id]==='win'||S.betResults[id]==='push');
         const showHedge=isPlaced&&pStatus==='pending'&&someResolved;
-        const showCashOut=isPlaced&&pStatus==='pending';
+        // Cash out is available on any live (pending) parlay with legs —
+        // placing first is not required.
+        const showCashOut=pStatus==='pending';
         html+=`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap" onclick="event.stopPropagation()">
           ${showHedge?`<button class="unlock-btn" onclick="event.stopPropagation();openHedge('${p.id}')">⚖ Hedge</button>`:''}
           ${showCashOut?`<button class="unlock-btn" onclick="event.stopPropagation();requestCashOut('${p.id}')">💵 Cash out</button>`:''}
@@ -2983,7 +2985,9 @@ function confirmCashOut(id){
   const el=document.getElementById('cashOutInput');
   const n=parseFloat(el?.value);
   if(isNaN(n)||n<0||n>STAKE_MAX){ showToast('Enter the cash-out amount'); return; }
-  S.parlays=S.parlays.map(p=>p.id===id?{...p,cashOut:n,cashedOutAt:Date.now()}:p);
+  // Cashing out implies the wager was live, so mark it placed for a consistent
+  // settled state (a cash-out can be reached without tapping Place first).
+  S.parlays=S.parlays.map(p=>p.id===id?{...p,placed:true,placedAt:p.placedAt||Date.now(),cashOut:n,cashedOutAt:Date.now()}:p);
   cashOutParlayId=null;
   haptic(); saveState(); render();
   const p=S.parlays.find(x=>x.id===id);
