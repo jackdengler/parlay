@@ -336,6 +336,16 @@ html, body {
 }
 .bet-card.stay-away { opacity: 0.45; }
 
+/* ── DRAG TO REORDER (fights, ungrouped bets, parlays) ── */
+.drag-item.drag-over-top { box-shadow: 0 -2px 0 var(--accent); }
+.drag-item.drag-over-bottom { box-shadow: 0 2px 0 var(--accent); }
+.pool-block { position: relative; }
+.pool-block .group-hdr { padding-top: 12px; }
+.tab-content > .pool-block:first-child .group-hdr { padding-top: 0; }
+.group-hdr .drag-handle { padding: 0; font-size: 13px; }
+.fight-props .drag-handle { display: none; }
+.parlay-top .drag-handle { padding: 2px 10px 0 0; }
+
 /* ── IMPLIED PROB ── */
 .imp-prob {
   font-size: 11px; font-weight: 600; color: var(--muted2);
@@ -1566,17 +1576,19 @@ function renderPool() {
   // Group bets by fight. The first two top-level bets in a fight are the
   // ML sides (rendered side-by-side). Any additional bets in the same fight
   // are fight-level props rendered full-width below the pair.
-  const betGroups={}, ungroupedBets=[];
+  const betGroups={};
   S.bets.forEach(b=>{
-    if(b.group){(betGroups[b.group]=betGroups[b.group]||[]).push(b);} else ungroupedBets.push(b);
+    if(b.group){(betGroups[b.group]=betGroups[b.group]||[]).push(b);}
   });
 
   function renderBetCard(b,opts){
     const isProp=!!(opts&&opts.isProp);
     const away=!!(opts&&opts.away);
-    const cls=(inParlayIds.has(b.id)?'bet-card in-parlay':'bet-card')+(isProp?' bet-prop':'')+(away?' stay-away':'');
+    const dragId=opts&&opts.dragId;
+    const cls=(inParlayIds.has(b.id)?'bet-card in-parlay':'bet-card')+(isProp?' bet-prop':'')+(away?' stay-away':'')+(dragId?' drag-item':'');
     const oc=b.odds>0?'odds-pos':'odds-neg';
-    return `<div class="${cls}" data-id="${b.id}" style="position:relative">
+    const dragAttrs=dragId?` data-drag-list="pool" data-drag-id="${dragId}"`:'';
+    return `<div class="${cls}" data-id="${b.id}"${dragAttrs} style="position:relative">
       <span class="drag-handle">⠿</span>
       <div class="bet-name">${esc(b.name)}</div>
       <div class="bet-right">
@@ -1589,13 +1601,23 @@ function renderPool() {
     </div>`;
   }
 
-  ungroupedBets.forEach(b=>{ html+=renderBetCard(b); });
-  Object.entries(betGroups).forEach(([g,bets])=>{
+  // Render in S.bets order so visual order matches the model (drag-to-reorder
+  // rebuilds S.bets from this order). An ungrouped bet is its own draggable
+  // item; a fight is one draggable block holding the ML pair + props, dragged
+  // via the handle on its header.
+  const seenGroups=new Set();
+  S.bets.forEach(b=>{
+    if(!b.group){ html+=renderBetCard(b,{dragId:'bet:'+b.id}); return; }
+    if(seenGroups.has(b.group)) return;
+    seenGroups.add(b.group);
+    const g=b.group;
+    const bets=betGroups[g];
     const sides=bets.slice(0,2);
     const props=bets.slice(2);
     const away=isStayAway(g);
+    html+=`<div class="pool-block drag-item" data-drag-list="pool" data-drag-id="fight:${esc(g)}">`;
     html+=`<div class="group-hdr${away?' stay-away':''}">
-      <span class="group-hdr-label"><span class="group-hdr-name">${esc(g)}</span>${away?'<span class="stay-away-badge">Stay away</span>':''}</span>
+      <span class="group-hdr-label"><span class="drag-handle">⠿</span><span class="group-hdr-name">${esc(g)}</span>${away?'<span class="stay-away-badge">Stay away</span>':''}</span>
       <button class="stay-away-btn${away?' on':''}" data-fight="${esc(g)}" onclick="toggleStayAway(this.dataset.fight)">${away?'✓ Avoiding':'Stay away'}</button>
     </div>`;
     // ML pair side-by-side
@@ -1610,6 +1632,7 @@ function renderPool() {
       html+=`</div>`;
     }
     html+=`<button class="add-prop-btn" data-fight="${esc(g)}" onclick="openAddProp(this.dataset.fight)">+ Prop for fight</button>`;
+    html+=`</div>`;
   });
 
   if(showPasteForm) {
@@ -1672,8 +1695,9 @@ function renderBuilder() {
     const isPlaced=!!p.placed;
     const dec=parlayDecimal(p.betIds);
     const cardCls=`parlay-card${isActive?' active':''}${isPlaced?' placed':''}`;
-    html+=`<div class="${cardCls}" onclick="toggleParlay('${p.id}')">
+    html+=`<div class="${cardCls} drag-item" data-drag-list="parlays" data-drag-id="${p.id}" onclick="toggleParlay('${p.id}')">
       <div class="parlay-top">
+        <span class="drag-handle" onclick="event.stopPropagation()">⠿</span>
         <div style="flex:1;min-width:0">
           ${renamingParlayId===p.id
             ?`<input class="parlay-rename-input" id="parlayNameInput" value="${esc(p.name)}" onclick="event.stopPropagation()" onblur="submitRenameParlay()" onkeydown="if(event.key==='Enter')this.blur()" />`
@@ -3131,20 +3155,25 @@ function initDrag() {
 }
 
 function onDragStart(e) {
-  const card = e.currentTarget.closest('.bet-card[data-id]');
-  if (!card) return;
+  const item = e.currentTarget.closest('.drag-item');
+  if (!item) return;
   e.preventDefault();
   const touch = e.touches ? e.touches[0] : e;
-  const rect = card.getBoundingClientRect();
-  const ghost = card.cloneNode(true);
-  ghost.style.cssText = `position:fixed;left:${rect.left}px;width:${rect.width}px;top:${rect.top}px;z-index:500;opacity:0.92;pointer-events:none;box-shadow:0 8px 28px rgba(0,0,0,0.18);border-radius:14px;transition:none;`;
+  const rect = item.getBoundingClientRect();
+  const ghost = item.cloneNode(true);
+  ghost.style.cssText = `position:fixed;left:${rect.left}px;width:${rect.width}px;top:${rect.top}px;z-index:500;opacity:0.92;pointer-events:none;box-shadow:0 8px 28px rgba(0,0,0,0.18);border-radius:14px;transition:none;margin:0;`;
   document.body.appendChild(ghost);
-  card.style.opacity = '0.25';
-  _drag = { id: card.dataset.id, offsetY: touch.clientY - rect.top, ghost, card };
+  item.style.opacity = '0.25';
+  _drag = { list: item.dataset.dragList, id: item.dataset.dragId, offsetY: touch.clientY - rect.top, ghost, item };
   document.addEventListener('touchmove', onDragMove, {passive: false});
   document.addEventListener('touchend', onDragEnd);
   document.addEventListener('mousemove', onDragMove);
   document.addEventListener('mouseup', onDragEnd);
+}
+
+// All draggable peers in the active drag's list, in DOM (visual) order.
+function _dragItems() {
+  return [...document.querySelectorAll(`.drag-item[data-drag-list="${_drag.list}"]`)];
 }
 
 function onDragMove(e) {
@@ -3153,9 +3182,9 @@ function onDragMove(e) {
   const touch = e.touches ? e.touches[0] : e;
   const y = touch.clientY;
   _drag.ghost.style.top = (y - _drag.offsetY) + 'px';
-  document.querySelectorAll('.bet-card[data-id]').forEach(c => {
+  _dragItems().forEach(c => {
     c.classList.remove('drag-over-top', 'drag-over-bottom');
-    if (c.dataset.id === _drag.id) return;
+    if (c.dataset.dragId === _drag.id) return;
     const r = c.getBoundingClientRect();
     c.classList.add(y < r.top + r.height / 2 ? 'drag-over-top' : 'drag-over-bottom');
   });
@@ -3165,28 +3194,18 @@ function onDragEnd(e) {
   if (!_drag) return;
   const touch = e.changedTouches ? e.changedTouches[0] : e;
   const y = touch.clientY;
-  const cards = [...document.querySelectorAll('.bet-card[data-id]')];
+  const items = _dragItems();
   let targetId = null, insertBefore = true;
-  for (const c of cards) {
-    if (c.dataset.id === _drag.id) continue;
+  for (const c of items) {
+    if (c.dataset.dragId === _drag.id) continue;
     const r = c.getBoundingClientRect();
-    if (y < r.top + r.height / 2) { targetId = c.dataset.id; insertBefore = true; break; }
-    targetId = c.dataset.id; insertBefore = false;
+    if (y < r.top + r.height / 2) { targetId = c.dataset.dragId; insertBefore = true; break; }
+    targetId = c.dataset.dragId; insertBefore = false;
   }
-  const fromIdx = S.bets.findIndex(b => b.id === _drag.id);
-  if (targetId !== null) {
-    let toIdx = S.bets.findIndex(b => b.id === targetId);
-    if (!insertBefore) toIdx++;
-    if (fromIdx < toIdx) toIdx--;
-    if (fromIdx !== toIdx && toIdx >= 0) {
-      const [moved] = S.bets.splice(fromIdx, 1);
-      S.bets.splice(toIdx, 0, moved);
-      saveState();
-    }
-  }
+  if (targetId !== null) reorderDragList(_drag.list, _drag.id, targetId, insertBefore);
   _drag.ghost.remove();
-  _drag.card.style.opacity = '';
-  cards.forEach(c => c.classList.remove('drag-over-top', 'drag-over-bottom'));
+  _drag.item.style.opacity = '';
+  items.forEach(c => c.classList.remove('drag-over-top', 'drag-over-bottom'));
   _drag = null;
   document.removeEventListener('touchmove', onDragMove);
   document.removeEventListener('touchend', onDragEnd);
@@ -3194,6 +3213,44 @@ function onDragEnd(e) {
   document.removeEventListener('mouseup', onDragEnd);
   haptic([4,30,4]);
   render();
+}
+
+// Reorder the underlying model from the new visual order of drag items.
+function reorderDragList(list, dragId, targetId, insertBefore) {
+  const ids = _dragItems().map(el => el.dataset.dragId);
+  const fromIdx = ids.indexOf(dragId);
+  let toIdx = ids.indexOf(targetId);
+  if (fromIdx < 0 || toIdx < 0) return;
+  if (!insertBefore) toIdx++;
+  if (fromIdx < toIdx) toIdx--;
+  if (fromIdx === toIdx) return;
+  ids.splice(fromIdx, 1);
+  ids.splice(toIdx, 0, dragId);
+  if (list === 'parlays') {
+    S.parlays = ids.map(id => S.parlays.find(p => p.id === id)).filter(Boolean);
+  } else if (list === 'pool') {
+    // Each id is either "bet:<id>" (one ungrouped bet) or "fight:<group>"
+    // (all bets of that fight, keeping their relative order).
+    const newBets = [];
+    ids.forEach(key => {
+      if (key.indexOf('fight:') === 0) {
+        const g = key.slice(6);
+        S.bets.forEach(b => { if (b.group === g) newBets.push(b); });
+      } else if (key.indexOf('bet:') === 0) {
+        const b = S.bets.find(x => x.id === key.slice(4));
+        if (b) newBets.push(b);
+      }
+    });
+    // Safety: never drop bets if some key didn't resolve.
+    if (newBets.length === S.bets.length) {
+      S.bets = newBets;
+    } else {
+      const have = new Set(newBets);
+      S.bets.forEach(b => { if (!have.has(b)) newBets.push(b); });
+      S.bets = newBets;
+    }
+  }
+  saveState();
 }
 
 // ─── SERVICE WORKER ────────────────────────────────────────────────────────
