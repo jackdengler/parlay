@@ -521,6 +521,27 @@ button:focus-visible, input:focus-visible, a:focus-visible, [tabindex]:focus-vis
   padding: 3px 8px; border-radius: 100px; margin-top: 4px;
   font-family: 'Source Sans 3', sans-serif;
 }
+.cashout-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--accent); color: #fff; font-size: 10px; font-weight: 800;
+  letter-spacing: 0.6px; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 100px; margin-top: 4px;
+  font-family: 'Source Sans 3', sans-serif;
+}
+.cashout-input-row {
+  display: flex; align-items: center; gap: 4px; margin: 8px 0;
+}
+.cashout-input-row .stake-dollar { color: var(--muted); font-weight: 700; font-size: 15px; }
+.cashout-summary {
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+}
+.cashout-line { display: flex; align-items: baseline; gap: 8px; }
+.co-lbl {
+  color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase; flex: 1;
+}
+.co-val { font-family: 'Lora', serif; font-size: 17px; font-weight: 700; color: var(--text); }
+.co-net { font-family: 'Lora', serif; font-size: 14px; font-weight: 700; }
 .place-btn {
   background: var(--green); color: #fff; border: none; border-radius: 9px;
   padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer;
@@ -1502,6 +1523,7 @@ function effectiveDecimal(ids) {
   },1);
 }
 function parlayStatus(p) {
+  if(typeof p.cashOut==='number') return 'cashout';
   const results=p.betIds.map(id=>S.betResults[id]||null);
   if(results.some(r=>r==='loss')) return 'loss';
   if(results.length>0 && results.every(r=>r==='win'||r==='push')) {
@@ -1509,8 +1531,11 @@ function parlayStatus(p) {
   }
   return 'pending';
 }
+// Net P/L of a cashed-out parlay: cash received minus stake.
+function cashOutNet(p){ return (Number(p.cashOut)||0)-(Number(p.stake)||0); }
 function effectiveProfit(p) {
   const status=parlayStatus(p);
+  if(status==='cashout') return cashOutNet(p);
   if(status==='win') return (effectiveDecimal(p.betIds)-1)*p.stake;
   if(status==='loss') return -p.stake;
   if(status==='push') return 0;
@@ -1587,7 +1612,10 @@ function computeWeekTotals() {
   S.parlays.forEach(p=>{
     totalStaked+=p.stake;
     const status=parlayStatus(p);
-    if(status==='win'){
+    if(status==='cashout'){
+      const profit=cashOutNet(p);
+      realizedPL+=profit; lockedDelta+=profit;
+    } else if(status==='win'){
       const profit=(effectiveDecimal(p.betIds)-1)*p.stake;
       realizedPL+=profit; lockedDelta+=profit;
     } else if(status==='loss'){
@@ -1707,7 +1735,7 @@ function showToast(msg, opts) {
 let currentTab='pool';
 function switchTab(tab) {
   if(tab!=='results') S._confirmClear=false;
-  showPasteForm=false; renamingParlayId=null; confirmPlaceParlayId=null; confirmDeleteParlayId=null; showBankrollForm=false;
+  showPasteForm=false; renamingParlayId=null; confirmPlaceParlayId=null; confirmDeleteParlayId=null; cashOutParlayId=null; showBankrollForm=false;
   currentTab=tab;
   document.querySelectorAll('.tab-btn').forEach(b=>{
     const on=b.dataset.tab===tab;
@@ -1861,7 +1889,8 @@ let renamingParlayId = null;
 let expandedResultParlayId = null;
 let confirmPlaceParlayId = null;
 let confirmDeleteParlayId = null;
-let parlayFilter = 'all'; // all | open | won | lost | push
+let cashOutParlayId = null;
+let parlayFilter = 'all'; // all | open | won | lost | push | cashout
 let showBankrollForm = false;
 function toggleResultParlay(id) { expandedResultParlayId = expandedResultParlayId===id?null:id; render(); }
 function renderBuilder() {
@@ -1875,13 +1904,14 @@ function renderBuilder() {
 
   // Status filter + settled/open split.
   if(S.parlays.length>0) {
-    const counts={all:S.parlays.length,open:0,won:0,lost:0,push:0};
+    const counts={all:S.parlays.length,open:0,won:0,lost:0,push:0,cashout:0};
     S.parlays.forEach(p=>{
       const st=parlayStatus(p);
-      counts[st==='pending'?'open':st==='win'?'won':st==='loss'?'lost':'push']++;
+      counts[st==='pending'?'open':st==='win'?'won':st==='loss'?'lost':st==='cashout'?'cashout':'push']++;
     });
     const chips=[['all','All',counts.all],['open','Open',counts.open],['won','Won',counts.won],['lost','Lost',counts.lost]];
     if(counts.push>0) chips.push(['push','Push',counts.push]);
+    if(counts.cashout>0) chips.push(['cashout','Cashed',counts.cashout]);
     html+=`<div class="parlay-filter" role="group" aria-label="Filter parlays by status">`;
     chips.forEach(([key,label,cnt])=>{
       const active=parlayFilter===key;
@@ -1897,11 +1927,12 @@ function renderBuilder() {
   let shownCount=0;
   S.parlays.forEach((p,pIdx)=>{
     const _st=parlayStatus(p);
-    const _bucket=_st==='pending'?'open':_st==='win'?'won':_st==='loss'?'lost':'push';
+    const _bucket=_st==='pending'?'open':_st==='win'?'won':_st==='loss'?'lost':_st==='cashout'?'cashout':'push';
     if(parlayFilter!=='all' && _bucket!==parlayFilter) return;
     shownCount++;
     const isActive=S.activeParlayId===p.id;
     const isPlaced=!!p.placed;
+    const isCashedOut=typeof p.cashOut==='number';
     const dec=parlayDecimal(p.betIds);
     const cardCls=`parlay-card${isActive?' active':''}${isPlaced?' placed':''}`;
     html+=`<div class="${cardCls}" onclick="toggleParlay('${p.id}')">
@@ -1913,7 +1944,7 @@ function renderBuilder() {
             :`<div class="parlay-name" onclick="event.stopPropagation();renameParlay('${p.id}')" title="Tap to rename">${esc(p.name)}</div>`
           }
           <div class="parlay-meta">${p.betIds.length} leg${p.betIds.length!==1?'s':''}</div>
-          ${isPlaced?`<div class="placed-badge">✓ Placed</div>`:''}
+          ${isCashedOut?`<div class="cashout-badge">💵 Cashed out</div>`:isPlaced?`<div class="placed-badge">✓ Placed</div>`:''}
           ${correlatedGroups(p).length?`<div class="correlated-badge" title="Two or more legs from the same fight — many books void or restrict same-game parlays.">⚠ Correlated</div>`:''}
         </div>
         <div style="display:flex;align-items:center;gap:6px">
@@ -1940,7 +1971,7 @@ function renderBuilder() {
         <span class="profit-val" id="pr-${p.id}">+$${calcProfit(p.betIds,p.stake)}</span>
       </div>`;
 
-      // Place / unlock / confirm row
+      // Place / unlock / cash-out / confirm row
       if(confirmDeleteParlayId===p.id) {
         html+=`<div class="place-confirm" onclick="event.stopPropagation()">
           <div class="place-confirm-txt">Delete <strong>${esc(p.name)}</strong>? Its ${p.betIds.length} leg${p.betIds.length!==1?'s':''} will be removed.</div>
@@ -1957,12 +1988,41 @@ function renderBuilder() {
             <button class="place-confirm-yes" onclick="event.stopPropagation();confirmPlaceParlay('${p.id}')">Confirm placed</button>
           </div>
         </div>`;
+      } else if(cashOutParlayId===p.id) {
+        const suggested=isCashedOut?p.cashOut.toFixed(2):calcPayout(p.betIds,p.stake);
+        html+=`<div class="place-confirm" onclick="event.stopPropagation()">
+          <div class="place-confirm-txt">Cash out <strong>${esc(p.name)}</strong> — enter the amount you received. Net = amount − $${p.stake} stake.</div>
+          <div class="cashout-input-row">
+            <span class="stake-dollar">$</span>
+            <input class="bk-input" id="cashOutInput" type="text" inputmode="decimal" pattern="[0-9.]*" value="${suggested}" placeholder="0.00"
+              onclick="event.stopPropagation();this.select()" onkeydown="if(event.key==='Enter'){event.preventDefault();confirmCashOut('${p.id}');}">
+          </div>
+          <div class="place-confirm-btns">
+            <button class="place-cancel" onclick="event.stopPropagation();cancelCashOut()">Cancel</button>
+            <button class="place-confirm-yes" onclick="event.stopPropagation();confirmCashOut('${p.id}')">Confirm cash out</button>
+          </div>
+        </div>`;
+      } else if(isCashedOut) {
+        const net=cashOutNet(p);
+        html+=`<div class="cashout-summary" onclick="event.stopPropagation()">
+          <div class="cashout-line">
+            <span class="co-lbl">Cashed out</span>
+            <span class="co-val">$${p.cashOut.toFixed(2)}</span>
+            <span class="co-net" style="color:${net>=0?'var(--green)':'var(--red)'}">${net>=0?'+':'-'}$${Math.abs(net).toFixed(2)}</span>
+          </div>
+          <div class="place-confirm-btns" style="margin-top:8px">
+            <button class="place-cancel" onclick="event.stopPropagation();undoCashOut('${p.id}')">Undo cash-out</button>
+            <button class="unlock-btn" onclick="event.stopPropagation();requestCashOut('${p.id}')">✎ Edit amount</button>
+          </div>
+        </div>`;
       } else {
         const pStatus=parlayStatus(p);
         const someResolved=p.betIds.some(id=>S.betResults[id]==='win'||S.betResults[id]==='push');
         const showHedge=isPlaced&&pStatus==='pending'&&someResolved;
-        html+=`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px" onclick="event.stopPropagation()">
+        const showCashOut=isPlaced&&pStatus==='pending';
+        html+=`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap" onclick="event.stopPropagation()">
           ${showHedge?`<button class="unlock-btn" onclick="event.stopPropagation();openHedge('${p.id}')">⚖ Hedge</button>`:''}
+          ${showCashOut?`<button class="unlock-btn" onclick="event.stopPropagation();requestCashOut('${p.id}')">💵 Cash out</button>`:''}
           ${isPlaced
             ?`<button class="unlock-btn" onclick="event.stopPropagation();unlockParlay('${p.id}')">🔓 Unlock</button>`
             :`<button class="place-btn" onclick="event.stopPropagation();requestPlaceParlay('${p.id}')">Place bet</button>`
@@ -2063,7 +2123,13 @@ function renderBuilder() {
       const legsStr=decided>0?`${liveIds.length}/${p.betIds.length}`:`${p.betIds.length}`;
       const effDec=effectiveDecimal(p.betIds);
       let oddsStr, payoutStr, payoutColor='var(--green)';
-      if(status==='loss') {
+      if(status==='cashout') {
+        const net=cashOutNet(p);
+        oddsStr='Cashed';
+        payoutStr='$'+(Number(p.cashOut)||0).toFixed(2);
+        payoutColor=net>=0?'var(--accent)':'var(--red)';
+        realizedPL+=net;
+      } else if(status==='loss') {
         oddsStr='—';
         payoutStr='Busted';
         payoutColor='var(--red)';
@@ -2084,7 +2150,7 @@ function renderBuilder() {
         payoutStr='$'+(effDec*p.stake).toFixed(2);
         liveRisk+=p.stake;
       }
-      const rowCls='compare-row'+(status==='loss'?' busted':status==='win'?' won':status==='push'?' push':'');
+      const rowCls='compare-row'+(status==='loss'?' busted':status==='win'?' won':status==='push'?' push':status==='cashout'?(cashOutNet(p)>=0?' won':' busted'):'');
       html+=`<div class="${rowCls}">
         <span class="cmp-name">${esc(p.name)}</span>
         <span class="cmp-legs">${legsStr}</span>
@@ -2117,6 +2183,7 @@ function renderBuilder() {
 // Simulate the parlay status if `assumed` (a map of betId -> 'win'|'loss'|'push')
 // were applied on top of the existing recorded results. Returns 'win'|'loss'|'push'|'pending'.
 function simulateParlayStatus(p, assumed) {
+  if (typeof p.cashOut === 'number') return 'cashout'; // terminal, leg-independent
   const results = p.betIds.map(id => assumed[id] || S.betResults[id] || null);
   if (results.some(r => r === 'loss')) return 'loss';
   if (results.length > 0 && results.every(r => r === 'win' || r === 'push')) {
@@ -2128,6 +2195,7 @@ function simulateParlayStatus(p, assumed) {
 // the *max* potential profit (i.e., assume remaining legs hit) to give an upper bound.
 function simulateParlayProfit(p, assumed) {
   const st = simulateParlayStatus(p, assumed);
+  if (st === 'cashout') return cashOutNet(p);
   if (st === 'loss') return -p.stake;
   if (st === 'push') return 0;
   // win or still-pending: potential profit if remaining legs all hit, with pushed legs dropped
@@ -2411,7 +2479,9 @@ function renderResults() {
       const pending=p.betIds.filter(id=>!S.betResults[id]);
       const alreadyLost=decided.some(id=>S.betResults[id]==='loss');
       let plLine='';
-      if(status==='pending'&&decided.length>0) {
+      if(status==='cashout') {
+        plLine=`<div class="rp-maxpl">Cashed out for $${(Number(p.cashOut)||0).toFixed(2)}</div>`;
+      } else if(status==='pending'&&decided.length>0) {
         if(alreadyLost) {
           plLine=`<div class="rp-maxpl loss">Busted</div>`;
         } else {
@@ -2435,8 +2505,8 @@ function renderResults() {
             ${plLine}
           </div>
           <div style="display:flex;align-items:center;gap:8px">
-            <div class="${status==='win'?'status-win':status==='loss'?'status-loss':status==='push'?'status-push':'status-pend'}">
-              ${status==='win'?'+$'+((effectiveDecimal(p.betIds)-1)*p.stake).toFixed(2):status==='loss'?'-$'+p.stake:status==='push'?'Push':'Pending'}
+            <div class="${status==='cashout'?(cashOutNet(p)>=0?'status-win':'status-loss'):status==='win'?'status-win':status==='loss'?'status-loss':status==='push'?'status-push':'status-pend'}">
+              ${status==='cashout'?(cashOutNet(p)>=0?'+':'-')+'$'+Math.abs(cashOutNet(p)).toFixed(2):status==='win'?'+$'+((effectiveDecimal(p.betIds)-1)*p.stake).toFixed(2):status==='loss'?'-$'+p.stake:status==='push'?'Push':'Pending'}
             </div>
             <span class="rp-chevron">${isExpanded?'▲':'▼'}</span>
           </div>
@@ -2482,13 +2552,13 @@ function renderResults() {
     const curPct=range>0?Math.max(0,Math.min(100,((realizedPL-worstCasePL)/range)*100)):50;
     const zeroPct=(range>0 && worstCasePL<=0 && bestCasePL>=0)?((0-worstCasePL)/range)*100:null;
     const showBar=S.parlays.length>0 && range>0.001;
-    let _pOpen=0,_pWon=0,_pLost=0,_pPush=0;
-    S.parlays.forEach(p=>{ const st=parlayStatus(p); if(st==='pending')_pOpen++;else if(st==='win')_pWon++;else if(st==='loss')_pLost++;else _pPush++; });
-    const _settled=_pWon+_pLost+_pPush;
+    let _pOpen=0,_pWon=0,_pLost=0,_pPush=0,_pCash=0;
+    S.parlays.forEach(p=>{ const st=parlayStatus(p); if(st==='pending')_pOpen++;else if(st==='win')_pWon++;else if(st==='loss')_pLost++;else if(st==='cashout')_pCash++;else _pPush++; });
+    const _settled=_pWon+_pLost+_pPush+_pCash;
     const _splitParts=[`${_settled} settled`,`${_pOpen} open`];
     html+=`<div class="week-summary-card">
       <div class="week-summary-title">Week Summary</div>
-      <div class="week-summary-row"><span class="ws-lbl">Parlays</span><span class="ws-val" style="font-family:'Source Sans 3',sans-serif;font-size:12px;font-weight:600;color:var(--muted)">${_splitParts.join(' · ')}${_settled>0?` (${_pWon}W · ${_pLost}L${_pPush>0?` · ${_pPush}P`:''})`:''}</span></div>
+      <div class="week-summary-row"><span class="ws-lbl">Parlays</span><span class="ws-val" style="font-family:'Source Sans 3',sans-serif;font-size:12px;font-weight:600;color:var(--muted)">${_splitParts.join(' · ')}${_settled>0?` (${_pWon}W · ${_pLost}L${_pPush>0?` · ${_pPush}P`:''}${_pCash>0?` · ${_pCash} cashed`:''})`:''}</span></div>
       <div class="week-summary-row"><span class="ws-lbl">Worst case</span><span class="ws-val" style="color:${colorPL(worstCasePL)}">${fmtPL(worstCasePL)}</span></div>
       <div class="week-summary-row"><span class="ws-lbl">Current</span><span class="ws-val">${covered?'<span class="ws-covered">Covered</span>':''}<span style="color:${colorPL(realizedPL)}">${fmtPL(realizedPL)}</span></span></div>
       <div class="week-summary-row"><span class="ws-lbl" title="Probability-weighted profit. Uses your win-chance estimate per bet, or the odds-implied % when you haven't set one.">Expected value</span><span class="ws-val" style="color:${colorPL(expectedPL)}">${fmtPL(expectedPL)}</span></div>
@@ -2533,13 +2603,18 @@ function renderResults() {
 let selectedRecapIdx = -1; // -1 = All Time
 
 function recapNet(r) {
-  const wonP=r.parlays.filter(p=>p.result==='win');
-  const lostP=r.parlays.filter(p=>p.result==='loss');
-  // Pushes net $0 — stake returned
-  return wonP.reduce((s,p)=>s+(p.payout-p.stake),0)-lostP.reduce((s,p)=>s+p.stake,0);
+  // Pushes net $0 (stake returned). Wins and cash-outs net payout − stake;
+  // losses net −stake.
+  return r.parlays.reduce((s,p)=>{
+    if(p.result==='loss') return s-p.stake;
+    if(p.result==='push') return s;
+    if(p.result==='win'||p.result==='cashout') return s+((p.payout||0)-p.stake);
+    return s; // pending (unsettled at archive)
+  },0);
 }
 function recapStaked(r) { return r.parlays.reduce((s,p)=>s+p.stake,0); }
-function recapWon(r) { return r.parlays.filter(p=>p.result==='win').reduce((s,p)=>s+p.payout,0); }
+// Total returned on settled-positive parlays (wins + cash-outs).
+function recapWon(r) { return r.parlays.filter(p=>p.result==='win'||p.result==='cashout').reduce((s,p)=>s+(p.payout||0),0); }
 
 function selectRecap(idx) { selectedRecapIdx=idx; render(); }
 
@@ -2643,14 +2718,15 @@ function renderRecap() {
     if(r.parlays && r.parlays.length>0) {
       html+=`<div class="recap-sub">Parlays</div>`;
       r.parlays.forEach(p=>{
-        const net=p.result==='win'?(p.payout-p.stake):p.result==='loss'?-p.stake:0;
+        const isCash=p.result==='cashout';
+        const net=p.result==='win'?(p.payout-p.stake):isCash?((p.payout||0)-p.stake):p.result==='loss'?-p.stake:0;
         html+=`<div class="recap-parlay-row">
           <div>
-            <div class="rp-name">${esc(p.name)}</div>
+            <div class="rp-name">${esc(p.name)}${isCash?' <span style="font-size:11px;color:var(--accent);font-weight:700">💵 cashed</span>':''}</div>
             <div class="rp-meta">${(p.betIds||[]).length} legs · $${p.stake} stake</div>
           </div>
-          <div class="${p.result==='win'?'status-win':p.result==='loss'?'status-loss':p.result==='push'?'status-push':'status-pend'}">
-            ${p.result==='win'?'+$'+(p.payout-p.stake).toFixed(2):p.result==='loss'?'-$'+p.stake:p.result==='push'?'Push':'Pending'}
+          <div class="${isCash?(net>=0?'status-win':'status-loss'):p.result==='win'?'status-win':p.result==='loss'?'status-loss':p.result==='push'?'status-push':'status-pend'}">
+            ${isCash?(net>=0?'+':'-')+'$'+Math.abs(net).toFixed(2):p.result==='win'?'+$'+(p.payout-p.stake).toFixed(2):p.result==='loss'?'-$'+p.stake:p.result==='push'?'Push':'Pending'}
           </div>
         </div>`;
       });
@@ -2886,8 +2962,37 @@ function confirmPlaceParlay(id){
   else showToast('Parlay placed ✓');
 }
 function unlockParlay(id){
-  S.parlays=S.parlays.map(p=>p.id===id?{...p,placed:false,placedAt:null}:p);
+  // Unlocking returns a parlay to an editable state, clearing any cash-out.
+  S.parlays=S.parlays.map(p=>{ if(p.id!==id) return p; const np={...p,placed:false,placedAt:null}; delete np.cashOut; delete np.cashedOutAt; return np; });
   saveState(); render(); showToast('Parlay unlocked');
+}
+
+// ─── CASH OUT ───────────────────────────────────────────────────────────────
+// Settle a parlay early for a fixed amount, regardless of its legs. The
+// cash-out value is the total returned (stake + profit), so net = cash − stake.
+function requestCashOut(id){
+  const p=S.parlays.find(x=>x.id===id);
+  if(!p||p.betIds.length===0){ showToast('Add legs first'); return; }
+  cashOutParlayId=id; confirmPlaceParlayId=null; confirmDeleteParlayId=null;
+  S.activeParlayId=id;
+  render();
+  setTimeout(()=>{ const el=document.getElementById('cashOutInput'); if(el){el.focus();el.select();} },60);
+}
+function cancelCashOut(){ cashOutParlayId=null; render(); }
+function confirmCashOut(id){
+  const el=document.getElementById('cashOutInput');
+  const n=parseFloat(el?.value);
+  if(isNaN(n)||n<0||n>STAKE_MAX){ showToast('Enter the cash-out amount'); return; }
+  S.parlays=S.parlays.map(p=>p.id===id?{...p,cashOut:n,cashedOutAt:Date.now()}:p);
+  cashOutParlayId=null;
+  haptic(); saveState(); render();
+  const p=S.parlays.find(x=>x.id===id);
+  const net=p?cashOutNet(p):0;
+  showToast(`Cashed out $${n.toFixed(2)} (${net>=0?'+':'-'}$${Math.abs(net).toFixed(2)})`);
+}
+function undoCashOut(id){
+  S.parlays=S.parlays.map(p=>{ if(p.id!==id) return p; const np={...p}; delete np.cashOut; delete np.cashedOutAt; return np; });
+  saveState(); render(); showToast('Cash-out removed');
 }
 
 // ─── BANKROLL ACTIONS ───────────────────────────────────────────────────────
@@ -3061,6 +3166,7 @@ function setFightWinner(idA, idB, mode) {
 }
 function parlayPayoutForArchive(p) {
   const status=parlayStatus(p);
+  if(status==='cashout') return Number(p.cashOut)||0;
   if(status==='loss') return 0;
   if(status==='push') return p.stake;
   return effectiveDecimal(p.betIds)*p.stake;
@@ -3233,11 +3339,11 @@ async function exportSlipImage(){
     ctx.fillRect(cardX, fy, cardW, 1);
     setFont(12,'600');
     ctx.fillStyle=c.muted;
-    const payoutLbl=status==='win'?'WON':status==='loss'?'LOST':'TO PAY';
+    const payoutLbl=status==='cashout'?'CASHED OUT':status==='win'?'WON':status==='loss'?'LOST':'TO PAY';
     ctx.fillText(payoutLbl, cardX+18, fy+26);
     setFont(18,'700',"'Lora', serif");
-    ctx.fillStyle=status==='loss'?c.red:status==='win'?c.green:c.text;
-    const payoutStr=status==='loss'?`-$${p.stake.toFixed(2)}`:`$${payout.toFixed(2)}`;
+    ctx.fillStyle=status==='loss'?c.red:status==='win'?c.green:status==='cashout'?c.accent:c.text;
+    const payoutStr=status==='loss'?`-$${p.stake.toFixed(2)}`:status==='cashout'?`$${(Number(p.cashOut)||0).toFixed(2)}`:`$${payout.toFixed(2)}`;
     const pw=ctx.measureText(payoutStr).width;
     ctx.fillText(payoutStr, cardX+cardW-18-pw, fy+28);
 
